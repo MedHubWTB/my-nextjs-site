@@ -1,21 +1,18 @@
 "use client";
+import { supabase } from './lib/supabase'
+console.log('Supabase connected:', supabase)
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white font-sans overflow-x-hidden">
-      {/* Google Fonts */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 
         * { box-sizing: border-box; }
 
-        body {
-          font-family: 'DM Sans', sans-serif;
-        }
+        body { font-family: 'DM Sans', sans-serif; }
 
-        .font-display {
-          font-family: 'DM Serif Display', serif;
-        }
+        .font-display { font-family: 'DM Serif Display', serif; }
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(28px); }
@@ -79,6 +76,26 @@ export default function Home() {
         .btn-ghost:hover {
           background: #eff6ff;
           border-color: #93c5fd;
+        }
+
+        .btn-agency {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #f5f3ff;
+          color: #6d28d9;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
+          font-size: 0.9rem;
+          padding: 10px 20px;
+          border-radius: 100px;
+          border: 1.5px solid #d8b4fe;
+          cursor: pointer;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-agency:hover {
+          background: #ede9fe;
+          border-color: #a78bfa;
         }
 
         .card {
@@ -148,8 +165,8 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Nav links */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          {/* Nav links + buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             {['Platform', 'Solutions', 'About'].map(link => (
               <a key={link} href="#" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', fontWeight: 500, color: '#475569', textDecoration: 'none', transition: 'color 0.15s' }}
                 onMouseOver={e => (e.currentTarget.style.color = '#1d4ed8')}
@@ -157,14 +174,31 @@ export default function Home() {
                 {link}
               </a>
             ))}
-            <button className="btn-ghost" style={{ fontSize: '0.85rem', padding: '8px 18px' }}>Sign in</button>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 20, background: '#e0eaff' }} />
+
+            {/* Doctor sign in */}
+            <button
+              className="btn-ghost"
+              style={{ fontSize: '0.85rem', padding: '8px 18px' }}
+              onClick={() => window.location.href = '/login'}>
+              👨‍⚕️ Doctor Sign In
+            </button>
+
+            {/* Agency sign in */}
+            <button
+              className="btn-agency"
+              style={{ fontSize: '0.85rem', padding: '8px 18px' }}
+              onClick={() => window.location.href = '/agency-login'}>
+              🏥 Agency Sign In
+            </button>
           </div>
         </div>
       </nav>
 
       {/* ── HERO ── */}
       <section className="grid-bg" style={{ padding: '96px 24px 80px', textAlign: 'center', position: 'relative' }}>
-        {/* Glow blob */}
         <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(191,219,254,0.45) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto' }}>
@@ -181,29 +215,72 @@ export default function Home() {
           </h1>
 
           <p className="anim-3" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', color: '#64748b', lineHeight: 1.7, maxWidth: 520, margin: '0 auto 40px', fontWeight: 400 }}>
-            MedHub connects care teams, patients, and data in one intelligent platform — reducing errors and giving clinicians more time for what matters.
+            MedHub connects doctors and medical agencies in one intelligent platform — reducing admin and giving clinicians more time for what matters.
           </p>
 
           <div className="anim-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <button className="btn-primary">
-              Get Started
+            <button className="btn-primary" onClick={() => window.location.href = '/signup'}>
+              Get Started — it&apos;s free
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <button className="btn-ghost">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                <circle cx="7.5" cy="7.5" r="6.5" stroke="#1d4ed8" strokeWidth="1.5"/>
-                <path d="M6 5.5l3 2-3 2V5.5z" fill="#1d4ed8"/>
-              </svg>
-              Watch demo
+            <button className="btn-agency" onClick={() => window.location.href = '/agency-contact'}>
+              🏥 Register your Agency
             </button>
           </div>
         </div>
       </section>
 
+      {/* ── WHO IS IT FOR ── */}
+      <section style={{ background: '#fff', borderTop: '1px solid #e0eaff', borderBottom: '1px solid #e0eaff', padding: '64px 24px' }}>
+        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <span className="pill" style={{ marginBottom: 16, display: 'inline-flex' }}>Who it&apos;s for</span>
+            <h2 className="font-display" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.2rem)', color: '#0f172a', letterSpacing: '-0.02em', margin: '12px 0 0' }}>
+              One platform, two sides
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+            {/* Doctors card */}
+            <div style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: 24, padding: '36px 32px' }}>
+              <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>👨‍⚕️</div>
+              <h3 className="font-display" style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: 12 }}>For Doctors</h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.7, marginBottom: 20 }}>
+                Manage your documents, track your working hours, connect with agencies, and get notified when your certifications are about to expire.
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {['📄 Document vault with expiry alerts', '🗓️ Calendar & shift tracking', '🏥 Connect with multiple agencies', '💎 Pro features available'].map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.88rem', color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>{item}</li>
+                ))}
+              </ul>
+              <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', animation: 'none', boxShadow: 'none', borderRadius: 12 }} onClick={() => window.location.href = '/signup'}>
+                Create Doctor Account
+              </button>
+            </div>
+
+            {/* Agencies card */}
+            <div style={{ background: '#f5f3ff', border: '1.5px solid #d8b4fe', borderRadius: 24, padding: '36px 32px' }}>
+              <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>🏥</div>
+              <h3 className="font-display" style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: 12 }}>For Agencies</h3>
+              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.7, marginBottom: 20 }}>
+                Access a pool of verified doctors, manage leads, receive shared documents, send shift offers, and grow your placement business.
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {['👨‍⚕️ Doctor leads & profiles', '📋 Post high-demand vacancies', '🧾 Automated referral invoicing', '💎 Pro plan available'].map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.88rem', color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>{item}</li>
+                ))}
+              </ul>
+              <button className="btn-agency" style={{ width: '100%', justifyContent: 'center', borderRadius: 12, padding: '14px 20px', fontWeight: 600 }} onClick={() => window.location.href = '/agency-contact'}>
+                Register your Agency
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── STATS ── */}
-      <section className="anim-5" style={{ background: '#fff', borderTop: '1px solid #e0eaff', borderBottom: '1px solid #e0eaff' }}>
+      <section className="anim-5" style={{ background: '#fff', borderBottom: '1px solid #e0eaff' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}>
           {[
             { value: '3.2M+', label: 'Patient records managed' },
@@ -229,21 +306,9 @@ export default function Home() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
           {[
-            {
-              icon: '⚡',
-              title: 'Real-time coordination',
-              body: 'Instant updates across departments keep every clinician aligned — from triage to discharge.'
-            },
-            {
-              icon: '🔒',
-              title: 'HIPAA-compliant security',
-              body: 'End-to-end encryption and role-based access ensure patient data stays protected at every layer.'
-            },
-            {
-              icon: '📊',
-              title: 'Clinical analytics',
-              body: 'Surface actionable insights from patient data to support faster, more confident decisions.'
-            },
+            { icon: '⚡', title: 'Real-time coordination', body: 'Instant updates across departments keep every clinician aligned — from triage to discharge.' },
+            { icon: '🔒', title: 'HIPAA-compliant security', body: 'End-to-end encryption and role-based access ensure patient data stays protected at every layer.' },
+            { icon: '📊', title: 'Clinical analytics', body: 'Surface actionable insights from patient data to support faster, more confident decisions.' },
           ].map((f, i) => (
             <div key={i} className="card">
               <div style={{ fontSize: '1.8rem', marginBottom: 16 }}>{f.icon}</div>
@@ -257,7 +322,6 @@ export default function Home() {
       {/* ── CTA BANNER ── */}
       <section style={{ padding: '0 24px 96px' }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)', borderRadius: 28, padding: '64px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          {/* decorative circles */}
           <div style={{ position: 'absolute', top: -60, right: -60, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', bottom: -40, left: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
@@ -267,14 +331,23 @@ export default function Home() {
           <p style={{ fontFamily: "'DM Sans', sans-serif", color: 'rgba(255,255,255,0.75)', fontSize: '1rem', margin: '0 auto 36px', maxWidth: 440, lineHeight: 1.65 }}>
             Join hundreds of hospitals already using MedHub to deliver better patient outcomes.
           </p>
-          <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: '#1d4ed8', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: '100px', border: 'none', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.15)' }}
-            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.2)'; }}
-            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.15)'; }}>
-            Get Started — it&apos;s free
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="#1d4ed8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: '#1d4ed8', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: '100px', border: 'none', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.15)' }}
+              onClick={() => window.location.href = '/signup'}
+              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.2)'; }}
+              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.15)'; }}>
+              👨‍⚕️ I&apos;m a Doctor
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="#1d4ed8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.15)', color: '#fff', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: '100px', border: '1.5px solid rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'transform 0.15s, background 0.2s' }}
+              onClick={() => window.location.href = '/agency-contact'}
+              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.25)'; }}
+              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}>
+              🏥 I&apos;m an Agency
+            </button>
+          </div>
         </div>
       </section>
 
@@ -287,6 +360,11 @@ export default function Home() {
             </svg>
           </div>
           <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: '#1d4ed8' }}>MedHub</span>
+        </div>
+        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 12 }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/login'}>Doctor Login</button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/agency-login'}>Agency Login</button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/agency-contact'}>Contact Us</button>
         </div>
         <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>
           © {new Date().getFullYear()} MedHub. All rights reserved.
