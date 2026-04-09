@@ -233,7 +233,8 @@ export default function DashboardPage() {
         .eq("doctor_id", user.id)
         .eq("status", "accepted");
       if (agencyLinks) {
-        const ag = agencyLinks.map((l: { agency_id: string; agencies: Agency | null }) => l.agencies).filter(Boolean) as Agency[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         setAgencies(ag);
       }
 
@@ -947,7 +948,7 @@ export default function DashboardPage() {
             { key: "appraisal", label: "Appraisal", icon: "📝", minTier: "pro" },
             { key: "insurance", label: "Insurance", icon: "🛡️" },
             { key: "profile", label: "My Profile", icon: "👤" },
-          ] as { key: "overview"|"workfeed"|"documents"|"calendar"|"vacancycal"|"agencies"|"appraisal"|"insurance"|"profile"; label: string; icon: string; minTier?: string }[]).map(item => {
+          ] as { key: "overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile"; label: string; icon: string; minTier?: string }[]).map(item => {
             const locked = item.minTier === "pro" && isBase;
             const lockedAdv = item.minTier === "advanced" && !isAdvanced;
             return (

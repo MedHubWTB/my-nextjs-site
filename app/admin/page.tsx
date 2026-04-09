@@ -411,8 +411,12 @@ export default function AdminPage() {
                           <td style={{ color: "#64748b" }}>{ag.contact_email || "—"}</td>
                           <td>{ag.contact_phone || "—"}</td>
                           <td style={{ maxWidth: 200 }}>
-                            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>{ag.required_specialties?.split(",").slice(0,2).join(", ") || "—"}{(ag.required_specialties?.split(",").length ?? 0) > 2 ? "..." : ""}</span>
-                          </td>
+  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+    {ag.required_specialties
+      ? ag.required_specialties.split(",").slice(0, 2).join(", ") + (ag.required_specialties.split(",").length > 2 ? "..." : "")
+      : "—"}
+  </span>
+</td>
                           <td>
                             <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: badge.bg, color: badge.color }}>
                               {badge.label}
