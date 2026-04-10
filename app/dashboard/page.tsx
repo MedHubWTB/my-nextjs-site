@@ -219,7 +219,19 @@ export default function DashboardPage() {
       setUserId(user.id);
 
       const { data: doctorData } = await supabase.from("doctors").select("*").eq("user_id", user.id).single();
-      if (doctorData) { setDoctor(doctorData); setEditData(doctorData); }
+if (doctorData) {
+  // Redirect to onboarding if not completed
+  if (!doctorData.onboarding_completed) {
+    router.push("/onboarding");
+    return;
+  }
+  setDoctor(doctorData);
+  setEditData(doctorData);
+} else {
+  // No doctor record yet — send to onboarding
+  router.push("/onboarding");
+  return;
+}
 
       const { data: docs } = await supabase.from("documents").select("*").eq("user_id", user.id).order("uploaded_at", { ascending: false });
       if (docs) setDocuments(docs);

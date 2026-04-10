@@ -13,15 +13,34 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const redirectAfterLogin = async (userId: string) => {
-    const { data: adminData } = await supabase
-      .from("admins")
-      .select("id")
-      .eq("user_id", userId)
-      .single();
-    if (adminData) {
-      router.push("/admin");
-      return;
-    }
+  const { data: adminData } = await supabase
+    .from("admins")
+    .select("id")
+    .eq("user_id", userId)
+    .single();
+  if (adminData) { router.push("/admin"); return; }
+
+  const { data: agencyUser } = await supabase
+    .from("agency_users")
+    .select("id")
+    .eq("user_id", userId)
+    .single();
+  if (agencyUser) { router.push("/agency-dashboard"); return; }
+
+  // Check if doctor onboarding completed
+  const { data: doctorData } = await supabase
+    .from("doctors")
+    .select("onboarding_completed")
+    .eq("user_id", userId)
+    .single();
+
+  if (!doctorData || !doctorData.onboarding_completed) {
+    router.push("/onboarding");
+    return;
+  }
+
+  router.push("/dashboard");
+};
     // Check if agency user
     const { data: agencyUser } = await supabase
       .from("agency_users")
@@ -98,6 +117,10 @@ export default function LoginPage() {
         <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: 36 }}>
           Don&apos;t have an account?{" "}
           <a href="/signup" style={{ color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}>Create one</a>
+          <div style={{ textAlign: "center", marginTop: 8 }}>
+  <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 6 }}>Don't want to use a password?</p>
+  <a href="/otp-login" style={{ fontSize: "0.88rem", color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}>Sign in with email code instead →</a>
+</div>
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

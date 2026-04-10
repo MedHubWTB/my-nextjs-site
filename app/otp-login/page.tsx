@@ -68,7 +68,18 @@ export default function OTPLoginPage() {
         .single();
       if (agencyUser) { router.push("/agency-dashboard"); return; }
 
-      router.push("/dashboard");
+      // Check onboarding
+const { data: doctorData } = await supabase
+  .from("doctors")
+  .select("onboarding_completed")
+  .eq("user_id", data.user.id)
+  .single();
+
+if (!doctorData || !doctorData.onboarding_completed) {
+  router.push("/onboarding");
+  return;
+}
+router.push("/dashboard");
     }
   };
 
