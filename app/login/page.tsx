@@ -40,18 +40,6 @@ export default function LoginPage() {
   }
 
   router.push("/dashboard");
-};
-    // Check if agency user
-    const { data: agencyUser } = await supabase
-      .from("agency_users")
-      .select("id")
-      .eq("user_id", userId)
-      .single();
-    if (agencyUser) {
-      router.push("/agency-dashboard");
-      return;
-    }
-    router.push("/dashboard");
   };
 
   const handleLogin = async () => {
