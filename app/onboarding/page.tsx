@@ -326,7 +326,7 @@ export default function OnboardingPage() {
                       <div>
                         <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>📄</div>
                         <p style={{ fontWeight: 600, color: "#0f172a", fontSize: "0.9rem", marginBottom: 8 }}>{complianceFile.name}</p>
-                        <button onClick={e => { e.stopPropagation(); handleUploadCompliance(); }} disabled={uploadingCompliance} style={{ background: "#1d4ed8", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 8, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: fontFamily: "'DM Sans', sans-serif" }}>
+                        <button onClick={e => { e.stopPropagation(); handleUploadCompliance(); }} disabled={uploadingCompliance} style={{ background: "#1d4ed8", color: "#fff", border: "none", padding: "8px 20px", borderRadius: 8, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                           {uploadingCompliance ? "Uploading..." : "Upload Document"}
                         </button>
                       </div>
