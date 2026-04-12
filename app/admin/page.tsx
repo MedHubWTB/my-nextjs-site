@@ -194,7 +194,13 @@ export default function AdminPage() {
         <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 6px", marginBottom: 20 }}>Admin Panel</div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
-          {([
+  <a href="/admin/crm" style={{ textDecoration: "none", width: "100%" }}>
+    <button className="sidebar-link">
+      <span>📊</span> CRM Pipeline
+    </button>
+  </a>
+  {([
+    ...
             { key: "overview", label: "Overview", icon: "⊞" },
             { key: "doctors", label: "Doctors", icon: "👨‍⚕️", count: doctors.length },
             { key: "agencies", label: "Agencies", icon: "🏥", count: agencies.length },
