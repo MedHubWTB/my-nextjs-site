@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +13,14 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [referrerId, setReferrerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Capture referral ID from URL
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) setReferrerId(ref);
+  }, []);
 
   const handleSignup = async () => {
     setError("");
@@ -36,11 +44,30 @@ export default function SignupPage() {
       return;
     }
     if (data.user) {
+      // Create doctor record
       await supabase.from("doctors").insert({
         user_id: data.user.id,
         full_name: fullName,
         email: email,
+        tier: "basic",
+        onboarding_completed: false,
       });
+
+      // Add to user_profiles
+      await supabase.from("user_profiles").insert({
+        id: data.user.id,
+        role: "doctor",
+      });
+
+      // Track referral if came via referral link
+      if (referrerId) {
+        await supabase.from("referrals").insert({
+          referrer_id: referrerId,
+          referee_email: email,
+          referee_id: data.user.id,
+          status: "signed_up",
+        });
+      }
     }
     setLoading(false);
     setSuccess(true);
@@ -49,15 +76,21 @@ export default function SignupPage() {
   if (success) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap'); * { box-sizing: border-box; }`}</style>
+        <div style={{ textAlign: "center", padding: "40px", maxWidth: 440 }}>
           <div style={{ width: 64, height: 64, background: "#eff6ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path d="M5 13l4 4L19 7" stroke="#1d4ed8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.8rem", color: "#0f172a", marginBottom: 12 }}>Account created!</h2>
+          {referrerId && (
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: "0.85rem", color: "#16a34a", fontWeight: 600 }}>
+              🎉 You joined via a colleague's invite!
+            </div>
+          )}
           <p style={{ color: "#64748b", fontSize: "0.92rem", lineHeight: 1.7, marginBottom: 32 }}>
-            Check your email to confirm your account, then sign in.
+            Check your email to confirm your account, then sign in to complete your profile.
           </p>
           <a href="/login" style={{ display: "inline-block", background: "#1d4ed8", color: "#fff", fontWeight: 600, fontSize: "0.95rem", padding: "14px 32px", borderRadius: 12, textDecoration: "none" }}>
             Go to Sign In
@@ -92,11 +125,18 @@ export default function SignupPage() {
         </div>
 
         <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#0f172a", marginBottom: 8 }}>Create account</h1>
-        <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: 32 }}>
-          Already have an account? <a href="/login" style={{ color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}>Sign in</a>
+        <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: 8 }}>
+          Already have an account?{" "}
+          <a href="/login" style={{ color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}>Sign in</a>
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {referrerId && (
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: "0.85rem", color: "#16a34a", fontWeight: 600 }}>
+            🎉 You were invited by a colleague!
+          </div>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 24 }}>
           <div>
             <label>Full name</label>
             <input className="input-field" type="text" placeholder="Dr. Jane Smith" value={fullName} onChange={e => setFullName(e.target.value)} />
@@ -123,6 +163,10 @@ export default function SignupPage() {
           <button className="btn" onClick={handleSignup} disabled={loading}>
             {loading ? "Creating account..." : "Create my MedHub account"}
           </button>
+
+          <p style={{ fontSize: "0.78rem", color: "#94a3b8", textAlign: "center", lineHeight: 1.6 }}>
+            By creating an account you agree to MedHub&apos;s Terms of Service and Privacy Policy.
+          </p>
         </div>
       </div>
     </div>
