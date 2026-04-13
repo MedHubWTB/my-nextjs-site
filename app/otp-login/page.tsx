@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
+import Logo from "../components/Logo";
 
 export default function OTPLoginPage() {
   const router = useRouter();
@@ -15,216 +16,102 @@ export default function OTPLoginPage() {
 
   const handleSendOTP = async () => {
     setError("");
-    if (!email || !email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    if (!email || !email.includes("@")) { setError("Please enter a valid email address."); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false, // Only existing users can log in via OTP
-      },
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     setLoading(false);
-    if (error) {
-      setError(error.message);
-      return;
-    }
+    if (error) { setError(error.message); return; }
     setStep("otp");
   };
 
   const handleVerifyOTP = async () => {
     setError("");
-    if (!otp || otp.length < 6) {
-      setError("Please enter the 6-digit code from your email.");
-      return;
-    }
+    if (!otp || otp.length < 6) { setError("Please enter the 6-digit code from your email."); return; }
     setLoading(true);
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: "email",
-    });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     setLoading(false);
-    if (error) {
-      setError("Invalid or expired code. Please try again.");
-      return;
-    }
+    if (error) { setError("Invalid or expired code. Please try again."); return; }
     if (data.user) {
-      // Check if admin
-      const { data: adminData } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("user_id", data.user.id)
-        .single();
+      const { data: adminData } = await supabase.from("admins").select("id").eq("user_id", data.user.id).single();
       if (adminData) { router.push("/admin"); return; }
-
-      // Check if agency
-      const { data: agencyUser } = await supabase
-        .from("agency_users")
-        .select("id")
-        .eq("user_id", data.user.id)
-        .single();
+      const { data: agencyUser } = await supabase.from("agency_users").select("id").eq("user_id", data.user.id).single();
       if (agencyUser) { router.push("/agency-dashboard"); return; }
-
-      // Check onboarding
-const { data: doctorData } = await supabase
-  .from("doctors")
-  .select("onboarding_completed")
-  .eq("user_id", data.user.id)
-  .single();
-
-if (!doctorData || !doctorData.onboarding_completed) {
-  router.push("/onboarding");
-  return;
-}
-router.push("/dashboard");
+      const { data: doctorData } = await supabase.from("doctors").select("onboarding_completed").eq("user_id", data.user.id).single();
+      if (!doctorData || !doctorData.onboarding_completed) { router.push("/onboarding"); return; }
+      router.push("/dashboard");
     }
   };
 
   const handleResendOTP = async () => {
     setResending(true);
     setError("");
-    await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
-    });
+    await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     setResending(false);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8faff 0%, #fdf4ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: 24 }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        .input-field { width: 100%; padding: 13px 16px; border: 1.5px solid #e0eaff; border-radius: 12px; font-size: 0.95rem; color: #0f172a; background: #fff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-family: 'DM Sans', sans-serif; }
-        .input-field:focus { border-color: #1d4ed8; box-shadow: 0 0 0 4px rgba(29,78,216,0.08); }
-        .input-field::placeholder { color: #94a3b8; }
-        .otp-input { width: 100%; padding: 16px; border: 1.5px solid #e0eaff; border-radius: 12px; font-size: 1.5rem; font-weight: 700; color: #0f172a; background: #fff; outline: none; text-align: center; letter-spacing: 0.3em; font-family: monospace; transition: border-color 0.2s, box-shadow 0.2s; }
-        .otp-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 4px rgba(29,78,216,0.08); }
-        .btn { width: 100%; padding: 14px; background: #1d4ed8; color: #fff; font-weight: 600; font-size: 0.95rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
-        .btn:hover:not(:disabled) { background: #1e40af; }
-        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.4s ease both; }
-      `}</style>
-
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8f9fc 0%, #f1f0f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-inter), Inter, sans-serif", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 440 }}>
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 40 }}>
-          <div style={{ width: 30, height: 30, background: "#1d4ed8", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1d4ed8" }}>MedHub</span>
+        <div style={{ marginBottom: 40 }}><Logo /></div>
+
+        <div style={{ background: "#fff", borderRadius: 20, padding: "36px", border: "1px solid #e2e8f0", boxShadow: "0 4px 24px rgba(51,65,85,0.08)" }}>
+          {step === "email" && (
+            <div className="fade-up">
+              <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", marginBottom: 6, letterSpacing: "-0.02em" }}>Sign in to QuietMedical</h1>
+              <p style={{ color: "#64748b", fontSize: "0.88rem", marginBottom: 28 }}>Enter your email and we'll send you a one-time login code — no password needed.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Email address</label>
+                  <input className="qm-input" type="email" placeholder="doctor@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSendOTP()} autoFocus />
+                </div>
+                {error && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", color: "#dc2626", fontSize: "0.85rem" }}>{error}</div>}
+                <button className="qm-btn-primary" style={{ width: "100%", padding: "13px", fontSize: "0.95rem", borderRadius: 12 }} onClick={handleSendOTP} disabled={loading || !email}>
+                  {loading ? "Sending code..." : "Send Login Code →"}
+                </button>
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 6 }}>Prefer to use a password?</p>
+                  <a href="/login" style={{ fontSize: "0.88rem", color: "#7c3aed", fontWeight: 600, textDecoration: "none" }}>Sign in with password</a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === "otp" && (
+            <div className="fade-up">
+              <div style={{ width: 52, height: 52, background: "linear-gradient(135deg, #f1f0f8, #ede9fe)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem", marginBottom: 20, border: "1px solid #ddd6fe" }}>📧</div>
+              <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", marginBottom: 6, letterSpacing: "-0.02em" }}>Check your email</h1>
+              <p style={{ color: "#64748b", fontSize: "0.88rem", marginBottom: 4 }}>We sent a 6-digit code to</p>
+              <p style={{ color: "#0f172a", fontWeight: 700, fontSize: "0.95rem", marginBottom: 28 }}>{email}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>6-digit code</label>
+                  <input
+                    style={{ width: "100%", padding: "16px", border: "1.5px solid #e2e8f0", borderRadius: 12, fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", background: "#fff", outline: "none", textAlign: "center", letterSpacing: "0.3em", fontFamily: "monospace", transition: "border-color 0.2s" }}
+                    type="text" inputMode="numeric" placeholder="000000" maxLength={6}
+                    value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    onKeyDown={e => e.key === "Enter" && otp.length === 6 && handleVerifyOTP()} autoFocus
+                  />
+                </div>
+                {error && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", color: "#dc2626", fontSize: "0.85rem" }}>{error}</div>}
+                <button className="qm-btn-primary" style={{ width: "100%", padding: "13px", fontSize: "0.95rem", borderRadius: 12 }} onClick={handleVerifyOTP} disabled={loading || otp.length < 6}>
+                  {loading ? "Verifying..." : "Verify & Sign In →"}
+                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                  <p style={{ fontSize: "0.82rem", color: "#94a3b8" }}>Didn't receive the code?</p>
+                  <button onClick={handleResendOTP} disabled={resending} style={{ background: "none", border: "none", color: "#7c3aed", fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", fontFamily: "inherit" }}>
+                    {resending ? "Sending..." : "Resend code"}
+                  </button>
+                  <button onClick={() => { setStep("email"); setOtp(""); setError(""); }} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit" }}>
+                    ← Use a different email
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {step === "email" && (
-          <div className="fade-up">
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#0f172a", marginBottom: 8 }}>
-              Sign in to MedHub
-            </h1>
-            <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: 36 }}>
-              Enter your email and we'll send you a one-time login code — no password needed.
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#374151", marginBottom: 8 }}>Email address</label>
-                <input
-                  className="input-field"
-                  type="email"
-                  placeholder="doctor@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSendOTP()}
-                  autoFocus
-                />
-              </div>
-
-              {error && (
-                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 16px", color: "#dc2626", fontSize: "0.88rem" }}>
-                  {error}
-                </div>
-              )}
-
-              <button className="btn" onClick={handleSendOTP} disabled={loading || !email}>
-                {loading ? "Sending code..." : "Send Login Code →"}
-              </button>
-
-              <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 8 }}>Prefer to use a password?</p>
-                <a href="/login" style={{ fontSize: "0.88rem", color: "#1d4ed8", fontWeight: 600, textDecoration: "none" }}>Sign in with password</a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === "otp" && (
-          <div className="fade-up">
-            <div style={{ width: 56, height: 56, background: "#eff6ff", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem", marginBottom: 20 }}>
-              📧
-            </div>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "2rem", color: "#0f172a", marginBottom: 8 }}>
-              Check your email
-            </h1>
-            <p style={{ color: "#64748b", fontSize: "0.92rem", marginBottom: 8 }}>
-              We've sent a 6-digit login code to
-            </p>
-            <p style={{ color: "#0f172a", fontWeight: 700, fontSize: "0.95rem", marginBottom: 32 }}>
-              {email}
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "#374151", marginBottom: 8 }}>Enter your 6-digit code</label>
-                <input
-                  className="otp-input"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="000000"
-                  maxLength={6}
-                  value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  onKeyDown={e => e.key === "Enter" && otp.length === 6 && handleVerifyOTP()}
-                  autoFocus
-                />
-              </div>
-
-              {error && (
-                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 16px", color: "#dc2626", fontSize: "0.88rem" }}>
-                  {error}
-                </div>
-              )}
-
-              <button className="btn" onClick={handleVerifyOTP} disabled={loading || otp.length < 6}>
-                {loading ? "Verifying..." : "Verify & Sign In →"}
-              </button>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
-                <p style={{ fontSize: "0.82rem", color: "#94a3b8" }}>Didn't receive the code?</p>
-                <button
-                  onClick={handleResendOTP}
-                  disabled={resending}
-                  style={{ background: "none", border: "none", color: "#1d4ed8", fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  {resending ? "Sending..." : "Resend code"}
-                </button>
-                <button
-                  onClick={() => { setStep("email"); setOtp(""); setError(""); }}
-                  style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.82rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  ← Use a different email
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <p style={{ marginTop: 32, fontSize: "0.78rem", color: "#94a3b8", textAlign: "center", lineHeight: 1.6 }}>
-          By signing in you agree to MedHub's Terms of Service and Privacy Policy.
+        <p style={{ marginTop: 20, fontSize: "0.75rem", color: "#94a3b8", textAlign: "center", lineHeight: 1.6 }}>
+          By signing in you agree to QuietMedical&apos;s Terms of Service and Privacy Policy.
         </p>
       </div>
     </div>
