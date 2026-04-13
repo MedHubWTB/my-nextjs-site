@@ -1023,8 +1023,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             ))}
           </div>
         )}
-
-        {/* OVERVIEW */}
+{/* OVERVIEW */}
         {activeTab === "overview" && (
           <div>
             <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 24 }}>
@@ -1062,30 +1061,9 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                       <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{shift.start_time?.slice(0,5)} – {shift.end_time?.slice(0,5)}</p>
                     </div>
                   </div>
-                  {/* Referral Card */}
-            <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #f0fdf4, #eff6ff)", border: "1.5px solid #bbf7d0" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-                <div>
-                  <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>👋 Know a colleague who does locum work?</h2>
-                  <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to MedHub — help them manage their compliance passport in one place.</p>
-                </div>
-                <button
-                  onClick={() => {
-                    const link = `${window.location.origin}/signup?ref=${userId}`;
-                    navigator.clipboard.writeText(link);
-                    setSaveMsg("Referral link copied!");
-                    setTimeout(() => setSaveMsg(""), 3000);
-                  }}
-                  style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}
-                >
-                  📋 Copy Invite Link
-                </button>
-              </div>
-            </div>
                 ))}
               </div>
 
-              {/* Top Matching Agencies — Pro/Advanced */}
               <div className="fade-up-2 card" style={{ position: "relative", overflow: "hidden" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                   <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Top Matching Agencies</h2>
@@ -1143,7 +1121,6 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               )}
             </div>
 
-            {/* Tier feature summary */}
             {isBase && (
               <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #fdf4ff, #eff6ff)", border: "1.5px solid #d8b4fe" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -1171,9 +1148,29 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 </div>
               </div>
             )}
+
+            {/* Referral Card */}
+            <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #f0fdf4, #eff6ff)", border: "1.5px solid #bbf7d0" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+                <div>
+                  <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>👋 Know a colleague who does locum work?</h2>
+                  <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to MedHub — help them manage their compliance passport in one place.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const link = `${window.location.origin}/signup?ref=${userId}`;
+                    navigator.clipboard.writeText(link);
+                    setSaveMsg("Referral link copied!");
+                    setTimeout(() => setSaveMsg(""), 3000);
+                  }}
+                  style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}
+                >
+                  📋 Copy Invite Link
+                </button>
+              </div>
+            </div>
           </div>
         )}
-
         {/* WORK FEED */}
         {activeTab === "workfeed" && (
           <div className="fade-up">

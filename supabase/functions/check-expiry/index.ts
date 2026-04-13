@@ -4,103 +4,93 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SENDER_EMAIL = Deno.env.get("SENDER_EMAIL") || "charlene@whatthebleep.co.uk";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
 
-async function sendEmail(to: string, subject: string, html: string) {
+serve(async (req) => {
+  const { type, data } = await req.json();
+
+  if (type === "broadcast") {
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    const { data: doctors } = await supabase.from("doctors").select("email, full_name").not("email", "is", null);
+
+    if (!doctors || doctors.length === 0) {
+      return new Response(JSON.stringify({ success: false, error: "No doctors found" }), { status: 400 });
+    }
+
+    let sent = 0;
+    for (const doctor of doctors) {
+      if (!doctor.email) continue;
+      const firstName = doctor.full_name?.split(" ").find((w: string) => !["dr", "dr."].includes(w.toLowerCase())) || doctor.full_name || "Doctor";
+      const personalizedBody = data.body.replace(/\[Name\]/g, firstName).replace(/\[name\]/g, firstName);
+
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: SENDER_EMAIL,
+          to: doctor.email,
+          subject: data.subject,
+          html: `
+            <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 24px; background: #f8faff;">
+              <div style="background: #fff; border-radius: 16px; padding: 40px; border: 1px solid #e8f0fe;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 32px;">
+                  <div style="width: 32px; height: 32px; background: #1d4ed8; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: white; font-size: 18px; font-weight: bold;">+</span>
+                  </div>
+                  <span style="font-weight: 700; font-size: 1.1rem; color: #1d4ed8;">MedHub</span>
+                </div>
+                <div style="font-size: 0.95rem; color: #374151; line-height: 1.8; white-space: pre-line;">${personalizedBody}</div>
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e8f0fe; font-size: 0.78rem; color: #94a3b8; text-align: center;">
+                  MedHub · Your Compliance Passport · <a href="mailto:charlene@whatthebleep.co.uk" style="color: #1d4ed8;">Contact Support</a>
+                </div>
+              </div>
+            </div>
+          `,
+        }),
+      });
+      sent++;
+    }
+
+    return new Response(JSON.stringify({ success: true, sent }), { headers: { "Content-Type": "application/json" } });
+  }
+
+  // Original single email logic
+  let to = "";
+  let subject = "";
+  let html = "";
+
+  if (type === "connection_request") {
+    to = data.agency_email;
+    subject = `New connection request from Dr. ${data.doctor_name}`;
+    html = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 24px;">
+      <h2 style="color: #1d4ed8;">New Connection Request</h2>
+      <p>Dr. <strong>${data.doctor_name}</strong> wants to connect with <strong>${data.agency_name}</strong> on MedHub.</p>
+      <p><strong>Specialty:</strong> ${data.doctor_specialty}</p>
+      <p><strong>Grade:</strong> ${data.doctor_grade}</p>
+      <p style="margin-top: 24px;"><a href="https://medhub.vercel.app/agency-dashboard" style="background: #1d4ed8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View on MedHub</a></p>
+    </div>`;
+  }
+
+  if (type === "document_share") {
+    to = data.agency_email;
+    subject = `Dr. ${data.doctor_name} shared a document with you`;
+    html = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 24px;">
+      <h2 style="color: #1d4ed8;">Document Shared</h2>
+      <p>Dr. <strong>${data.doctor_name}</strong> has shared <strong>${data.file_name}</strong> with <strong>${data.agency_name}</strong>.</p>
+      <p style="margin-top: 24px;"><a href="https://medhub.vercel.app/agency-dashboard" style="background: #1d4ed8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Document</a></p>
+    </div>`;
+  }
+
+  if (!to) {
+    return new Response(JSON.stringify({ success: false, error: "Unknown email type" }), { status: 400 });
+  }
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: `MedHub <${SENDER_EMAIL}>`,
-      to: [to],
-      subject,
-      html,
-    }),
+    headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: SENDER_EMAIL, to, subject, html }),
   });
-  return res.json();
-}
 
-serve(async () => {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-  const today = new Date();
-  const in30Days = new Date(today);
-  in30Days.setDate(today.getDate() + 30);
-  const in7Days = new Date(today);
-  in7Days.setDate(today.getDate() + 7);
-
-  const in30Str = in30Days.toISOString().split("T")[0];
-  const in7Str = in7Days.toISOString().split("T")[0];
-
-  const { data: expiries } = await supabase
-    .from("document_expiry")
-    .select("id, expiry_date, reminder_30_sent, reminder_7_sent, documents(file_name, user_id), doctors!document_expiry_doctor_id_fkey(email, full_name, tier)");
-
-  if (!expiries) {
-    return new Response(JSON.stringify({ success: true, emailsSent: 0 }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  let emailsSent = 0;
-
-  for (const expiry of expiries) {
-    const e = expiry as Record<string, unknown>;
-    const doctor = (Array.isArray(e.doctors) ? e.doctors[0] : e.doctors) as Record<string, string> | null;
-    const document = (Array.isArray(e.documents) ? e.documents[0] : e.documents) as Record<string, string> | null;
-
-    if (!doctor || doctor.tier !== "pro") continue;
-    if (!document) continue;
-
-    const expiryDate = e.expiry_date as string;
-    const expiryFormatted = new Date(expiryDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-
-    if (expiryDate === in30Str && !e.reminder_30_sent) {
-      await sendEmail(
-        doctor.email,
-        `⚠️ Document Expiring in 30 Days — ${document.file_name}`,
-        `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;">
-          <p style="font-weight:700;font-size:1.1rem;color:#1d4ed8;margin-bottom:24px;">MedHub</p>
-          <h1 style="font-size:1.5rem;color:#0f172a;margin-bottom:8px;">Document Expiring Soon ⚠️</h1>
-          <p style="color:#64748b;margin-bottom:24px;">Hi ${doctor.full_name}, one of your documents is expiring in <strong>30 days</strong>.</p>
-          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
-            <p style="font-weight:700;color:#92400e;margin-bottom:4px;">${document.file_name}</p>
-            <p style="color:#92400e;font-size:0.9rem;">Expires on ${expiryFormatted}</p>
-          </div>
-          <a href="https://eqkloogtlmyxidauetam.supabase.co/dashboard" style="display:inline-block;background:#1d4ed8;color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;text-decoration:none;">View Document Vault →</a>
-          <p style="color:#94a3b8;font-size:0.78rem;margin-top:28px;">You're receiving this because you have a MedHub Pro account.</p>
-        </div>`
-      );
-      await supabase.from("document_expiry").update({ reminder_30_sent: true }).eq("id", e.id);
-      emailsSent++;
-    }
-
-    if (expiryDate === in7Str && !e.reminder_7_sent) {
-      await sendEmail(
-        doctor.email,
-        `🚨 URGENT: Document Expiring in 7 Days — ${document.file_name}`,
-        `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;">
-          <p style="font-weight:700;font-size:1.1rem;color:#1d4ed8;margin-bottom:24px;">MedHub</p>
-          <h1 style="font-size:1.5rem;color:#dc2626;margin-bottom:8px;">URGENT: Document Expiring in 7 Days 🚨</h1>
-          <p style="color:#64748b;margin-bottom:24px;">Hi ${doctor.full_name}, one of your documents expires in <strong>7 days</strong>. Please renew it as soon as possible.</p>
-          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
-            <p style="font-weight:700;color:#dc2626;margin-bottom:4px;">${document.file_name}</p>
-            <p style="color:#dc2626;font-size:0.9rem;">Expires on ${expiryFormatted}</p>
-          </div>
-          <a href="https://eqkloogtlmyxidauetam.supabase.co/dashboard" style="display:inline-block;background:#dc2626;color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;text-decoration:none;">Renew Now →</a>
-          <p style="color:#94a3b8;font-size:0.78rem;margin-top:28px;">You're receiving this because you have a MedHub Pro account.</p>
-        </div>`
-      );
-      await supabase.from("document_expiry").update({ reminder_7_sent: true }).eq("id", e.id);
-      emailsSent++;
-    }
-  }
-
-  return new Response(
-    JSON.stringify({ success: true, emailsSent }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  const result = await res.json();
+  return new Response(JSON.stringify({ success: true, result }), { headers: { "Content-Type": "application/json" } });
 });

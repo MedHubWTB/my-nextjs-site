@@ -34,12 +34,158 @@ type Connection = {
   connected_at: string;
   status: string;
 };
+const WELCOME_EMAIL = {
+  subject: "Your MedHub account is ready — here's how to log in",
+  body: `Hi Dr. [Name],
+
+We've been busy building something we think you're going to love.
+
+MedHub has launched — your all-in-one compliance passport and locum management platform.
+
+Here's what's waiting for you:
+
+🔒 Digital Compliance Vault — store all your documents in one secure place. GMC certificate, DBS, Right to Work, indemnity — everything in one place, shareable with agencies in one click.
+
+📋 Digital CV — your specialty, grade and GMC number verified and ready to share.
+
+🛡️ Privacy Shield — agencies can only see your documents if you approve it. No spam, no cold calls.
+
+How to log in:
+
+1. Go to https://my-nextjs-site.vercel.app/otp-login
+2. Enter your email address
+3. You'll receive a 6-digit code — enter it and you're in
+4. Complete your profile in under 2 minutes
+
+No password needed — just your email.
+
+Any questions? Reply to this email and we'll help you get set up.
+
+Welcome to MedHub 👋
+
+— The MedHub Team`,
+};
+
+const SUPABASE_URL_CLIENT = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY_CLIENT = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+function BroadcastTab() {
+  const [subject, setSubject] = useState(WELCOME_EMAIL.subject);
+  const [body, setBody] = useState(WELCOME_EMAIL.body);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ sent?: number; error?: string } | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const handleSend = async () => {
+    if (!confirmed) { setResult({ error: "Please confirm before sending." }); return; }
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await fetch(`${SUPABASE_URL_CLIENT}/functions/v1/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY_CLIENT}` },
+        body: JSON.stringify({ type: "broadcast", data: { subject, body } }),
+      });
+      const data = await res.json();
+      if (data.success) setResult({ sent: data.sent });
+      else setResult({ error: data.error || "Something went wrong." });
+    } catch {
+      setResult({ error: "Failed to send. Check your edge function." });
+    }
+    setSending(false);
+    setConfirmed(false);
+  };
+
+  return (
+    <div className="fade-up">
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 4 }}>Email Broadcasts</h2>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Send emails to all doctors on MedHub via Resend. Personalised with their first name automatically.</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          <button
+            onClick={() => { setSubject(WELCOME_EMAIL.subject); setBody(WELCOME_EMAIL.body); setResult(null); setConfirmed(false); }}
+            style={{ background: "#eff6ff", color: "#1d4ed8", border: "1.5px solid #bfdbfe", padding: "8px 16px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+          >
+            📧 Load Welcome Email
+          </button>
+          <button
+            onClick={() => { setSubject(""); setBody(""); setResult(null); setConfirmed(false); }}
+            style={{ background: "#f1f5f9", color: "#64748b", border: "1.5px solid #e0eaff", padding: "8px 16px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+          >
+            ✏️ Write Custom Email
+          </button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Subject Line</label>
+            <input
+              style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0eaff", borderRadius: 10, fontSize: "0.9rem", color: "#0f172a", background: "#fff", outline: "none", fontFamily: "'DM Sans', sans-serif" }}
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
+              placeholder="Email subject..."
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Email Body
+              <span style={{ marginLeft: 8, fontSize: "0.72rem", color: "#94a3b8", textTransform: "none", fontWeight: 400 }}>Use [Name] to personalise with doctor's first name</span>
+            </label>
+            <textarea
+              style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #e0eaff", borderRadius: 10, fontSize: "0.88rem", color: "#0f172a", background: "#fff", outline: "none", fontFamily: "'DM Sans', sans-serif", resize: "vertical", lineHeight: 1.7 }}
+              rows={16}
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              placeholder="Write your email here..."
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 16 }}>Send Broadcast</h3>
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: "0.85rem", color: "#92400e" }}>
+          ⚠️ This will send an email to <strong>every doctor</strong> registered on MedHub. Make sure your email is ready before sending.
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "12px 14px", background: "#f8faff", borderRadius: 10, border: "1px solid #e8f0fe", cursor: "pointer" }} onClick={() => setConfirmed(!confirmed)}>
+          <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${confirmed ? "#1d4ed8" : "#e0eaff"}`, background: confirmed ? "#1d4ed8" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+            {confirmed && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          </div>
+          <span style={{ fontSize: "0.85rem", color: "#374151", fontWeight: 500 }}>I confirm I want to send this email to all doctors</span>
+        </div>
+
+        {result?.sent && (
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: "0.85rem", color: "#16a34a", fontWeight: 600 }}>
+            ✅ Successfully sent to {result.sent} doctor{result.sent !== 1 ? "s" : ""}!
+          </div>
+        )}
+        {result?.error && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: "0.85rem", color: "#dc2626" }}>
+            ❌ {result.error}
+          </div>
+        )}
+
+        <button
+          onClick={handleSend}
+          disabled={sending || !subject || !body || !confirmed}
+          style={{ background: "#1d4ed8", color: "#fff", border: "none", padding: "13px 28px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: sending || !confirmed ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: sending || !confirmed ? 0.6 : 1 }}
+        >
+          {sending ? "Sending..." : "📧 Send Broadcast"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts">("overview");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -200,12 +346,12 @@ export default function AdminPage() {
     </button>
   </a>
   {([
-    ...
-            { key: "overview", label: "Overview", icon: "⊞" },
-            { key: "doctors", label: "Doctors", icon: "👨‍⚕️", count: doctors.length },
-            { key: "agencies", label: "Agencies", icon: "🏥", count: agencies.length },
-            { key: "connections", label: "Connections", icon: "🔗", count: connections.length },
-          ] as { key: "overview"|"doctors"|"agencies"|"connections"; label: string; icon: string; count?: number }[]).map(item => (
+    { key: "overview", label: "Overview", icon: "⊞" },
+    { key: "doctors", label: "Doctors", icon: "👨‍⚕️", count: doctors.length },
+    { key: "agencies", label: "Agencies", icon: "🏥", count: agencies.length },
+    { key: "connections", label: "Connections", icon: "🔗", count: connections.length },
+    { key: "broadcasts", label: "Email Broadcasts", icon: "📧" },
+  ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"; label: string; icon: string; count?: number }[]).map(item => (
             <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { setActiveTab(item.key); setSearch(""); }}>
               <span>{item.icon}</span>{item.label}
               {item.count !== undefined && (
@@ -503,6 +649,10 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+        )}
+        {/* BROADCASTS */}
+        {activeTab === "broadcasts" && (
+          <BroadcastTab />
         )}
       </div>
     </div>
