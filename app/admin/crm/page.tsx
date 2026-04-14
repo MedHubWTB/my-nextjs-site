@@ -35,7 +35,7 @@ const SOURCE_OPTIONS = ["linkedin", "facebook", "reddit", "referral", "direct", 
 const TIER_OPTIONS = ["basic", "pro", "advanced"];
 
 const STATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
-  new: { bg: "#eff6ff", color: "#1d4ed8", label: "🆕 New" },
+  new: { bg: "#f5f3ff", color: "#334155", label: "🆕 New" },
   contacted: { bg: "#fdf4ff", color: "#7c3aed", label: "📤 Contacted" },
   interested: { bg: "#fffbeb", color: "#92400e", label: "⭐ Interested" },
   demo_booked: { bg: "#f0fdf4", color: "#16a34a", label: "📅 Demo Booked" },
@@ -183,10 +183,10 @@ export default function CRMPage() {
   };
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #e0eaff", borderTop: "3px solid #1d4ed8", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+        <div style={{ width: 40, height: 40, border: "3px solid #e0eaff", borderTop: "3px solid #334155", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
         <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>Loading CRM...</p>
       </div>
     </div>
@@ -195,27 +195,27 @@ export default function CRMPage() {
   if (!authorized) return null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5fb", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f9fc", fontFamily: "Inter, sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; }
-        .sidebar-link:hover { background: #eff6ff; color: #1d4ed8; }
-        .sidebar-link.active { background: #1d4ed8; color: #fff; }
-        .card { background: #fff; border-radius: 16px; border: 1px solid #e8f0fe; padding: 24px; }
-        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.2s; }
-        .input-field:focus { border-color: #1d4ed8; }
-        .btn-blue { background: #1d4ed8; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: Inter, sans-serif; }
+        .sidebar-link:hover { background: #f5f3ff; color: #334155; }
+        .sidebar-link.active { background: #334155; color: #fff; }
+        .card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; }
+        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: Inter, sans-serif; transition: border-color 0.2s; }
+        .input-field:focus { border-color: #334155; }
+        .btn-blue { background: #334155; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: Inter, sans-serif; }
         .btn-blue:hover { background: #1e40af; }
-        .btn-ghost { background: #fff; color: #1d4ed8; border: 1.5px solid #bfdbfe; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-        .lead-row { display: flex; align-items: center; padding: 14px 16px; border-radius: 12px; background: #fff; border: 1px solid #e8f0fe; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; gap: 12px; }
-        .lead-row:hover { border-color: #1d4ed8; box-shadow: 0 4px 12px rgba(29,78,216,0.08); }
-        .lead-row.selected { border-color: #1d4ed8; background: #eff6ff; }
+        .btn-ghost { background: #fff; color: #334155; border: 1.5px solid #ddd6fe; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: Inter, sans-serif; }
+        .lead-row { display: flex; align-items: center; padding: 14px 16px; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; gap: 12px; }
+        .lead-row:hover { border-color: #334155; box-shadow: 0 4px 12px rgba(29,78,216,0.08); }
+        .lead-row.selected { border-color: #334155; background: #f5f3ff; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 100; display: flex; align-items: center; justifyContent: center; padding: 24px; }
         .modal { background: #fff; border-radius: 20px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
         label { display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
-        .filter-btn { padding: 7px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid #e0eaff; background: #fff; color: #64748b; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-        .filter-btn.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+        .filter-btn { padding: 7px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid #e0eaff; background: #fff; color: #64748b; font-family: Inter, sans-serif; transition: all 0.15s; }
+        .filter-btn.active { background: #334155; color: #fff; border-color: #334155; }
         .activity-icon { font-size: 0.9rem; }
       `}</style>
 
@@ -224,7 +224,7 @@ export default function CRMPage() {
         <div className="modal-overlay" style={{ display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setShowLeadModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Add New Lead</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Add New Lead</h2>
               <button onClick={() => setShowLeadModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -269,12 +269,12 @@ export default function CRMPage() {
       )}
 
       {/* SIDEBAR */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e8f0fe", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40 }}>
+      <div style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "0 6px" }}>
-          <div style={{ width: 30, height: 30, background: "#1d4ed8", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 30, height: 30, background: "#334155", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></svg>
           </div>
-          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1d4ed8" }}>MedHub</span>
+          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#334155" }}>QuietMedical</span>
         </div>
         <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 6px", marginBottom: 20 }}>CRM</div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
@@ -288,7 +288,7 @@ export default function CRMPage() {
           </button>
         </nav>
         <div style={{ padding: "12px 6px", borderTop: "1px solid #f1f5f9" }}>
-          <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>MedHub CRM</p>
+          <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>QuietMedical CRM</p>
           <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>Launch Pipeline</p>
         </div>
       </div>
@@ -302,8 +302,8 @@ export default function CRMPage() {
           {/* Top bar */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
             <div>
-              <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>MedHub CRM</p>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.6rem", color: "#0f172a" }}>Launch Pipeline</h1>
+              <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>QuietMedical CRM</p>
+              <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.6rem", color: "#0f172a" }}>Launch Pipeline</h1>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {msg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>{msg}</span>}
@@ -314,7 +314,7 @@ export default function CRMPage() {
           {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 20 }}>
             {[
-              { label: "Total", value: stats.total, color: "#eff6ff", textColor: "#1d4ed8" },
+              { label: "Total", value: stats.total, color: "#f5f3ff", textColor: "#334155" },
               { label: "New", value: stats.new, color: "#fdf4ff", textColor: "#7c3aed" },
               { label: "Interested", value: stats.interested, color: "#fffbeb", textColor: "#92400e" },
               { label: "Signed Up", value: stats.signedUp, color: "#f0fdf4", textColor: "#16a34a" },
@@ -356,7 +356,7 @@ export default function CRMPage() {
             return (
               <div key={lead.id} className={`lead-row ${selectedLead?.id === lead.id ? "selected" : ""}`} onClick={() => openDetail(lead)}>
                 {/* Type icon */}
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: lead.type === "agency" ? "#eff6ff" : "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: lead.type === "agency" ? "#f5f3ff" : "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", flexShrink: 0 }}>
                   {lead.type === "agency" ? "🏥" : "👨‍⚕️"}
                 </div>
 
@@ -365,7 +365,7 @@ export default function CRMPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                     <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.name}</p>
                     {lead.tier_interest && (
-                      <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: 100, background: lead.tier_interest === "advanced" ? "linear-gradient(135deg, #0f172a, #1d4ed8)" : lead.tier_interest === "pro" ? "linear-gradient(135deg, #6d28d9, #4f46e5)" : "#f1f5f9", color: lead.tier_interest !== "basic" ? "#fff" : "#64748b", flexShrink: 0 }}>
+                      <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: 100, background: lead.tier_interest === "advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : lead.tier_interest === "pro" ? "linear-gradient(135deg, #6d28d9, #4f46e5)" : "#f1f5f9", color: lead.tier_interest !== "basic" ? "#fff" : "#64748b", flexShrink: 0 }}>
                         {lead.tier_interest === "advanced" ? "⚡" : lead.tier_interest === "pro" ? "💎" : "Base"}
                       </span>
                     )}
@@ -398,14 +398,14 @@ export default function CRMPage() {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                     <span style={{ fontSize: "1.5rem" }}>{selectedLead.type === "agency" ? "🏥" : "👨‍⚕️"}</span>
-                    <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a" }}>{selectedLead.name}</h2>
+                    <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>{selectedLead.name}</h2>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {selectedLead.company && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>🏢 {selectedLead.company}</span>}
                     {selectedLead.email && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>✉️ {selectedLead.email}</span>}
                     {selectedLead.phone && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>📞 {selectedLead.phone}</span>}
                     {selectedLead.source && <span style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: 100 }}>📍 {selectedLead.source}</span>}
-                    {selectedLead.assigned_to && <span style={{ fontSize: "0.72rem", background: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: 100 }}>👤 {selectedLead.assigned_to}</span>}
+                    {selectedLead.assigned_to && <span style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#334155", padding: "2px 8px", borderRadius: 100 }}>👤 {selectedLead.assigned_to}</span>}
                   </div>
                 </div>
                 <button onClick={() => { setShowDetailPanel(false); setSelectedLead(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -418,7 +418,7 @@ export default function CRMPage() {
                   {STATUS_OPTIONS.map(s => {
                     const style = STATUS_STYLES[s];
                     return (
-                      <button key={s} onClick={() => handleUpdateStatus(selectedLead.id, s)} style={{ padding: "5px 12px", borderRadius: 100, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", border: `1.5px solid ${selectedLead.status === s ? style.color : "#e0eaff"}`, background: selectedLead.status === s ? style.bg : "#fff", color: selectedLead.status === s ? style.color : "#94a3b8", fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s" }}>
+                      <button key={s} onClick={() => handleUpdateStatus(selectedLead.id, s)} style={{ padding: "5px 12px", borderRadius: 100, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", border: `1.5px solid ${selectedLead.status === s ? style.color : "#e0eaff"}`, background: selectedLead.status === s ? style.bg : "#fff", color: selectedLead.status === s ? style.color : "#94a3b8", fontFamily: "Inter, sans-serif", transition: "all 0.15s" }}>
                         {style.label}
                       </button>
                     );
@@ -446,7 +446,7 @@ export default function CRMPage() {
               </div>
 
               {/* Delete */}
-              <button onClick={() => handleDeleteLead(selectedLead.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "8px 16px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              <button onClick={() => handleDeleteLead(selectedLead.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "8px 16px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                 🗑 Delete Lead
               </button>
             </div>
@@ -456,7 +456,7 @@ export default function CRMPage() {
               <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 16 }}>Activity Log</h3>
 
               {/* Add activity */}
-              <div style={{ background: "#f8faff", borderRadius: 12, padding: "16px", marginBottom: 20, border: "1px solid #e8f0fe" }}>
+              <div style={{ background: "#f8faff", borderRadius: 12, padding: "16px", marginBottom: 20, border: "1px solid #e2e8f0" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 10, marginBottom: 10 }}>
                   <select className="input-field" style={{ width: "auto" }} value={newActivity.activity_type} onChange={e => setNewActivity({ ...newActivity, activity_type: e.target.value })}>
                     <option value="note">📝 Note</option>

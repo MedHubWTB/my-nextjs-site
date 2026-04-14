@@ -177,31 +177,31 @@ export default function AgencyContactPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8faff 0%, #fdf4ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: "32px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8faff 0%, #fdf4ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", padding: "32px 24px" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
-        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.2s; }
-        .input-field:focus { border-color: #1d4ed8; }
-        .grade-tag { display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1.5px solid #e0eaff; background: #fff; color: #64748b; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: Inter, sans-serif; transition: border-color 0.2s; }
+        .input-field:focus { border-color: #334155; }
+        .grade-tag { display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1.5px solid #e0eaff; background: #fff; color: #64748b; transition: all 0.15s; font-family: Inter, sans-serif; }
         .grade-tag:hover { border-color: #6d28d9; color: #6d28d9; background: #f5f3ff; }
         .grade-tag.selected { border-color: #6d28d9; background: #6d28d9; color: #fff; }
         .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; font-size: 0.88rem; color: #374151; transition: background 0.1s; border-radius: 8px; }
-        .dropdown-item:hover { background: #eff6ff; color: #1d4ed8; }
-        .dropdown-item.selected { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
-        .select-all-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1.5px solid #1d4ed8; background: #fff; color: #1d4ed8; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
-        .select-all-btn:hover { background: #1d4ed8; color: #fff; }
-        .select-all-btn.all-selected { background: #1d4ed8; color: #fff; }
+        .dropdown-item:hover { background: #f5f3ff; color: #334155; }
+        .dropdown-item.selected { background: #f5f3ff; color: #334155; font-weight: 600; }
+        .select-all-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1.5px solid #334155; background: #fff; color: #334155; transition: all 0.15s; font-family: Inter, sans-serif; }
+        .select-all-btn:hover { background: #334155; color: #fff; }
+        .select-all-btn.all-selected { background: #334155; color: #fff; }
       `}</style>
 
-      <div style={{ background: "#fff", borderRadius: 24, padding: "40px 36px", width: "100%", maxWidth: 580, border: "1px solid #e8f0fe", boxShadow: "0 8px 40px rgba(29,78,216,0.08)" }}>
+      <div style={{ background: "#fff", borderRadius: 24, padding: "40px 36px", width: "100%", maxWidth: 580, border: "1px solid #e2e8f0", boxShadow: "0 8px 40px rgba(29,78,216,0.08)" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
-          <div style={{ width: 32, height: 32, background: "#1d4ed8", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 32, height: 32, background: "#334155", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></svg>
           </div>
-          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1d4ed8" }}>MedHub</span>
+          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#334155" }}>QuietMedical</span>
           <span style={{ fontSize: "0.78rem", color: "#94a3b8", marginLeft: 4 }}>· Agency Registration</span>
         </div>
 
@@ -209,11 +209,11 @@ export default function AgencyContactPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
           {[1, 2].map(s => (
             <div key={s} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.82rem", background: step >= s ? "#1d4ed8" : "#f1f5f9", color: step >= s ? "#fff" : "#94a3b8", transition: "all 0.2s" }}>{s}</div>
-              <span style={{ fontSize: "0.82rem", color: step >= s ? "#1d4ed8" : "#94a3b8", fontWeight: step === s ? 600 : 400 }}>
+              <div style={{ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.82rem", background: step >= s ? "#334155" : "#f1f5f9", color: step >= s ? "#fff" : "#94a3b8", transition: "all 0.2s" }}>{s}</div>
+              <span style={{ fontSize: "0.82rem", color: step >= s ? "#334155" : "#94a3b8", fontWeight: step === s ? 600 : 400 }}>
                 {s === 1 ? "Agency Details" : "Doctor Requirements"}
               </span>
-              {s < 2 && <div style={{ width: 32, height: 2, background: step > s ? "#1d4ed8" : "#e0eaff", borderRadius: 2 }} />}
+              {s < 2 && <div style={{ width: 32, height: 2, background: step > s ? "#334155" : "#e0eaff", borderRadius: 2 }} />}
             </div>
           ))}
         </div>
@@ -225,7 +225,7 @@ export default function AgencyContactPage() {
         {/* STEP 1 */}
         {step === 1 && (
           <div>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: "#0f172a", marginBottom: 6 }}>Tell us about your agency</h1>
+            <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: "#0f172a", marginBottom: 6 }}>Tell us about your agency</h1>
             <p style={{ color: "#64748b", fontSize: "0.88rem", marginBottom: 24 }}>We'll create your free account instantly — no waiting.</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -257,14 +257,14 @@ export default function AgencyContactPage() {
                   style={{ resize: "vertical" }}
                 />
               </div>
-              <button onClick={handleNext} style={{ background: "#1d4ed8", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <button onClick={handleNext} style={{ background: "#334155", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "Inter, sans-serif", marginTop: 4, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 Next — Doctor Requirements
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
 
             <p style={{ textAlign: "center", fontSize: "0.82rem", color: "#94a3b8", marginTop: 20 }}>
-              Already have an account? <span onClick={() => { window.location.href = "/agency-login"; }} style={{ color: "#1d4ed8", fontWeight: 600, cursor: "pointer" }}>Sign in here</span>
+              Already have an account? <span onClick={() => { window.location.href = "/agency-login"; }} style={{ color: "#334155", fontWeight: 600, cursor: "pointer" }}>Sign in here</span>
             </p>
           </div>
         )}
@@ -272,7 +272,7 @@ export default function AgencyContactPage() {
         {/* STEP 2 */}
         {step === 2 && (
           <div>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.5rem", color: "#0f172a", marginBottom: 6 }}>What doctors are you looking for?</h1>
+            <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.5rem", color: "#0f172a", marginBottom: 6 }}>What doctors are you looking for?</h1>
             <p style={{ color: "#64748b", fontSize: "0.88rem", marginBottom: 24 }}>This determines which doctors can find and connect with your agency.</p>
 
             {/* Specialties Dropdown */}
@@ -281,7 +281,7 @@ export default function AgencyContactPage() {
                 <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   Specialties Needed
                   {selectedSpecialties.length > 0 && (
-                    <span style={{ marginLeft: 8, background: "#1d4ed8", color: "#fff", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100 }}>
+                    <span style={{ marginLeft: 8, background: "#334155", color: "#fff", fontSize: "0.7rem", padding: "2px 8px", borderRadius: 100 }}>
                       {selectedSpecialties.length === SPECIALTIES.length ? "All selected" : `${selectedSpecialties.length} selected`}
                     </span>
                   )}
@@ -298,9 +298,9 @@ export default function AgencyContactPage() {
               {selectedSpecialties.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                   {selectedSpecialties.map(s => (
-                    <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#eff6ff", color: "#1d4ed8", fontSize: "0.78rem", fontWeight: 600, padding: "4px 10px", borderRadius: 100, border: "1px solid #bfdbfe" }}>
+                    <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#f5f3ff", color: "#334155", fontSize: "0.78rem", fontWeight: 600, padding: "4px 10px", borderRadius: 100, border: "1px solid #ddd6fe" }}>
                       {s}
-                      <button onClick={() => toggleSpecialty(s)} style={{ background: "none", border: "none", cursor: "pointer", color: "#1d4ed8", fontSize: "0.9rem", padding: 0, lineHeight: 1, display: "flex", alignItems: "center" }}>×</button>
+                      <button onClick={() => toggleSpecialty(s)} style={{ background: "none", border: "none", cursor: "pointer", color: "#334155", fontSize: "0.9rem", padding: 0, lineHeight: 1, display: "flex", alignItems: "center" }}>×</button>
                     </span>
                   ))}
                 </div>
@@ -309,7 +309,7 @@ export default function AgencyContactPage() {
               {/* Dropdown trigger */}
               <div
                 onClick={() => setSpecialtyDropdownOpen(prev => !prev)}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: `1.5px solid ${specialtyDropdownOpen ? "#1d4ed8" : "#e0eaff"}`, borderRadius: 10, cursor: "pointer", background: "#fff", transition: "border-color 0.2s" }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: `1.5px solid ${specialtyDropdownOpen ? "#334155" : "#e0eaff"}`, borderRadius: 10, cursor: "pointer", background: "#fff", transition: "border-color 0.2s" }}
               >
                 <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>
                   {selectedSpecialties.length === 0 ? "Search and select specialties..." : `${selectedSpecialties.length} specialty${selectedSpecialties.length !== 1 ? "s" : ""} selected`}
@@ -343,7 +343,7 @@ export default function AgencyContactPage() {
                           className={`dropdown-item ${selectedSpecialties.includes(s) ? "selected" : ""}`}
                           onClick={() => toggleSpecialty(s)}
                         >
-                          <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${selectedSpecialties.includes(s) ? "#1d4ed8" : "#e0eaff"}`, background: selectedSpecialties.includes(s) ? "#1d4ed8" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                          <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${selectedSpecialties.includes(s) ? "#334155" : "#e0eaff"}`, background: selectedSpecialties.includes(s) ? "#334155" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
                             {selectedSpecialties.includes(s) && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                           </div>
                           {s}
@@ -352,7 +352,7 @@ export default function AgencyContactPage() {
                     </div>
                     <div style={{ padding: "10px 12px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>{filteredSpecialties.length} specialties shown</span>
-                      <button onClick={() => setSpecialtyDropdownOpen(false)} style={{ background: "#1d4ed8", color: "#fff", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Done</button>
+                      <button onClick={() => setSpecialtyDropdownOpen(false)} style={{ background: "#334155", color: "#fff", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Done</button>
                     </div>
                   </div>
                 </div>
@@ -388,7 +388,7 @@ export default function AgencyContactPage() {
             </div>
 
             {/* Password */}
-            <div style={{ background: "#f8faff", borderRadius: 14, padding: "20px", border: "1px solid #e8f0fe", marginBottom: 20 }}>
+            <div style={{ background: "#f8faff", borderRadius: 14, padding: "20px", border: "1px solid #e2e8f0", marginBottom: 20 }}>
               <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>🔐 Create your password</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div>
@@ -403,10 +403,10 @@ export default function AgencyContactPage() {
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => { setStep(1); setError(""); }} style={{ background: "#fff", color: "#1d4ed8", border: "1.5px solid #bfdbfe", padding: "13px 20px", borderRadius: 10, fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+              <button onClick={() => { setStep(1); setError(""); }} style={{ background: "#fff", color: "#334155", border: "1.5px solid #ddd6fe", padding: "13px 20px", borderRadius: 10, fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                 ← Back
               </button>
-              <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, background: "#1d4ed8", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: loading ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: loading ? 0.7 : 1 }}>
+              <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, background: "#334155", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: loading ? "not-allowed" : "pointer", fontFamily: "Inter, sans-serif", opacity: loading ? 0.7 : 1 }}>
                 {loading ? "Creating your account..." : "🏥 Create Agency Account & Sign In"}
               </button>
             </div>
