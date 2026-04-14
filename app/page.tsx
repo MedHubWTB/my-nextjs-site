@@ -1,375 +1,359 @@
 "use client";
-import { supabase } from './lib/supabase'
-console.log('Supabase connected:', supabase)
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import Logo from "./components/Logo";
+
+export default function LandingPage() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <main className="min-h-screen bg-white font-sans overflow-x-hidden">
+    <div style={{ fontFamily: "var(--font-inter), Inter, -apple-system, sans-serif", color: "#0f172a", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-        * { box-sizing: border-box; }
-
-        body { font-family: 'DM Sans', sans-serif; }
-
-        .font-display { font-family: 'DM Serif Display', serif; }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes pulse-ring {
-          0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37,99,235,0.25); }
-          70%  { transform: scale(1);    box-shadow: 0 0 0 14px rgba(37,99,235,0); }
-          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37,99,235,0); }
-        }
-
-        .anim-1 { animation: fadeUp 0.7s ease both; }
-        .anim-2 { animation: fadeUp 0.7s 0.15s ease both; }
-        .anim-3 { animation: fadeUp 0.7s 0.30s ease both; }
-        .anim-4 { animation: fadeUp 0.7s 0.45s ease both; }
-        .anim-5 { animation: fadeIn 1.2s 0.6s ease both; }
-
-        .btn-primary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: #1d4ed8;
-          color: #fff;
-          font-family: 'DM Sans', sans-serif;
-          font-weight: 600;
-          font-size: 0.95rem;
-          letter-spacing: 0.01em;
-          padding: 14px 32px;
-          border-radius: 100px;
-          border: none;
-          cursor: pointer;
-          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-          box-shadow: 0 4px 18px rgba(29,78,216,0.28);
-          animation: pulse-ring 2.8s 1.4s infinite;
-        }
-        .btn-primary:hover {
-          background: #1e40af;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(29,78,216,0.38);
-        }
-
-        .btn-ghost {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: transparent;
-          color: #1d4ed8;
-          font-family: 'DM Sans', sans-serif;
-          font-weight: 500;
-          font-size: 0.9rem;
-          padding: 10px 20px;
-          border-radius: 100px;
-          border: 1.5px solid #bfdbfe;
-          cursor: pointer;
-          transition: background 0.2s, border-color 0.2s;
-        }
-        .btn-ghost:hover {
-          background: #eff6ff;
-          border-color: #93c5fd;
-        }
-
-        .btn-agency {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #f5f3ff;
-          color: #6d28d9;
-          font-family: 'DM Sans', sans-serif;
-          font-weight: 500;
-          font-size: 0.9rem;
-          padding: 10px 20px;
-          border-radius: 100px;
-          border: 1.5px solid #d8b4fe;
-          cursor: pointer;
-          transition: background 0.2s, border-color 0.2s;
-        }
-        .btn-agency:hover {
-          background: #ede9fe;
-          border-color: #a78bfa;
-        }
-
-        .card {
-          background: #f8faff;
-          border: 1px solid #e0eaff;
-          border-radius: 20px;
-          padding: 32px 28px;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 36px rgba(29,78,216,0.10);
-        }
-
-        .grid-bg {
-          background-image:
-            linear-gradient(rgba(219,234,254,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(219,234,254,0.5) 1px, transparent 1px);
-          background-size: 48px 48px;
-        }
-
-        .stat-number {
-          font-family: 'DM Serif Display', serif;
-          font-size: 2.6rem;
-          color: #1d4ed8;
-          line-height: 1;
-        }
-
-        .pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #eff6ff;
-          color: #1d4ed8;
-          font-size: 0.78rem;
-          font-weight: 600;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          padding: 6px 14px;
-          border-radius: 100px;
-          border: 1px solid #bfdbfe;
-        }
-
-        nav {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          background: rgba(255,255,255,0.88);
-          border-bottom: 1px solid #e0eaff;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        .nav-link { color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-link:hover { color: #334155; }
+        .btn-primary { display: inline-block; background: linear-gradient(135deg, #1e293b, #334155); color: #fff; font-weight: 600; font-size: 0.95rem; padding: 13px 28px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; font-family: inherit; transition: all 0.2s; box-shadow: 0 2px 12px rgba(51,65,85,0.25); letter-spacing: -0.01em; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(51,65,85,0.3); opacity: 0.95; }
+        .btn-ghost { display: inline-block; background: transparent; color: #334155; font-weight: 600; font-size: 0.95rem; padding: 13px 28px; border-radius: 12px; text-decoration: none; border: 1.5px solid #e2e8f0; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-ghost:hover { border-color: #334155; background: #f8f9fc; }
+        .btn-violet { display: inline-block; background: linear-gradient(135deg, #6d28d9, #7c3aed); color: #fff; font-weight: 600; font-size: 0.95rem; padding: 13px 28px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; font-family: inherit; transition: all 0.2s; box-shadow: 0 2px 12px rgba(124,58,237,0.25); }
+        .btn-violet:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.3); }
+        .feature-card { background: #fff; border-radius: 16px; padding: 28px; border: 1px solid #e2e8f0; transition: all 0.25s; }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(51,65,85,0.1); border-color: #ddd6fe; }
+        .step-card { background: #fff; border-radius: 16px; padding: 28px; border: 1px solid #e2e8f0; position: relative; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .fade-up { animation: fadeUp 0.7s ease both; }
+        .fade-up-2 { animation: fadeUp 0.7s 0.15s ease both; }
+        .fade-up-3 { animation: fadeUp 0.7s 0.3s ease both; }
+        .float { animation: float 4s ease-in-out infinite; }
+        @media (max-width: 768px) {
+          .hero-grid { grid-template-columns: 1fr !important; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .steps-grid { grid-template-columns: 1fr !important; }
+          .nav-links { display: none !important; }
+          .mobile-menu { display: flex !important; }
         }
       `}</style>
 
-      {/* ── NAV ── */}
-      <nav>
-        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 32, height: 32, background: '#1d4ed8', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', color: '#1d4ed8', letterSpacing: '-0.01em' }}>
-              MedHub
-            </span>
-          </div>
-
-          {/* Nav links + buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            {['Platform', 'Solutions', 'About'].map(link => (
-              <a key={link} href="#" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', fontWeight: 500, color: '#475569', textDecoration: 'none', transition: 'color 0.15s' }}
-                onMouseOver={e => (e.currentTarget.style.color = '#1d4ed8')}
-                onMouseOut={e => (e.currentTarget.style.color = '#475569')}>
-                {link}
-              </a>
-            ))}
-
-            {/* Divider */}
-            <div style={{ width: 1, height: 20, background: '#e0eaff' }} />
-
-            {/* Doctor sign in */}
-            <button
-              className="btn-ghost"
-              style={{ fontSize: '0.85rem', padding: '8px 18px' }}
-              onClick={() => window.location.href = '/login'}>
-              👨‍⚕️ Doctor Sign In
-            </button>
-
-            {/* Agency sign in */}
-            <button
-              className="btn-agency"
-              style={{ fontSize: '0.85rem', padding: '8px 18px' }}
-              onClick={() => window.location.href = '/agency-login'}>
-              🏥 Agency Sign In
-            </button>
-          </div>
+      {/* NAVBAR */}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(255,255,255,0.95)" : "transparent", backdropFilter: scrolled ? "blur(12px)" : "none", borderBottom: scrolled ? "1px solid #e2e8f0" : "none", transition: "all 0.3s" }}>
+        <Logo />
+        <div className="nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <a href="#for-doctors" className="nav-link">For Doctors</a>
+          <a href="#for-agencies" className="nav-link">For Agencies</a>
+          <a href="#how-it-works" className="nav-link">How it works</a>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <a href="/login" className="btn-ghost" style={{ padding: "9px 20px", fontSize: "0.88rem" }}>Sign in</a>
+          <a href="/signup" className="btn-primary" style={{ padding: "9px 20px", fontSize: "0.88rem" }}>Get started free</a>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
-      <section className="grid-bg" style={{ padding: '96px 24px 80px', textAlign: 'center', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(191,219,254,0.45) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      {/* HERO */}
+      <section style={{ minHeight: "100vh", background: "linear-gradient(160deg, #f8f9fc 0%, #f1f0f8 50%, #e8f4f8 100%)", display: "flex", alignItems: "center", padding: "100px 24px 80px", position: "relative", overflow: "hidden" }}>
+        {/* Background decoration */}
+        <div style={{ position: "absolute", top: "10%", right: "-5%", width: 500, height: 500, background: "radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", left: "-5%", width: 400, height: 400, background: "radial-gradient(circle, rgba(51,65,85,0.06) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
 
-        <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto' }}>
-          <div className="anim-1" style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
-            <span className="pill">
-              <span style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%', display: 'inline-block' }} />
-              Now in open beta
-            </span>
-          </div>
+        <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+            {/* Left */}
+            <div>
+              <div className="fade-up" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #ddd6fe", borderRadius: 100, padding: "6px 14px", marginBottom: 24, boxShadow: "0 2px 8px rgba(124,58,237,0.1)" }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#7c3aed", display: "inline-block" }} />
+                <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#7c3aed", letterSpacing: "0.04em" }}>NOW LIVE — UK LOCUM DOCTORS</span>
+              </div>
 
-          <h1 className="font-display anim-2" style={{ fontSize: 'clamp(2.4rem, 6vw, 4rem)', color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.02em', margin: '0 0 24px' }}>
-            The Future of<br />
-            <em style={{ color: '#1d4ed8', fontStyle: 'italic' }}>Medical Coordination</em>
-          </h1>
+              <h1 className="fade-up-2" style={{ fontSize: "3.2rem", fontWeight: 800, color: "#0f172a", lineHeight: 1.15, marginBottom: 20, letterSpacing: "-0.03em" }}>
+                Your compliance passport.<br />
+                <span style={{ background: "linear-gradient(135deg, #334155, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Quietly powerful.</span>
+              </h1>
 
-          <p className="anim-3" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', color: '#64748b', lineHeight: 1.7, maxWidth: 520, margin: '0 auto 40px', fontWeight: 400 }}>
-            MedHub connects doctors and medical agencies in one intelligent platform — reducing admin and giving clinicians more time for what matters.
-          </p>
+              <p className="fade-up-3" style={{ fontSize: "1.1rem", color: "#64748b", lineHeight: 1.7, marginBottom: 36, maxWidth: 480 }}>
+                One secure place for your GMC certificate, DBS, Right to Work, and indemnity documents. Share with agencies in one click — with full control over who sees what.
+              </p>
 
-          <div className="anim-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-            <button className="btn-primary" onClick={() => window.location.href = '/signup'}>
-              Get Started — it&apos;s free
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <button className="btn-agency" onClick={() => window.location.href = '/agency-contact'}>
-              🏥 Register your Agency
-            </button>
+              <div className="fade-up-3" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                <a href="/signup" className="btn-primary" style={{ fontSize: "1rem", padding: "14px 32px" }}>
+                  Create free account →
+                </a>
+                <a href="/otp-login" className="btn-ghost" style={{ fontSize: "1rem", padding: "14px 32px" }}>
+                  Sign in with email code
+                </a>
+              </div>
+
+              <div className="fade-up-3" style={{ display: "flex", gap: 24, marginTop: 36, flexWrap: "wrap" }}>
+                {[
+                  { icon: "🔒", text: "No data sharing without consent" },
+                  { icon: "✅", text: "GMC verified profiles" },
+                  { icon: "🇬🇧", text: "Built for UK locum doctors" },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ fontSize: "1rem" }}>{item.icon}</span>
+                    <span style={{ fontSize: "0.82rem", color: "#64748b", fontWeight: 500 }}>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — Dashboard Preview */}
+            <div className="float" style={{ position: "relative" }}>
+              <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #e2e8f0", boxShadow: "0 20px 60px rgba(51,65,85,0.15)", overflow: "hidden" }}>
+                {/* Mock sidebar */}
+                <div style={{ display: "grid", gridTemplateColumns: "200px 1fr" }}>
+                  <div style={{ background: "#fff", borderRight: "1px solid #e2e8f0", padding: "20px 12px", minHeight: 340 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, padding: "0 6px" }}>
+                      <div style={{ width: 24, height: 24, background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.72rem" }}>Q</span>
+                      </div>
+                      <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "#1e293b" }}>Quiet<span style={{ color: "#7c3aed" }}>Medical</span></span>
+                    </div>
+                    {["⊞ Overview", "📄 Document Vault", "🗓️ My Calendar", "🏥 My Agencies", "📝 Appraisal"].map((item, i) => (
+                      <div key={i} style={{ padding: "7px 10px", borderRadius: 8, marginBottom: 3, background: i === 0 ? "linear-gradient(135deg, #1e293b, #334155)" : "transparent", color: i === 0 ? "#fff" : "#64748b", fontSize: "0.75rem", fontWeight: i === 0 ? 600 : 400 }}>{item}</div>
+                    ))}
+                  </div>
+                  <div style={{ padding: 16, background: "#f8f9fc" }}>
+                    <p style={{ fontSize: "0.7rem", color: "#94a3b8", marginBottom: 4 }}>Welcome back</p>
+                    <p style={{ fontSize: "0.95rem", fontWeight: 700, color: "#0f172a", marginBottom: 14, letterSpacing: "-0.01em" }}>Good day, Dr. Smith 👋</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+                      {[
+                        { icon: "📄", val: "8", label: "Documents" },
+                        { icon: "🏥", val: "3", label: "Agencies" },
+                        { icon: "⏱️", val: "124h", label: "This year" },
+                      ].map((s, i) => (
+                        <div key={i} style={{ background: "#fff", borderRadius: 10, padding: "10px 8px", border: "1px solid #e2e8f0", textAlign: "center" }}>
+                          <div style={{ fontSize: "1rem" }}>{s.icon}</div>
+                          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "#0f172a" }}>{s.val}</div>
+                          <div style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{s.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid #e2e8f0" }}>
+                      <p style={{ fontSize: "0.72rem", fontWeight: 600, color: "#0f172a", marginBottom: 6 }}>Document Vault</p>
+                      {["GMC Certificate", "DBS Check", "Right to Work"].map((doc, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
+                          <span style={{ fontSize: "0.7rem", color: "#374151" }}>📄 {doc}</span>
+                          <span style={{ fontSize: "0.62rem", background: "#f0fdf4", color: "#16a34a", padding: "1px 6px", borderRadius: 100, fontWeight: 600 }}>✓ Verified</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Floating badge */}
+              <div style={{ position: "absolute", bottom: -16, right: -16, background: "#fff", borderRadius: 14, padding: "12px 16px", border: "1px solid #ddd6fe", boxShadow: "0 8px 24px rgba(124,58,237,0.15)", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 36, height: 36, background: "linear-gradient(135deg, #6d28d9, #7c3aed)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}>🛡️</div>
+                <div>
+                  <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#0f172a" }}>Privacy Shield</p>
+                  <p style={{ fontSize: "0.68rem", color: "#94a3b8" }}>You control your data</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── WHO IS IT FOR ── */}
-      <section style={{ background: '#fff', borderTop: '1px solid #e0eaff', borderBottom: '1px solid #e0eaff', padding: '64px 24px' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="pill" style={{ marginBottom: 16, display: 'inline-flex' }}>Who it&apos;s for</span>
-            <h2 className="font-display" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.2rem)', color: '#0f172a', letterSpacing: '-0.02em', margin: '12px 0 0' }}>
-              One platform, two sides
+      {/* FOR DOCTORS */}
+      <section id="for-doctors" style={{ padding: "100px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 100, padding: "6px 14px", marginBottom: 16 }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#7c3aed" }}>👨‍⚕️ FOR DOCTORS</span>
+            </div>
+            <h2 style={{ fontSize: "2.4rem", fontWeight: 800, color: "#0f172a", marginBottom: 16, letterSpacing: "-0.03em" }}>
+              Stop chasing paperwork.<br />Start doing what matters.
             </h2>
+            <p style={{ fontSize: "1rem", color: "#64748b", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
+              QuietMedical gives you a single, verified compliance passport that travels with you across every locum placement.
+            </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-            {/* Doctors card */}
-            <div style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: 24, padding: '36px 32px' }}>
-              <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>👨‍⚕️</div>
-              <h3 className="font-display" style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: 12 }}>For Doctors</h3>
-              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.7, marginBottom: 20 }}>
-                Manage your documents, track your working hours, connect with agencies, and get notified when your certifications are about to expire.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['📄 Document vault with expiry alerts', '🗓️ Calendar & shift tracking', '🏥 Connect with multiple agencies', '💎 Pro features available'].map((item, i) => (
-                  <li key={i} style={{ fontSize: '0.88rem', color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>{item}</li>
-                ))}
-              </ul>
-              <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', animation: 'none', boxShadow: 'none', borderRadius: 12 }} onClick={() => window.location.href = '/signup'}>
-                Create Doctor Account
-              </button>
-            </div>
 
-            {/* Agencies card */}
-            <div style={{ background: '#f5f3ff', border: '1.5px solid #d8b4fe', borderRadius: 24, padding: '36px 32px' }}>
-              <div style={{ fontSize: '2.2rem', marginBottom: 16 }}>🏥</div>
-              <h3 className="font-display" style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: 12 }}>For Agencies</h3>
-              <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.7, marginBottom: 20 }}>
-                Access a pool of verified doctors, manage leads, receive shared documents, send shift offers, and grow your placement business.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {['👨‍⚕️ Doctor leads & profiles', '📋 Post high-demand vacancies', '🧾 Automated referral invoicing', '💎 Pro plan available'].map((item, i) => (
-                  <li key={i} style={{ fontSize: '0.88rem', color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>{item}</li>
-                ))}
-              </ul>
-              <button className="btn-agency" style={{ width: '100%', justifyContent: 'center', borderRadius: 12, padding: '14px 20px', fontWeight: 600 }} onClick={() => window.location.href = '/agency-contact'}>
-                Register your Agency
-              </button>
-            </div>
+          <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {[
+              {
+                icon: "🔒",
+                title: "Digital Compliance Vault",
+                desc: "Store your GMC certificate, DBS, Right to Work, indemnity and appraisal documents in one secure place. Set expiry reminders so nothing lapses.",
+                badge: "All plans",
+                badgeColor: "#f1f5f9",
+                badgeText: "#64748b",
+              },
+              {
+                icon: "📤",
+                title: "One-Click Document Sharing",
+                desc: "Share your compliance documents with agencies instantly. You control who gets access, and you can revoke it at any time.",
+                badge: "All plans",
+                badgeColor: "#f1f5f9",
+                badgeText: "#64748b",
+              },
+              {
+                icon: "🛡️",
+                title: "Privacy Shield",
+                desc: "Agencies can only see your documents if you approve it. No cold calls, no spam, no data sold to third parties. Ever.",
+                badge: "All plans",
+                badgeColor: "#f1f5f9",
+                badgeText: "#64748b",
+              },
+              {
+                icon: "📰",
+                title: "Work Feed",
+                desc: "See matching locum roles from agencies looking for your specialty and grade. Filter by location, pay rate and freshness.",
+                badge: "Pro & Advanced",
+                badgeColor: "#f5f3ff",
+                badgeText: "#7c3aed",
+              },
+              {
+                icon: "💷",
+                title: "BMA Rate Benchmarking",
+                desc: "Compare your pay against the BMA Rate Card for your grade. Know your worth before you negotiate.",
+                badge: "Pro & Advanced",
+                badgeColor: "#f5f3ff",
+                badgeText: "#7c3aed",
+              },
+              {
+                icon: "⚡",
+                title: "Instant Grab",
+                desc: "One-click application for open calendar spots with priority status. Advanced members appear at the top of agency search results.",
+                badge: "Advanced only",
+                badgeColor: "linear-gradient(135deg, #1e293b, #334155)",
+                badgeText: "#fff",
+              },
+            ].map((feature, i) => (
+              <div key={i} className="feature-card">
+                <div style={{ width: 48, height: 48, background: "linear-gradient(135deg, #f8f9fc, #f1f0f8)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", marginBottom: 16, border: "1px solid #e2e8f0" }}>{feature.icon}</div>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: 8, letterSpacing: "-0.01em" }}>{feature.title}</h3>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", lineHeight: 1.65, marginBottom: 14 }}>{feature.desc}</p>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: feature.badgeColor, color: feature.badgeText, letterSpacing: "0.02em" }}>{feature.badge}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 48 }}>
+            <a href="/signup" className="btn-primary" style={{ fontSize: "1rem", padding: "14px 36px" }}>Create your compliance passport →</a>
           </div>
         </div>
       </section>
 
-      {/* ── STATS ── */}
-      <section className="anim-5" style={{ background: '#fff', borderBottom: '1px solid #e0eaff' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}>
-          {[
-            { value: '3.2M+', label: 'Patient records managed' },
-            { value: '98.7%', label: 'Uptime guarantee' },
-            { value: '140+', label: 'Partner hospitals' },
-          ].map((stat, i) => (
-            <div key={i} style={{ textAlign: 'center', padding: '8px 16px', borderRight: i < 2 ? '1px solid #e0eaff' : 'none' }}>
-              <div className="stat-number">{stat.value}</div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: '#94a3b8', marginTop: 6, fontWeight: 400 }}>{stat.label}</div>
+      {/* FOR AGENCIES */}
+      <section id="for-agencies" style={{ padding: "100px 24px", background: "linear-gradient(160deg, #f8f9fc, #f1f0f8)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 100, padding: "6px 14px", marginBottom: 16 }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#334155" }}>🏥 FOR AGENCIES</span>
             </div>
-          ))}
+            <h2 style={{ fontSize: "2.4rem", fontWeight: 800, color: "#0f172a", marginBottom: 16, letterSpacing: "-0.03em" }}>
+              Find verified doctors.<br />Fill shifts faster.
+            </h2>
+            <p style={{ fontSize: "1rem", color: "#64748b", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
+              Access a pool of pre-verified UK locum doctors. Post shifts directly to their calendars and manage compliance documents in one place.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+            {[
+              { icon: "📋", title: "Post Shifts to Doctor Calendars", desc: "Publish open spots that appear directly on matching doctors' live calendars. Get instant grabs from Advanced tier doctors." },
+              { icon: "🔍", title: "Market View", desc: "Browse active UK locum doctors matching your specialty requirements. Pro and Advanced agencies get summarised CVs and outreach credits." },
+              { icon: "📄", title: "Verified Compliance Documents", desc: "Request access to doctor compliance documents directly through the platform. No more chasing paper trails." },
+              { icon: "⚡", title: "Top Agency Status", desc: "Advanced agencies get their logo and jobs pinned to the top of all doctor lists, plus 2x email blasts to targeted doctors per month." },
+            ].map((feature, i) => (
+              <div key={i} className="feature-card">
+                <div style={{ width: 48, height: 48, background: "linear-gradient(135deg, #f8f9fc, #f1f0f8)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", marginBottom: 16, border: "1px solid #e2e8f0" }}>{feature.icon}</div>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: 8, letterSpacing: "-0.01em" }}>{feature.title}</h3>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", lineHeight: 1.65 }}>{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 48 }}>
+            <a href="/agency-contact" className="btn-ghost" style={{ fontSize: "1rem", padding: "14px 36px" }}>Register your agency →</a>
+          </div>
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section style={{ maxWidth: 1120, margin: '0 auto', padding: '88px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <span className="pill" style={{ marginBottom: 16, display: 'inline-flex' }}>Platform features</span>
-          <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: '#0f172a', letterSpacing: '-0.02em', margin: '12px 0 0' }}>
-            Built for modern care teams
-          </h2>
-        </div>
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" style={{ padding: "100px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <h2 style={{ fontSize: "2.4rem", fontWeight: 800, color: "#0f172a", marginBottom: 16, letterSpacing: "-0.03em" }}>Up and running in minutes</h2>
+            <p style={{ fontSize: "1rem", color: "#64748b", lineHeight: 1.7 }}>No forms to fill, no documents to post. Just sign up and start.</p>
+          </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-          {[
-            { icon: '⚡', title: 'Real-time coordination', body: 'Instant updates across departments keep every clinician aligned — from triage to discharge.' },
-            { icon: '🔒', title: 'HIPAA-compliant security', body: 'End-to-end encryption and role-based access ensure patient data stays protected at every layer.' },
-            { icon: '📊', title: 'Clinical analytics', body: 'Surface actionable insights from patient data to support faster, more confident decisions.' },
-          ].map((f, i) => (
-            <div key={i} className="card">
-              <div style={{ fontSize: '1.8rem', marginBottom: 16 }}>{f.icon}</div>
-              <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '1.05rem', color: '#0f172a', margin: '0 0 10px' }}>{f.title}</h3>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem', color: '#64748b', lineHeight: 1.65, margin: 0 }}>{f.body}</p>
-            </div>
-          ))}
+          <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+            {[
+              { step: "01", icon: "✉️", title: "Sign up with your email", desc: "No password needed. Enter your email, get a one-time code, and you're in." },
+              { step: "02", icon: "📋", title: "Build your compliance passport", desc: "Add your specialty, grade and GMC number. Upload your compliance documents securely." },
+              { step: "03", icon: "🚀", title: "Connect with agencies", desc: "Agencies find you based on your specialty and grade. Share your documents with one click." },
+            ].map((step, i) => (
+              <div key={i} className="step-card">
+                <div style={{ position: "absolute", top: 20, right: 20, fontSize: "2rem", fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.05em" }}>{step.step}</div>
+                <div style={{ width: 48, height: 48, background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", marginBottom: 16, boxShadow: "0 4px 12px rgba(51,65,85,0.2)" }}>{step.icon}</div>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: 8, letterSpacing: "-0.01em" }}>{step.title}</h3>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", lineHeight: 1.65 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
-      <section style={{ padding: '0 24px 96px' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)', borderRadius: 28, padding: '64px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -60, right: -60, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -40, left: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-
-          <h2 className="font-display" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', color: '#fff', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
-            Ready to transform your practice?
+      {/* FINAL CTA */}
+      <section style={{ padding: "100px 24px", background: "linear-gradient(135deg, #1e293b 0%, #334155 50%, #4c1d95 100%)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "20%", right: "10%", width: 300, height: 300, background: "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", left: "5%", width: 200, height: 200, background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center", position: "relative" }}>
+          <h2 style={{ fontSize: "2.8rem", fontWeight: 800, color: "#fff", marginBottom: 16, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+            Your compliance passport.<br />Always ready.
           </h2>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", color: 'rgba(255,255,255,0.75)', fontSize: '1rem', margin: '0 auto 36px', maxWidth: 440, lineHeight: 1.65 }}>
-            Join hundreds of hospitals already using MedHub to deliver better patient outcomes.
+          <p style={{ fontSize: "1.05rem", color: "rgba(255,255,255,0.75)", marginBottom: 40, lineHeight: 1.7 }}>
+            Join UK locum doctors who've moved their compliance documents out of email and into QuietMedical.
           </p>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: '#1d4ed8', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: '100px', border: 'none', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.15)' }}
-              onClick={() => window.location.href = '/signup'}
-              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.2)'; }}
-              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.15)'; }}>
-              👨‍⚕️ I&apos;m a Doctor
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="#1d4ed8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <button style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.15)', color: '#fff', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: '100px', border: '1.5px solid rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'transform 0.15s, background 0.2s' }}
-              onClick={() => window.location.href = '/agency-contact'}
-              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.25)'; }}
-              onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}>
-              🏥 I&apos;m an Agency
-            </button>
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href="/signup" style={{ display: "inline-block", background: "#fff", color: "#1e293b", fontWeight: 700, fontSize: "1rem", padding: "14px 36px", borderRadius: 12, textDecoration: "none", transition: "all 0.2s", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
+              Create free account →
+            </a>
+            <a href="/otp-login" style={{ display: "inline-block", background: "rgba(255,255,255,0.1)", color: "#fff", fontWeight: 600, fontSize: "1rem", padding: "14px 36px", borderRadius: 12, textDecoration: "none", border: "1.5px solid rgba(255,255,255,0.2)", transition: "all 0.2s" }}>
+              Sign in with email code
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid #e0eaff', padding: '32px 24px', textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
-          <div style={{ width: 22, height: 22, background: '#1d4ed8', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1v10M1 6h10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+      {/* FOOTER */}
+      <footer style={{ background: "#0f172a", padding: "48px 24px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 32 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #334155, #475569)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.82rem" }}>Q</span>
+              </div>
+              <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#fff", letterSpacing: "-0.02em" }}>Quiet<span style={{ color: "#a78bfa" }}>Medical</span></span>
+            </div>
+            <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+              {[
+                { label: "For Doctors", href: "#for-doctors" },
+                { label: "For Agencies", href: "#for-agencies" },
+                { label: "Sign In", href: "/login" },
+                { label: "Sign Up", href: "/signup" },
+              ].map((link, i) => (
+                <a key={i} href={link.href} style={{ color: "#94a3b8", textDecoration: "none", fontSize: "0.85rem", fontWeight: 500, transition: "color 0.2s" }}>{link.label}</a>
+              ))}
+            </div>
           </div>
-          <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: '#1d4ed8' }}>MedHub</span>
+          <div style={{ borderTop: "1px solid #1e293b", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <p style={{ fontSize: "0.78rem", color: "#475569" }}>© 2025 QuietMedical. Built for UK locum doctors.</p>
+            <p style={{ fontSize: "0.78rem", color: "#475569" }}>Privacy Policy · Terms of Service</p>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 12 }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/login'}>Doctor Login</button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/agency-login'}>Agency Login</button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontFamily: "'DM Sans', sans-serif" }} onClick={() => window.location.href = '/agency-contact'}>Contact Us</button>
-        </div>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.8rem', color: '#94a3b8', margin: 0 }}>
-          © {new Date().getFullYear()} MedHub. All rights reserved.
-        </p>
       </footer>
-    </main>
+    </div>
   );
 }
