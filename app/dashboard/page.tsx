@@ -579,7 +579,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
   const pendingIncomingConnections = connections.filter(c => c.status === "pending" && c.initiated_by === "agency");
 
   const getTierBadge = () => {
-    if (isAdvanced) return { label: "⚡ ADVANCED", bg: "linear-gradient(135deg, #0f172a, #1d4ed8)" };
+    if (isAdvanced) return { label: "⚡ ADVANCED", bg: "linear-gradient(135deg, #0f172a, #334155)" };
     if (isPro) return { label: "💎 PRO", bg: "linear-gradient(135deg, #6d28d9, #4f46e5)" };
     return null;
   };
@@ -588,7 +588,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
   const getStatusColor = (status: string) => {
     const map: Record<string, { bg: string; color: string }> = {
       pending: { bg: "#fffbeb", color: "#92400e" },
-      in_progress: { bg: "#eff6ff", color: "#1d4ed8" },
+      in_progress: { bg: "#f5f3ff", color: "#334155" },
       completed: { bg: "#f0fdf4", color: "#16a34a" },
       open: { bg: "#fff1f2", color: "#dc2626" },
       resolved: { bg: "#f0fdf4", color: "#16a34a" },
@@ -598,26 +598,26 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
   };
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #e0eaff", borderTop: "3px solid #1d4ed8", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+        <div style={{ width: 40, height: 40, border: "3px solid #e0eaff", borderTop: "3px solid #334155", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
         <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>Loading your dashboard...</p>
       </div>
     </div>
   );
 
   if (showUpgradePage) return (
-    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: 24 }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
+    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", padding: 24 }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; }`}</style>
       <div style={{ width: "100%", maxWidth: 600 }}>
-        <button onClick={() => setShowUpgradePage(false)} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.88rem", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>← Back to dashboard</button>
+        <button onClick={() => setShowUpgradePage(false)} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", marginBottom: 24, display: "flex", alignItems: "center", gap: 6 }}>← Back to dashboard</button>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* PRO */}
-          <div style={{ background: "#fff", borderRadius: 24, border: upgradeTarget === "pro" ? "2px solid #6d28d9" : "1px solid #e8f0fe", overflow: "hidden" }}>
+          <div style={{ background: "#fff", borderRadius: 24, border: upgradeTarget === "pro" ? "2px solid #6d28d9" : "1px solid #e2e8f0", overflow: "hidden" }}>
             <div style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", padding: "28px 24px", textAlign: "center" }}>
               <div style={{ fontSize: "2rem", marginBottom: 8 }}>💎</div>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.4rem", color: "#fff", marginBottom: 4 }}>Pro</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.4rem", color: "#fff", marginBottom: 4 }}>Pro</h2>
               <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.85rem" }}>Full control over your locum career</p>
             </div>
             <div style={{ padding: "20px 24px" }}>
@@ -631,21 +631,21 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "#7c3aed", marginBottom: 4 }}>💳 Coming Soon</p>
                 <p style={{ fontSize: "0.78rem", color: "#64748b" }}>Stripe payment coming</p>
               </div>
-              <button disabled style={{ width: "100%", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "not-allowed", fontFamily: "'DM Sans', sans-serif", opacity: 0.6 }}>Upgrade to Pro</button>
+              <button disabled style={{ width: "100%", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "not-allowed", fontFamily: "Inter, sans-serif", opacity: 0.6 }}>Upgrade to Pro</button>
             </div>
           </div>
 
           {/* ADVANCED */}
-          <div style={{ background: "#fff", borderRadius: 24, border: upgradeTarget === "advanced" ? "2px solid #1d4ed8" : "1px solid #e8f0fe", overflow: "hidden" }}>
-            <div style={{ background: "linear-gradient(135deg, #0f172a, #1d4ed8)", padding: "28px 24px", textAlign: "center" }}>
+          <div style={{ background: "#fff", borderRadius: 24, border: upgradeTarget === "advanced" ? "2px solid #334155" : "1px solid #e2e8f0", overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg, #0f172a, #334155)", padding: "28px 24px", textAlign: "center" }}>
               <div style={{ fontSize: "2rem", marginBottom: 8 }}>⚡</div>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.4rem", color: "#fff", marginBottom: 4 }}>Advanced</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.4rem", color: "#fff", marginBottom: 4 }}>Advanced</h2>
               <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.85rem" }}>Priority access & unlimited reach</p>
             </div>
             <div style={{ padding: "20px 24px" }}>
               {["Everything in Pro", "Priority Feed & Top of List", "Unlimited Chat", "Instant Grab", "Universal Passport", "Recruiter SLA (24hr)", "Designated Body / RO Link"].map((f, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: i < 6 ? "1px solid #f1f5f9" : "none" }}>
-                  <span style={{ color: "#1d4ed8" }}>✓</span>
+                  <span style={{ color: "#334155" }}>✓</span>
                   <span style={{ fontSize: "0.85rem", color: "#374151" }}>{f}</span>
                 </div>
               ))}
@@ -653,7 +653,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "#0369a1", marginBottom: 4 }}>💳 Coming Soon</p>
                 <p style={{ fontSize: "0.78rem", color: "#64748b" }}>Stripe payment coming</p>
               </div>
-              <button disabled style={{ width: "100%", background: "linear-gradient(135deg, #0f172a, #1d4ed8)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "not-allowed", fontFamily: "'DM Sans', sans-serif", opacity: 0.6 }}>Upgrade to Advanced</button>
+              <button disabled style={{ width: "100%", background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "not-allowed", fontFamily: "Inter, sans-serif", opacity: 0.6 }}>Upgrade to Advanced</button>
             </div>
           </div>
         </div>
@@ -662,28 +662,28 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5fb", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f9fc", fontFamily: "Inter, sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; }
-        .sidebar-link:hover { background: #eff6ff; color: #1d4ed8; }
-        .sidebar-link.active { background: #1d4ed8; color: #fff; }
-        .card { background: #fff; border-radius: 16px; border: 1px solid #e8f0fe; padding: 24px; }
-        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.2s; }
-        .input-field:focus { border-color: #1d4ed8; }
-        .btn-blue { background: #1d4ed8; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
-        .btn-blue:hover { background: #1e40af; }
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: Inter, sans-serif; }
+        .sidebar-link:hover { background: #f5f3ff; color: #334155; }
+        .sidebar-link.active { background: #334155; color: #fff; }
+        .card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; }
+        .input-field { width: 100%; padding: 10px 14px; border: 1.5px solid #e0eaff; border-radius: 10px; font-size: 0.9rem; color: #0f172a; background: #fff; outline: none; font-family: Inter, sans-serif; transition: border-color 0.2s; }
+        .input-field:focus { border-color: #334155; }
+        .btn-blue { background: #334155; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: Inter, sans-serif; transition: background 0.2s; }
+        .btn-blue:hover { opacity: 0.9; }
         .btn-blue:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-ghost { background: #fff; color: #1d4ed8; border: 1.5px solid #bfdbfe; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
-        .btn-ghost:hover { background: #eff6ff; }
-        .btn-advanced { background: linear-gradient(135deg, #0f172a, #1d4ed8); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-        .doc-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; background: #f8faff; border: 1px solid #e8f0fe; margin-bottom: 10px; transition: box-shadow 0.15s; }
+        .btn-ghost { background: #fff; color: #334155; border: 1.5px solid #ddd6fe; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: Inter, sans-serif; transition: background 0.2s; }
+        .btn-ghost:hover { background: #f5f3ff; }
+        .btn-advanced { background: linear-gradient(135deg, #0f172a, #334155); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: Inter, sans-serif; }
+        .doc-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; background: #f8faff; border: 1px solid #e2e8f0; margin-bottom: 10px; transition: box-shadow 0.15s; }
         .doc-row:hover { box-shadow: 0 4px 12px rgba(29,78,216,0.08); }
         .cal-day { min-height: 72px; border-radius: 10px; padding: 6px; cursor: pointer; transition: background 0.15s; border: 1.5px solid transparent; }
-        .cal-day:hover { background: #eff6ff; border-color: #bfdbfe; }
-        .cal-day.today { border-color: #1d4ed8; background: #eff6ff; }
-        .cal-day.selected { background: #1d4ed8 !important; border-color: #1d4ed8; }
+        .cal-day:hover { background: #f5f3ff; border-color: #ddd6fe; }
+        .cal-day.today { border-color: #334155; background: #f5f3ff; }
+        .cal-day.selected { background: #334155 !important; border-color: #334155; }
         .cal-day.selected span { color: #fff !important; }
         .shift-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin: 1px; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -695,31 +695,31 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         label { display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
         @keyframes popIn { from { opacity: 0; transform: scale(0.85) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .upgrade-popup { animation: popIn 0.2s ease both; }
-        .upload-zone { border: 2px dashed #bfdbfe; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8faff; }
-        .upload-zone:hover { border-color: #1d4ed8; background: #eff6ff; }
+        .upload-zone { border: 2px dashed #ddd6fe; border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8faff; }
+        .upload-zone:hover { border-color: #334155; background: #f5f3ff; }
         .upload-zone.has-file { border-color: #22c55e; background: #f0fdf4; }
         .agency-select-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #e0eaff; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
-        .agency-select-row:hover { border-color: #1d4ed8; background: #f8faff; }
-        .agency-select-row.selected { border-color: #1d4ed8; background: #eff6ff; }
-        .agency-card { background: #f8faff; border: 1px solid #e8f0fe; border-radius: 14px; padding: 18px 20px; transition: box-shadow 0.15s; margin-bottom: 12px; }
+        .agency-select-row:hover { border-color: #334155; background: #f8faff; }
+        .agency-select-row.selected { border-color: #334155; background: #f5f3ff; }
+        .agency-card { background: #f8faff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; transition: box-shadow 0.15s; margin-bottom: 12px; }
         .agency-card:hover { box-shadow: 0 4px 16px rgba(29,78,216,0.08); }
-        .vacancy-card { background: #fff; border: 1px solid #e8f0fe; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; transition: box-shadow 0.15s; }
+        .vacancy-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; transition: box-shadow 0.15s; }
         .vacancy-card:hover { box-shadow: 0 4px 16px rgba(29,78,216,0.08); }
-        .claim-card { background: #f8faff; border: 1px solid #e8f0fe; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; }
+        .claim-card { background: #f8faff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; }
         @media (max-width: 768px) { .sidebar { display: none !important; } .main-content { margin-left: 0 !important; } }
       `}</style>
 
       {/* UPGRADE POPUP */}
       {showUpgradePopup && (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowUpgradePopup(false)}>
-          <div className="upgrade-popup" style={{ background: "#fff", borderRadius: 20, padding: "28px 32px", maxWidth: 400, width: "100%", border: `2px solid ${upgradeRequired === "advanced" ? "#1d4ed8" : "#d8b4fe"}`, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+          <div className="upgrade-popup" style={{ background: "#fff", borderRadius: 20, padding: "28px 32px", maxWidth: 400, width: "100%", border: `2px solid ${upgradeRequired === "advanced" ? "#334155" : "#d8b4fe"}`, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", textAlign: "center" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: "2.2rem", marginBottom: 12 }}>{upgradeRequired === "advanced" ? "⚡" : "💎"}</div>
-            <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 8 }}>{upgradeRequired === "advanced" ? "Advanced" : "Pro"} Feature</h3>
-            <p style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: 20 }}><strong style={{ color: upgradeRequired === "advanced" ? "#1d4ed8" : "#7c3aed" }}>{upgradeFeature}</strong> requires the {upgradeRequired === "advanced" ? "Advanced" : "Pro"} plan.</p>
-            <button onClick={() => { setShowUpgradePopup(false); setUpgradeTarget(upgradeRequired); setShowUpgradePage(true); }} style={{ width: "100%", background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #0f172a, #1d4ed8)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", marginBottom: 10 }}>
+            <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 8 }}>{upgradeRequired === "advanced" ? "Advanced" : "Pro"} Feature</h3>
+            <p style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: 20 }}><strong style={{ color: upgradeRequired === "advanced" ? "#334155" : "#7c3aed" }}>{upgradeFeature}</strong> requires the {upgradeRequired === "advanced" ? "Advanced" : "Pro"} plan.</p>
+            <button onClick={() => { setShowUpgradePopup(false); setUpgradeTarget(upgradeRequired); setShowUpgradePage(true); }} style={{ width: "100%", background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "Inter, sans-serif", marginBottom: 10 }}>
               {upgradeRequired === "advanced" ? "⚡ Upgrade to Advanced" : "💎 Upgrade to Pro"}
             </button>
-            <button onClick={() => setShowUpgradePopup(false)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Maybe later</button>
+            <button onClick={() => setShowUpgradePopup(false)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Maybe later</button>
           </div>
         </div>
       )}
@@ -729,7 +729,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Upload Document</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Upload Document</h2>
               <button onClick={() => setShowUploadModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             {uploadError && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: "0.85rem", marginBottom: 16 }}>{uploadError}</div>}
@@ -755,7 +755,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowSendModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Send Document</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Send Document</h2>
               <button onClick={() => setShowSendModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 20 }}>Sending: <strong style={{ color: "#0f172a" }}>{sendingDoc.file_name}</strong></p>
@@ -769,7 +769,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <label style={{ margin: 0 }}>Select Agencies</label>
-                  <button style={{ background: "none", border: "none", color: "#1d4ed8", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                  <button style={{ background: "none", border: "none", color: "#334155", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}
                     onClick={() => { const available = agencies.filter(ag => !shareRequests.find(s => s.document_id === sendingDoc.id && s.agency_id === ag.id && s.status !== "revoked")); if (sendToAgencies.length === available.length) setSendToAgencies([]); else setSendToAgencies(available.map(a => a.id)); }}>
                     {sendToAgencies.length === agencies.filter(ag => !shareRequests.find(s => s.document_id === sendingDoc.id && s.agency_id === ag.id && s.status !== "revoked")).length ? "Deselect All" : "Select All"}
                   </button>
@@ -789,13 +789,13 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                             </span>
                           </div>
                         </div>
-                        <button onClick={() => handleRevokeShare(existingShare.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "5px 12px", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>Revoke</button>
+                        <button onClick={() => handleRevokeShare(existingShare.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "5px 12px", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }}>Revoke</button>
                       </div>
                     );
                     return (
                       <div key={ag.id} className={`agency-select-row ${isSelected ? "selected" : ""}`} onClick={() => setSendToAgencies(prev => prev.includes(ag.id) ? prev.filter(x => x !== ag.id) : [...prev, ag.id])}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span>🏥</span><span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{ag.agency_name}</span></div>
-                        <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${isSelected ? "#1d4ed8" : "#e0eaff"}`, background: isSelected ? "#1d4ed8" : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${isSelected ? "#334155" : "#e0eaff"}`, background: isSelected ? "#334155" : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         </div>
                       </div>
@@ -814,11 +814,11 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowChatModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Message {chatAgency.agency_name}</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Message {chatAgency.agency_name}</h2>
               <button onClick={() => setShowChatModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             {isPro && !isAdvanced && (
-              <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: "0.82rem", color: "#1d4ed8" }}>
+              <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: "0.82rem", color: "#334155" }}>
                 💬 Pro Chat Limit: <strong>{2 - chatLimitToday}</strong> messages remaining today
               </div>
             )}
@@ -840,7 +840,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowAppraisalModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Appraisal</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Appraisal</h2>
               <button onClick={() => setShowAppraisalModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -867,7 +867,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowClaimModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Insurance Claim</h2>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Insurance Claim</h2>
               <button onClick={() => setShowClaimModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -889,7 +889,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <div className="modal-overlay" onClick={() => setShowShiftModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>
                 {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
               </h2>
               <button onClick={() => setShowShiftModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -897,8 +897,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             {getShiftsForDate(selectedDate).length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 {getShiftsForDate(selectedDate).map(s => (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: s.type === "shift" ? "#eff6ff" : "#f0fdf4", borderRadius: 10, marginBottom: 6 }}>
-                    <span className="shift-dot" style={{ background: s.type === "shift" ? "#1d4ed8" : "#22c55e", width: 10, height: 10, flexShrink: 0 }} />
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: s.type === "shift" ? "#f5f3ff" : "#f0fdf4", borderRadius: 10, marginBottom: 6 }}>
+                    <span className="shift-dot" style={{ background: s.type === "shift" ? "#334155" : "#22c55e", width: 10, height: 10, flexShrink: 0 }} />
                     <div>
                       <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#0f172a", textTransform: "capitalize" }}>{s.type}{s.agency_name ? ` — ${s.agency_name}` : ""}</p>
                       <p style={{ fontSize: "0.75rem", color: "#64748b" }}>{s.start_time?.slice(0,5)} – {s.end_time?.slice(0,5)}{s.notes ? ` · ${s.notes}` : ""}</p>
@@ -943,13 +943,13 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       )}
 
       {/* SIDEBAR */}
-      <div className="sidebar" style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e8f0fe", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40, overflowY: "auto" }}>
+      <div className="sidebar" style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40, overflowY: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 36, padding: "0 6px" }}>
-          <div style={{ width: 30, height: 30, background: "#1d4ed8", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></svg>
-          </div>
-          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1d4ed8" }}>MedHub</span>
-        </div>
+  <div style={{ width: 30, height: 30, background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(51,65,85,0.25)" }}>
+    <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>Q</span>
+  </div>
+  <span style={{ fontWeight: 700, fontSize: "1rem", color: "#1e293b", letterSpacing: "-0.02em" }}>Quiet<span style={{ color: "#7c3aed" }}>Medical</span></span>
+</div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
           {([
             { key: "overview", label: "Overview", icon: "⊞" },
@@ -974,7 +974,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 {locked && <span style={{ marginLeft: "auto", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 100 }}>PRO</span>}
                 {item.key === "documents" && alerts.length > 0 && <span style={{ marginLeft: "auto", background: alerts.some(a => a.urgent) ? "#ef4444" : "#f59e0b", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>{alerts.length}</span>}
                 {item.key === "agencies" && pendingIncomingConnections.length > 0 && <span style={{ marginLeft: "auto", background: "#f59e0b", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>{pendingIncomingConnections.length}</span>}
-                {item.key === "workfeed" && isAdvanced && <span style={{ marginLeft: "auto", background: "linear-gradient(135deg, #0f172a, #1d4ed8)", color: "#fff", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 100 }}>⚡</span>}
+                {item.key === "workfeed" && isAdvanced && <span style={{ marginLeft: "auto", background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 100 }}>⚡</span>}
               </button>
             );
           })}
@@ -985,7 +985,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff" }}>{tierBadge.label} Plan</p>
           </div>
         ) : (
-          <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ margin: "0 0 12px", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", border: "none", borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', sans-serif" }}>
+          <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ margin: "0 0 12px", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", border: "none", borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", fontFamily: "Inter, sans-serif" }}>
             <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>You are on</p>
             <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff" }}>Base Plan · Upgrade 💎</p>
           </button>
@@ -999,13 +999,13 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
           <div>
             <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>Welcome back</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.6rem", color: "#0f172a" }}>Good day, Dr. {firstName} 👋</h1>
+              <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.6rem", color: "#0f172a" }}>Good day, Dr. {firstName} 👋</h1>
               {tierBadge && <span style={{ background: tierBadge.bg, color: "#fff", fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>{tierBadge.label}</span>}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {saveMsg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>{saveMsg}</span>}
-            <div style={{ width: 40, height: 40, background: "#1d4ed8", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>{initials}</div>
+            <div style={{ width: 40, height: 40, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>{initials}</div>
           </div>
         </div>
 
@@ -1028,7 +1028,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
           <div>
             <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 24 }}>
               {[
-                { label: "Documents", value: documents.length, icon: "📄", color: "#eff6ff" },
+                { label: "Documents", value: documents.length, icon: "📄", color: "#f5f3ff" },
                 { label: "Hours This Month", value: getMonthHours().toFixed(1) + "h", icon: "⏱️", color: "#f0fdf4" },
                 { label: "Hours This Year", value: getYearHours().toFixed(1) + "h", icon: "📅", color: "#fefce8" },
                 { label: "Connected Agencies", value: agencies.length, icon: "🏥", color: "#fdf4ff" },
@@ -1052,9 +1052,9 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                   <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}><div style={{ fontSize: "1.8rem", marginBottom: 8 }}>🗓️</div><p style={{ fontSize: "0.85rem" }}>No upcoming shifts logged</p></div>
                 ) : getUpcomingShifts().map(shift => (
                   <div key={shift.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
-                    <div style={{ width: 40, height: 40, background: "#eff6ff", borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase" }}>{MONTHS[new Date(shift.date + "T12:00:00").getMonth()].slice(0, 3)}</span>
-                      <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#1d4ed8", lineHeight: 1 }}>{new Date(shift.date + "T12:00:00").getDate()}</span>
+                    <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#334155", textTransform: "uppercase" }}>{MONTHS[new Date(shift.date + "T12:00:00").getMonth()].slice(0, 3)}</span>
+                      <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#334155", lineHeight: 1 }}>{new Date(shift.date + "T12:00:00").getDate()}</span>
                     </div>
                     <div>
                       <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{shift.agency_name || "Unassigned"}</p>
@@ -1080,7 +1080,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                           <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                             {ag.pay_range && <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", padding: "2px 7px", borderRadius: 100 }}>💷 {ag.pay_range}</span>}
                             {ag.review_score && <span style={{ fontSize: "0.72rem", background: "#fffbeb", color: "#92400e", padding: "2px 7px", borderRadius: 100 }}>⭐ {ag.review_score}</span>}
-                            {ag.location_tags && <span style={{ fontSize: "0.72rem", background: "#eff6ff", color: "#1d4ed8", padding: "2px 7px", borderRadius: 100 }}>📍 {ag.location_tags}</span>}
+                            {ag.location_tags && <span style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#334155", padding: "2px 7px", borderRadius: 100 }}>📍 {ag.location_tags}</span>}
                           </div>
                         </div>
                         <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("agencies")}>View →</button>
@@ -1122,13 +1122,13 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             </div>
 
             {isBase && (
-              <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #fdf4ff, #eff6ff)", border: "1.5px solid #d8b4fe" }}>
+              <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #fdf4ff, #f5f3ff)", border: "1.5px solid #d8b4fe" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <div>
                     <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#6d28d9" }}>You're on the Base Plan</h2>
-                    <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 2 }}>Upgrade to unlock the full MedHub experience</p>
+                    <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 2 }}>Upgrade to unlock the full QuietMedical experience</p>
                   </div>
-                  <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
+                  <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                   {[
@@ -1139,10 +1139,10 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     { label: "Priority Feed", tier: "Advanced", icon: "⚡" },
                     { label: "Instant Grab", tier: "Advanced", icon: "🎯" },
                   ].map((f, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#fff", borderRadius: 8, border: "1px solid #e8f0fe" }}>
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#fff", borderRadius: 8, border: "1px solid #e2e8f0" }}>
                       <span>{f.icon}</span>
                       <span style={{ fontSize: "0.78rem", color: "#374151", flex: 1 }}>{f.label}</span>
-                      <span style={{ fontSize: "0.68rem", fontWeight: 700, background: f.tier === "Advanced" ? "linear-gradient(135deg, #0f172a, #1d4ed8)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", padding: "2px 6px", borderRadius: 100 }}>{f.tier}</span>
+                      <span style={{ fontSize: "0.68rem", fontWeight: 700, background: f.tier === "Advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", padding: "2px 6px", borderRadius: 100 }}>{f.tier}</span>
                     </div>
                   ))}
                 </div>
@@ -1150,11 +1150,11 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             )}
 
             {/* Referral Card */}
-            <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #f0fdf4, #eff6ff)", border: "1.5px solid #bbf7d0" }}>
+            <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #f0fdf4, #f5f3ff)", border: "1.5px solid #bbf7d0" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                 <div>
                   <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>👋 Know a colleague who does locum work?</h2>
-                  <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to MedHub — help them manage their compliance passport in one place.</p>
+                  <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to QuietMedical — help them manage their compliance passport in one place.</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1163,7 +1163,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     setSaveMsg("Referral link copied!");
                     setTimeout(() => setSaveMsg(""), 3000);
                   }}
-                  style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}
+                  style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}
                 >
                   📋 Copy Invite Link
                 </button>
@@ -1177,8 +1177,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a" }}>Work Feed</h2>
-                  {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #1d4ed8)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Priority</span>}
+                  <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Work Feed</h2>
+                  {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Priority</span>}
                 </div>
                 <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>
                   {isAdvanced ? "You have priority placement — your profile appears at the top of agency searches." : "Roles matching your specialty and grade from connected agencies."}
@@ -1196,7 +1196,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               <div key={vac.id} className="vacancy-card">
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 44, height: 44, background: "#eff6ff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>📋</div>
+                    <div style={{ width: 44, height: 44, background: "#f5f3ff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>📋</div>
                     <div>
                       <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>{vac.specialty} — {vac.grade}</p>
                       <p style={{ fontSize: "0.8rem", color: "#64748b" }}>{vac.agency_name}{vac.location ? ` · 📍 ${vac.location}` : ""}</p>
@@ -1220,14 +1220,14 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     {isAdvanced ? (
                       <button className="btn-advanced" style={{ padding: "7px 14px", fontSize: "0.82rem" }} onClick={() => handleGrabVacancy(vac.id)}>⚡ Grab</button>
                     ) : (
-                      <button className="btn-blue" style={{ padding: "7px 14px", fontSize: "0.82rem", background: "linear-gradient(135deg, #0f172a, #1d4ed8)", opacity: 0.7 }} onClick={() => handleUpgradeClick("Instant Grab", "advanced")}>⚡ Grab</button>
+                      <button className="btn-blue" style={{ padding: "7px 14px", fontSize: "0.82rem", background: "linear-gradient(135deg, #0f172a, #334155)", opacity: 0.7 }} onClick={() => handleUpgradeClick("Instant Grab", "advanced")}>⚡ Grab</button>
                     )}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {vac.vacancies > 0 && <span style={{ fontSize: "0.75rem", background: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: 100, border: "1px solid #bbf7d0" }}>🟢 {vac.vacancies} spot{vac.vacancies > 1 ? "s" : ""} available</span>}
                   {vac.pay_range && <span style={{ fontSize: "0.75rem", background: "#fffbeb", color: "#92400e", padding: "3px 8px", borderRadius: 100, border: "1px solid #fde68a" }}>💷 {vac.pay_range}</span>}
-                  {vac.notes && <span style={{ fontSize: "0.75rem", background: "#f8faff", color: "#64748b", padding: "3px 8px", borderRadius: 100, border: "1px solid #e8f0fe" }}>{vac.notes}</span>}
+                  {vac.notes && <span style={{ fontSize: "0.75rem", background: "#f8faff", color: "#64748b", padding: "3px 8px", borderRadius: 100, border: "1px solid #e2e8f0" }}>{vac.notes}</span>}
                   <span style={{ fontSize: "0.72rem", color: "#94a3b8", padding: "3px 8px" }}>🕐 {new Date(vac.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                 </div>
               </div>
@@ -1248,8 +1248,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                   </thead>
                   <tbody>
                     {BMA_RATES.map((r, i) => (
-                      <tr key={i} style={{ background: r.grade === doctor?.grade ? "#eff6ff" : "transparent" }}>
-                        <td style={{ padding: "10px 12px", fontSize: "0.85rem", fontWeight: r.grade === doctor?.grade ? 700 : 400, color: r.grade === doctor?.grade ? "#1d4ed8" : "#374151", borderBottom: "1px solid #f8faff" }}>
+                      <tr key={i} style={{ background: r.grade === doctor?.grade ? "#f5f3ff" : "transparent" }}>
+                        <td style={{ padding: "10px 12px", fontSize: "0.85rem", fontWeight: r.grade === doctor?.grade ? 700 : 400, color: r.grade === doctor?.grade ? "#334155" : "#374151", borderBottom: "1px solid #f8faff" }}>
                           {r.grade === doctor?.grade ? "▶ " : ""}{r.grade}
                         </td>
                         <td style={{ padding: "10px 12px", fontSize: "0.85rem", color: "#374151", borderBottom: "1px solid #f8faff" }}>{r.rate}</td>
@@ -1280,7 +1280,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 <h3 style={{ fontWeight: 700, fontSize: "0.88rem", color: "#0f172a" }}>Expiry Alerts</h3>
                 {isBase && <span style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>💎 PRO</span>}
               </div>
-              <div style={{ filter: isBase ? "blur(3px)" : "none", pointerEvents: isBase ? "none" : "auto", background: "#f8faff", borderRadius: 12, padding: 16, border: "1px solid #e8f0fe", minHeight: 60 }}>
+              <div style={{ filter: isBase ? "blur(3px)" : "none", pointerEvents: isBase ? "none" : "auto", background: "#f8faff", borderRadius: 12, padding: 16, border: "1px solid #e2e8f0", minHeight: 60 }}>
                 {!isBase && alerts.length === 0 && <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>No documents expiring soon ✅</p>}
                 {!isBase && alerts.map((alert, i) => <div key={i} style={{ fontSize: "0.85rem", color: alert.urgent ? "#dc2626" : "#92400e", marginBottom: 4 }}>{alert.urgent ? "🚨" : "⚠️"} <strong>{alert.file_name}</strong> expires in {alert.days} day{alert.days !== 1 ? "s" : ""}</div>)}
                 {isBase && <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>⚠️ Document expiry alerts available on Pro</p>}
@@ -1297,8 +1297,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: 100 }}>{docs.length} files</span>
                   </div>
                   {docs.length === 0 ? (
-                    <div style={{ background: "#f8faff", border: "1.5px dashed #bfdbfe", borderRadius: 12, padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: "0.85rem" }}>
-                      No {folder.label.toLowerCase()} yet — <span style={{ color: "#1d4ed8", fontWeight: 600, cursor: "pointer", marginLeft: 4 }} onClick={() => { setUploadFolder(folder.key); setUploadError(""); setShowUploadModal(true); }}>upload your first one</span>
+                    <div style={{ background: "#f8faff", border: "1.5px dashed #ddd6fe", borderRadius: 12, padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: "0.85rem" }}>
+                      No {folder.label.toLowerCase()} yet — <span style={{ color: "#334155", fontWeight: 600, cursor: "pointer", marginLeft: 4 }} onClick={() => { setUploadFolder(folder.key); setUploadError(""); setShowUploadModal(true); }}>upload your first one</span>
                     </div>
                   ) : docs.map(doc => {
                     const expiry = getExpiryForDoc(doc.id);
@@ -1308,7 +1308,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                       <div key={doc.id} className="doc-row" style={{ flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <div style={{ width: 34, height: 34, background: "#eff6ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>📄</div>
+                            <div style={{ width: 34, height: 34, background: "#f5f3ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>📄</div>
                             <div>
                               <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
                               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -1320,7 +1320,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                           <div style={{ display: "flex", gap: 8 }}>
                             <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
                             <button className="btn-blue" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => openSendModal(doc)}>📤 Send</button>
-                            <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
+                            <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
                           </div>
                         </div>
                         {docShares.length > 0 && (
@@ -1354,7 +1354,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
       {[
-        { label: `${MONTHS[calMonth]} Hours`, value: getMonthHours(filterAgencyId).toFixed(1) + "h", icon: "⏱️", color: "#eff6ff" },
+        { label: `${MONTHS[calMonth]} Hours`, value: getMonthHours(filterAgencyId).toFixed(1) + "h", icon: "⏱️", color: "#f5f3ff" },
         { label: `${calYear} Total Hours`, value: getYearHours(filterAgencyId).toFixed(1) + "h", icon: "📅", color: "#f0fdf4" },
         { label: `${MONTHS[calMonth]} Shifts`, value: getMonthShifts(filterAgencyId).length, icon: "🗓️", color: "#fefce8" },
         { label: "Open Spots", value: isPro ? vacancies.length : "—", icon: "📋", color: "#fff7ed" },
@@ -1372,7 +1372,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 16 }}>Hours by Agency</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {agencies.map(ag => (
-            <div key={ag.id} style={{ background: "#f8faff", borderRadius: 12, padding: "14px 16px", border: "1px solid #e8f0fe" }}>
+            <div key={ag.id} style={{ background: "#f8faff", borderRadius: 12, padding: "14px 16px", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <span>🏥</span>
                 <span style={{ fontWeight: 600, fontSize: "0.88rem", color: "#0f172a" }}>{ag.agency_name}</span>
@@ -1380,7 +1380,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               <div style={{ display: "flex", gap: 16 }}>
                 <div>
                   <p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>This month</p>
-                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#1d4ed8" }}>{getMonthHours(ag.id).toFixed(1)}h</p>
+                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#334155" }}>{getMonthHours(ag.id).toFixed(1)}h</p>
                 </div>
                 <div>
                   <p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{calYear}</p>
@@ -1396,7 +1396,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
     <div className="card">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <button className="btn-ghost" style={{ padding: "6px 14px" }} onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }}>← Prev</button>
-        <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.2rem", color: "#0f172a" }}>{MONTHS[calMonth]} {calYear}</h2>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>{MONTHS[calMonth]} {calYear}</h2>
         <button className="btn-ghost" style={{ padding: "6px 14px" }} onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }}>Next →</button>
       </div>
 
@@ -1429,16 +1429,16 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
           // Background color logic
           let dayBg = "transparent";
-          if (isSelected) dayBg = "#1d4ed8";
+          if (isSelected) dayBg = "#334155";
           else if (isOpenSpot) dayBg = "#fff7ed"; // amber - open vacancy, no conflict
           else if (isConflict) dayBg = "#fefce8"; // light yellow - conflict
-          else if (isToday) dayBg = "#eff6ff";
+          else if (isToday) dayBg = "#f5f3ff";
 
           let dayBorder = "1.5px solid transparent";
-          if (isSelected) dayBorder = "1.5px solid #1d4ed8";
+          if (isSelected) dayBorder = "1.5px solid #334155";
           else if (isOpenSpot) dayBorder = "1.5px solid #fed7aa";
           else if (isConflict) dayBorder = "1.5px solid #fde68a";
-          else if (isToday) dayBorder = "1.5px solid #1d4ed8";
+          else if (isToday) dayBorder = "1.5px solid #334155";
 
           return (
             <div
@@ -1446,7 +1446,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               style={{ minHeight: 72, borderRadius: 10, padding: 6, cursor: "pointer", background: dayBg, border: dayBorder, transition: "all 0.15s", position: "relative" }}
               onClick={() => { setSelectedDate(dateStr); setShowShiftModal(true); }}
             >
-              <span style={{ fontSize: "0.8rem", fontWeight: isToday ? 700 : 500, color: isSelected ? "#fff" : isToday ? "#1d4ed8" : "#374151" }}>{day}</span>
+              <span style={{ fontSize: "0.8rem", fontWeight: isToday ? 700 : 500, color: isSelected ? "#fff" : isToday ? "#334155" : "#374151" }}>{day}</span>
 
               {/* Vacancy indicator for conflict days */}
               {isConflict && isPro && (
@@ -1460,7 +1460,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
               <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 2 }}>
                 {dayShifts.map(s => (
-                  <span key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: s.type === "shift" ? "#1d4ed8" : "#22c55e" }} />
+                  <span key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: s.type === "shift" ? "#334155" : "#22c55e" }} />
                 ))}
                 {isOpenSpot && isPro && (
                   <span style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: "#f97316" }} />
@@ -1477,7 +1477,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       {/* Legend */}
       <div style={{ display: "flex", gap: 16, marginTop: 16, paddingTop: 16, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#1d4ed8", display: "inline-block" }} />
+          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#334155", display: "inline-block" }} />
           <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Shift logged</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1523,8 +1523,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => handleAcceptConnection(conn.id, conn.agency_id)} style={{ background: "#f0fdf4", color: "#16a34a", border: "1.5px solid #bbf7d0", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>✓ Accept</button>
-                      <button onClick={() => handleDeclineConnection(conn.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>✗ Decline</button>
+                      <button onClick={() => handleAcceptConnection(conn.id, conn.agency_id)} style={{ background: "#f0fdf4", color: "#16a34a", border: "1.5px solid #bbf7d0", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✓ Accept</button>
+                      <button onClick={() => handleDeclineConnection(conn.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✗ Decline</button>
                     </div>
                   </div>
                 ))}
@@ -1545,7 +1545,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                 return (
                   <div key={ag.id} className="agency-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 40, height: 40, background: "#eff6ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>🏥</div>
+                      <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>🏥</div>
                       <div>
                         <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>{ag.agency_name}</p>
                         <span style={{ fontSize: "0.72rem", fontWeight: 700, background: "#f0fdf4", color: "#16a34a", padding: "2px 8px", borderRadius: 100 }}>✓ Connected</span>
@@ -1558,7 +1558,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                           💬 {chatLimitReached ? "Limit" : "Message"}
                         </button>
                       )}
-                      {conn && <button onClick={() => handleDisconnect(conn.id, ag.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Disconnect</button>}
+                      {conn && <button onClick={() => handleDisconnect(conn.id, ag.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Disconnect</button>}
                     </div>
                   </div>
                 );
@@ -1577,7 +1577,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                         <span style={{ fontSize: "0.72rem", fontWeight: 700, background: "#fffbeb", color: "#92400e", padding: "2px 8px", borderRadius: 100 }}>⏳ Request pending</span>
                       </div>
                     </div>
-                    <button onClick={() => handleDisconnect(conn.id, conn.agency_id)} style={{ background: "#fff", color: "#94a3b8", border: "1.5px solid #e0eaff", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>
+                    <button onClick={() => handleDisconnect(conn.id, conn.agency_id)} style={{ background: "#fff", color: "#94a3b8", border: "1.5px solid #e0eaff", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Cancel</button>
                   </div>
                 ))}
               </div>
@@ -1604,7 +1604,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                   <div key={ag.id} className="agency-card">
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 44, height: 44, background: "#eff6ff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>🏥</div>
+                        <div style={{ width: 44, height: 44, background: "#f5f3ff", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem" }}>🏥</div>
                         <div>
                           {isBase ? (
                             <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", filter: "blur(5px)", userSelect: "none" }}>Agency Name Hidden</p>
@@ -1617,7 +1617,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                         </div>
                       </div>
                       {isBase ? (
-                        <button style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 10, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }} onClick={() => handleUpgradeClick("Proactive Agency Connection", "pro")}>
+                        <button style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 10, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }} onClick={() => handleUpgradeClick("Proactive Agency Connection", "pro")}>
                           💎 Upgrade to Connect
                         </button>
                       ) : (
@@ -1629,15 +1629,15 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                             </button>
                           )}
                           {!isConnected && !isPendingConn && !isDeclined && <button className="btn-blue" style={{ padding: "8px 16px", fontSize: "0.85rem" }} onClick={() => handleSendConnectionRequest(ag.id)}>Connect →</button>}
-                          {isConnected && existingConn && <button onClick={() => handleDisconnect(existingConn.id, ag.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Disconnect</button>}
-                          {isPendingConn && existingConn && <button onClick={() => handleDisconnect(existingConn.id, ag.id)} style={{ background: "#fff", color: "#94a3b8", border: "1.5px solid #e0eaff", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>}
+                          {isConnected && existingConn && <button onClick={() => handleDisconnect(existingConn.id, ag.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Disconnect</button>}
+                          {isPendingConn && existingConn && <button onClick={() => handleDisconnect(existingConn.id, ag.id)} style={{ background: "#fff", color: "#94a3b8", border: "1.5px solid #e0eaff", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Cancel</button>}
                         </div>
                       )}
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {!isBase ? (
                         <>
-                          {ag.required_specialties?.split(",").map((s, i) => <span key={i} style={{ fontSize: "0.72rem", background: "#eff6ff", color: "#1d4ed8", padding: "3px 8px", borderRadius: 100, border: "1px solid #bfdbfe" }}>{s.trim()}</span>)}
+                          {ag.required_specialties?.split(",").map((s, i) => <span key={i} style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#334155", padding: "3px 8px", borderRadius: 100, border: "1px solid #ddd6fe" }}>{s.trim()}</span>)}
                           {ag.required_grades?.split(",").map((g, i) => <span key={i} style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#6d28d9", padding: "3px 8px", borderRadius: 100, border: "1px solid #d8b4fe" }}>{g.trim()}</span>)}
                           {ag.pay_range && <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: 100, border: "1px solid #bbf7d0" }}>💷 {ag.pay_range}</span>}
                           {ag.review_score && <span style={{ fontSize: "0.72rem", background: "#fffbeb", color: "#92400e", padding: "3px 8px", borderRadius: 100, border: "1px solid #fde68a" }}>⭐ {ag.review_score}</span>}
@@ -1660,8 +1660,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a" }}>Medical Appraisal</h2>
-                  {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #1d4ed8)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Includes RO Link</span>}
+                  <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Medical Appraisal</h2>
+                  {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Includes RO Link</span>}
                 </div>
                 <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Track your annual medical appraisals and revalidation.</p>
               </div>
@@ -1669,7 +1669,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             </div>
 
             {isAdvanced && (
-              <div style={{ background: "linear-gradient(135deg, #f0f9ff, #eff6ff)", border: "1.5px solid #bae6fd", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ background: "linear-gradient(135deg, #f0f9ff, #f5f3ff)", border: "1.5px solid #bae6fd", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0369a1", marginBottom: 4 }}>⚡ Designated Body & RO Link</p>
                   <p style={{ fontSize: "0.82rem", color: "#64748b" }}>Advanced members get a direct link to a Responsible Officer (RO) for appraisals and revalidation.</p>
@@ -1692,7 +1692,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
-                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
+                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
                     </div>
                   </div>
                 ))}
@@ -1708,7 +1708,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             ) : appraisals.map(appr => {
               const sc = getStatusColor(appr.status);
               return (
-                <div key={appr.id} style={{ background: "#f8faff", border: "1px solid #e8f0fe", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
+                <div key={appr.id} style={{ background: "#f8faff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>📝</div>
@@ -1732,7 +1732,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
           <div className="fade-up">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div>
-                <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "1.3rem", color: "#0f172a" }}>Insurance</h2>
+                <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Insurance</h2>
                 <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Manage claims, upload documents, and get support.</p>
               </div>
               <button className="btn-blue" onClick={() => setShowClaimModal(true)}>+ Log Claim</button>
@@ -1741,7 +1741,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 24 }}>
               {[
                 { label: "Open Claims", value: insuranceClaims.filter(c => c.status === "open").length, icon: "🔴", color: "#fff1f2" },
-                { label: "In Progress", value: insuranceClaims.filter(c => c.status === "in_progress").length, icon: "🔵", color: "#eff6ff" },
+                { label: "In Progress", value: insuranceClaims.filter(c => c.status === "in_progress").length, icon: "🔵", color: "#f5f3ff" },
                 { label: "Resolved", value: insuranceClaims.filter(c => c.status === "resolved").length, icon: "✅", color: "#f0fdf4" },
                 { label: "Insurance Docs", value: folderDocs("insurance").length, icon: "📄", color: "#fdf4ff" },
               ].map((stat, i) => (
@@ -1770,7 +1770,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
-                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
+                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
                     </div>
                   </div>
                 ))}
@@ -1788,7 +1788,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               ) : insuranceClaims.map(claim => {
                 const sc = getStatusColor(claim.status);
                 return (
-                  <div key={claim.id} style={{ background: "#f8faff", border: "1px solid #e8f0fe", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
+                  <div key={claim.id} style={{ background: "#f8faff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ width: 40, height: 40, background: "#fdf4ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>🛡️</div>
@@ -1840,7 +1840,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32, paddingBottom: 28, borderBottom: "1px solid #f1f5f9" }}>
-              <div style={{ width: 64, height: 64, background: "#1d4ed8", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "1.3rem" }}>{initials}</div>
+              <div style={{ width: 64, height: 64, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "1.3rem" }}>{initials}</div>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <p style={{ fontWeight: 700, fontSize: "1.05rem", color: "#0f172a" }}>{doctor?.full_name}</p>
@@ -1871,12 +1871,12 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
               ))}
             </div>
             {isBase && (
-              <div style={{ marginTop: 32, background: "linear-gradient(135deg, #fdf4ff, #eff6ff)", border: "1.5px solid #d8b4fe", borderRadius: 14, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+              <div style={{ marginTop: 32, background: "linear-gradient(135deg, #fdf4ff, #f5f3ff)", border: "1.5px solid #d8b4fe", borderRadius: 14, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                 <div>
                   <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#6d28d9", marginBottom: 4 }}>💎 Upgrade to Pro or Advanced</p>
                   <p style={{ fontSize: "0.82rem", color: "#64748b" }}>Unlock Work Feed, proactive chat, vacancy calendar and more.</p>
                 </div>
-                <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
+                <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
               </div>
             )}
           </div>
