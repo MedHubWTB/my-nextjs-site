@@ -94,8 +94,18 @@ export default function SignupPage() {
       return;
     }
 
-    // Go straight to onboarding
-    router.push("/onboarding");
+    // Check if onboarding completed
+const { data: doctorData } = await supabase
+  .from("doctors")
+  .select("onboarding_completed")
+  .eq("user_id", data.user.id)
+  .single();
+
+if (!doctorData || !doctorData.onboarding_completed) {
+  router.push("/onboarding");
+} else {
+  router.push("/dashboard");
+}
   };
 
   return (
