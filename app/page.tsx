@@ -37,11 +37,20 @@ export default function LandingPage() {
         .fade-up-3 { animation: fadeUp 0.7s 0.3s ease both; }
         .float { animation: float 4s ease-in-out infinite; }
         @media (max-width: 768px) {
-          .hero-grid { grid-template-columns: 1fr !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .features-grid { grid-template-columns: 1fr !important; }
           .steps-grid { grid-template-columns: 1fr !important; }
           .nav-links { display: none !important; }
           .mobile-menu { display: flex !important; }
+          h1 { font-size: 2.2rem !important; }
+          h2 { font-size: 1.8rem !important; }
+          section { padding: 60px 20px !important; }
+          .hero-preview { display: none !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .features-grid { grid-template-columns: 1fr 1fr !important; }
+          .steps-grid { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
 
@@ -107,7 +116,7 @@ export default function LandingPage() {
             </div>
 
             {/* Right — Dashboard Preview */}
-            <div className="float" style={{ position: "relative" }}>
+            <div className="float hero-preview" style={{ position: "relative" }}>
               <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #e2e8f0", boxShadow: "0 20px 60px rgba(51,65,85,0.15)", overflow: "hidden" }}>
                 {/* Mock sidebar */}
                 <div style={{ display: "grid", gridTemplateColumns: "200px 1fr" }}>

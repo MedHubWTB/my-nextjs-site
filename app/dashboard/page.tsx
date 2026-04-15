@@ -943,8 +943,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       )}
 
       {/* SIDEBAR */}
-      <div className="sidebar" style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40, overflowY: "auto" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 36, padding: "0 6px" }}>
+      <div className="qm-sidebar sidebar" style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40, overflowY: "auto" }}>
+        <div style={{ alignItems: "center", gap: 8, marginBottom: 36, padding: "0 6px" }}>
   <div style={{ width: 30, height: 30, background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(51,65,85,0.25)" }}>
     <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>Q</span>
   </div>
@@ -994,7 +994,7 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       </div>
 
       {/* MAIN */}
-      <div className="main-content" style={{ marginLeft: 240, padding: "32px 32px 64px" }}>
+      <div className="qm-main-content main-content" style={{ marginLeft: 240, padding: "32px 32px 64px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
             <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>Welcome back</p>
@@ -1881,6 +1881,32 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
             )}
           </div>
         )}
+        {/* BOTTOM NAV — Mobile/Tablet */}
+      <div className="qm-bottom-nav">
+        {([
+          { key: "overview", label: "Home", icon: "⊞" },
+          { key: "workfeed", label: "Feed", icon: "📰", minTier: "pro" },
+          { key: "documents", label: "Vault", icon: "📄" },
+          { key: "calendar", label: "Calendar", icon: "🗓️" },
+          { key: "agencies", label: "Agencies", icon: "🏥" },
+          { key: "profile", label: "Profile", icon: "👤" },
+        ] as { key: "overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile"; label: string; icon: string; minTier?: string }[]).map(item => (
+          <button
+            key={item.key}
+            className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
+            onClick={() => {
+              if (item.minTier === "pro" && isBase) { handleUpgradeClick(item.label, "pro"); return; }
+              setActiveTab(item.key);
+            }}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+            {item.key === "documents" && alerts.length > 0 && (
+              <span style={{ position: "absolute", top: 4, right: "calc(50% - 16px)", width: 8, height: 8, borderRadius: "50%", background: "#dc2626" }} />
+            )}
+          </button>
+        ))}
+      </div>
       </div>
     </div>
   );
