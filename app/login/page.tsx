@@ -65,15 +65,6 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in to QuietMedical"}
             </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-              <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-            </div>
-
-            <a href="/otp-login" style={{ display: "block", textAlign: "center", background: "#f8f9fc", color: "#334155", border: "1.5px solid #e2e8f0", padding: "12px", borderRadius: 12, fontWeight: 600, fontSize: "0.88rem", textDecoration: "none" }}>
-              Sign in with email code instead
-            </a>
           </div>
         </div>
 
