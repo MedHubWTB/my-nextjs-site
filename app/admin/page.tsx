@@ -206,6 +206,7 @@ export default function AdminPage() {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [savingTier, setSavingTier] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<UserView[]>([]);
 const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
@@ -217,6 +218,7 @@ const [tierFilter, setTierFilter] = useState("all");
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+      setCurrentUserEmail(user.email || "");
 
       const { data: adminData } = await supabase
         .from("admins")
@@ -388,7 +390,7 @@ if (usersData) setUsers(usersData);
 
         <div style={{ padding: "12px 6px", borderTop: "1px solid #f1f5f9", marginTop: 12 }}>
           <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>Signed in as</p>
-          <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151", marginBottom: 12 }}>charlene@whatthebleep.co.uk</p>
+          <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151", marginBottom: 12 }}>{currentUserEmail}</p>
           <button className="sidebar-link" onClick={handleSignOut} style={{ color: "#ef4444" }}>
             <span>🚪</span> Sign out
           </button>
@@ -410,7 +412,9 @@ if (usersData) setUsers(usersData);
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {msg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>✅ {msg}</span>}
-            <div style={{ width: 36, height: 36, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.78rem" }}>CW</div>
+            <div style={{ width: 36, height: 36, background: "#1d4ed8", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.78rem" }}>
+  {currentUserEmail.slice(0, 2).toUpperCase()}
+</div>
           </div>
         </div>
 
