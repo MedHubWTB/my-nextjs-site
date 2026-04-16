@@ -8,17 +8,20 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <div style={{
-        width: s.box, height: s.box,
-        background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+        width: s.box,
+        height: s.box,
+        background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
         borderRadius: 8,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 2px 8px rgba(51,65,85,0.25)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 8px rgba(124,58,237,0.35)",
         flexShrink: 0,
       }}>
         <span style={{ color: "#fff", fontWeight: 800, fontSize: s.font, fontFamily: "inherit", letterSpacing: "-0.02em" }}>Q</span>
       </div>
-      <span style={{ fontWeight: 700, fontSize: size === "lg" ? "1.2rem" : "1rem", color: "#1e293b", letterSpacing: "-0.02em" }}>
-        Quiet<span style={{ color: "#7c3aed" }}>Medical</span>
+      <span style={{ fontWeight: 700, fontSize: size === "lg" ? "1.2rem" : "1rem", color: "#7c3aed", letterSpacing: "-0.02em" }}>
+        Quiet<span style={{ color: "#334155" }}>.</span>
       </span>
     </div>
   );
