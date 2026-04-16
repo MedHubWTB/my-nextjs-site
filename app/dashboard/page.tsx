@@ -156,6 +156,12 @@ export default function DashboardPage() {
   const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
   const [insuranceClaims, setInsuranceClaims] = useState<InsuranceClaim[]>([]);
   const [chatLimitToday, setChatLimitToday] = useState(0);
+  const [profileMatches, setProfileMatches] = useState<{ agency_id: string; agency_name: string; matched_at: string }[]>([]);
+const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+const [availabilityDate, setAvailabilityDate] = useState(new Date().toISOString().split("T")[0]);
+const [availabilityStart, setAvailabilityStart] = useState("09:00");
+const [availabilityEnd, setAvailabilityEnd] = useState("17:00");
+const [addingAvailability, setAddingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile">("overview");
   const [editMode, setEditMode] = useState(false);
@@ -325,6 +331,21 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       const { data: chatLimit } = await supabase.from("doctor_chat_limits").select("count").eq("doctor_id", user.id).eq("chat_date", todayStr).single();
       if (chatLimit) setChatLimitToday(chatLimit.count);
 
+      // Load profile matches
+const { data: matches } = await supabase
+  .from("profile_matches")
+  .select("agency_id, matched_at, agencies(agency_name)")
+  .eq("doctor_id", user.id)
+  .order("matched_at", { ascending: false });
+if (matches) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapped = matches.map((m: any) => ({
+    agency_id: m.agency_id,
+    agency_name: Array.isArray(m.agencies) ? m.agencies[0]?.agency_name : m.agencies?.agency_name,
+    matched_at: m.matched_at,
+  }));
+  setProfileMatches(mapped);
+}
       setLoading(false);
     };
     init();
@@ -500,6 +521,25 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
     setSaving(false);
   };
 
+  const handleAddAvailability = async () => {
+  if (!availabilityDate) return;
+  setAddingAvailability(true);
+  const { data, error } = await supabase.from("shifts").insert({
+    doctor_id: userId,
+    date: availabilityDate,
+    start_time: availabilityStart,
+    end_time: availabilityEnd,
+    type: "availability",
+    notes: "Available for locum",
+  }).select().single();
+  if (!error && data) {
+    setShifts(prev => [...prev, data]);
+    setSaveMsg("Availability added!");
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+  setAddingAvailability(false);
+  setShowAvailabilityModal(false);
+};
   const handleAddShift = async () => {
     if (!selectedDate) return;
     setAddingShift(true);
@@ -726,8 +766,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
       {/* UPLOAD MODAL */}
       {showUploadModal && (
-        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Upload Document</h2>
               <button onClick={() => setShowUploadModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -752,8 +792,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
       {/* SEND MODAL */}
       {showSendModal && sendingDoc && (
-        <div className="modal-overlay" onClick={() => setShowSendModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowSendModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Send Document</h2>
               <button onClick={() => setShowSendModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -811,8 +851,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
       {/* CHAT MODAL */}
       {showChatModal && chatAgency && (
-        <div className="modal-overlay" onClick={() => setShowChatModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowChatModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Message {chatAgency.agency_name}</h2>
               <button onClick={() => setShowChatModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -837,8 +877,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
       {/* APPRAISAL MODAL */}
       {showAppraisalModal && (
-        <div className="modal-overlay" onClick={() => setShowAppraisalModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowAppraisalModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Appraisal</h2>
               <button onClick={() => setShowAppraisalModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -864,8 +904,8 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
 
       {/* CLAIM MODAL */}
       {showClaimModal && (
-        <div className="modal-overlay" onClick={() => setShowClaimModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowClaimModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>Log Insurance Claim</h2>
               <button onClick={() => setShowClaimModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
@@ -884,10 +924,54 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         </div>
       )}
 
+      {/* AVAILABILITY MODAL */}
+{showAvailabilityModal && (
+  <div className="modal-overlay qm-modal-overlay" onClick={() => setShowAvailabilityModal(false)}>
+    <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>Add Availability</h2>
+        <button onClick={() => setShowAvailabilityModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+      </div>
+      <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: "0.82rem", color: "#7c3aed" }}>
+        📅 Let agencies know when you're available for locum shifts.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Date</label>
+          <input
+            className="input-field"
+            type="date"
+            value={availabilityDate}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={e => setAvailabilityDate(e.target.value)}
+          />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>From</label>
+            <input className="input-field" type="time" value={availabilityStart} onChange={e => setAvailabilityStart(e.target.value)} />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>To</label>
+            <input className="input-field" type="time" value={availabilityEnd} onChange={e => setAvailabilityEnd(e.target.value)} />
+          </div>
+        </div>
+        <button
+          className="btn-blue"
+          style={{ width: "100%", padding: "13px", marginTop: 4 }}
+          onClick={handleAddAvailability}
+          disabled={addingAvailability}
+        >
+          {addingAvailability ? "Adding..." : "Add Availability"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* SHIFT MODAL */}
       {showShiftModal && selectedDate && (
-        <div className="modal-overlay" onClick={() => setShowShiftModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowShiftModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>
                 {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
@@ -945,10 +1029,10 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
       {/* SIDEBAR */}
       <div className="qm-sidebar sidebar" style={{ position: "fixed", top: 0, left: 0, width: 240, height: "100vh", background: "#fff", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 40, overflowY: "auto" }}>
         <div style={{ alignItems: "center", gap: 8, marginBottom: 36, padding: "0 6px" }}>
-  <div style={{ width: 30, height: 30, background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(51,65,85,0.25)" }}>
+  <div style={{ width: 30, height: 30, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(51,65,85,0.25)" }}>
     <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>Q</span>
   </div>
-  <span style={{ fontWeight: 700, fontSize: "1rem", color: "#1e293b", letterSpacing: "-0.02em" }}>Quiet<span style={{ color: "#7c3aed" }}>Medical</span></span>
+  <span style={{ fontWeight: 700, fontSize: "1rem", color: "#7c3aed", letterSpacing: "-0.02em" }}>Quiet<span style={{ color: "#334155" }}>.</span></span>
 </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
           {([
@@ -1025,152 +1109,233 @@ const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
         )}
 {/* OVERVIEW */}
         {activeTab === "overview" && (
+  <div>
+    {/* Stats */}
+    <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 24 }}>
+      {[
+        { label: "Documents", value: documents.length, icon: "📄", color: "#f5f3ff" },
+        { label: "Hours This Month", value: getMonthHours().toFixed(1) + "h", icon: "⏱️", color: "#f0fdf4" },
+        { label: "Hours This Year", value: getYearHours().toFixed(1) + "h", icon: "📅", color: "#fefce8" },
+        { label: "Connected Agencies", value: agencies.length, icon: "🏥", color: "#f8f9fc" },
+        { label: "Matched Agencies", value: profileMatches.length, icon: "✨", color: "#fdf4ff" },
+      ].map((stat, i) => (
+        <div key={i} className="card" style={{ background: stat.color, border: "none" }}>
+          <div style={{ fontSize: "1.3rem", marginBottom: 8 }}>{stat.icon}</div>
+          <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{stat.value}</div>
+          <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4 }}>{stat.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Agency Carousel — all tiers */}
+    {matchingAgencies.length > 0 && (
+      <div className="fade-up card" style={{ marginBottom: 20, overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div>
-            <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 24 }}>
-              {[
-                { label: "Documents", value: documents.length, icon: "📄", color: "#f5f3ff" },
-                { label: "Hours This Month", value: getMonthHours().toFixed(1) + "h", icon: "⏱️", color: "#f0fdf4" },
-                { label: "Hours This Year", value: getYearHours().toFixed(1) + "h", icon: "📅", color: "#fefce8" },
-                { label: "Connected Agencies", value: agencies.length, icon: "🏥", color: "#fdf4ff" },
-                { label: "Open Vacancies", value: vacancies.length, icon: "📋", color: "#fff1f2" },
-              ].map((stat, i) => (
-                <div key={i} className="card" style={{ background: stat.color, border: "none" }}>
-                  <div style={{ fontSize: "1.3rem", marginBottom: 8 }}>{stat.icon}</div>
-                  <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{stat.value}</div>
-                  <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4 }}>{stat.label}</div>
-                </div>
-              ))}
+            <h2 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>🏥 Agencies hiring in your specialty</h2>
+            <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>These agencies are looking for doctors matching your profile</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
+          {matchingAgencies.map((ag, i) => (
+            <div key={ag.id} style={{ flexShrink: 0, background: "linear-gradient(135deg, #f8f9fc, #f5f3ff)", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", minWidth: 160, cursor: "pointer", transition: "all 0.2s" }}
+              onClick={() => setActiveTab("agencies")}
+            >
+              <div style={{ width: 40, height: 40, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, fontSize: "1.1rem" }}>🏥</div>
+              <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "#0f172a", marginBottom: 4 }}>
+                {isPro ? ag.agency_name : `Agency ${i + 1}`}
+              </p>
+              {ag.location_tags && <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>📍 {ag.location_tags}</p>}
+              {ag.pay_range && isPro && <p style={{ fontSize: "0.72rem", color: "#16a34a", marginTop: 2 }}>💷 {ag.pay_range}</p>}
+              {!isPro && <p style={{ fontSize: "0.68rem", color: "#7c3aed", fontWeight: 600, marginTop: 4 }}>💎 Upgrade to connect</p>}
             </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-              <div className="fade-up-2 card">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                  <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Upcoming Shifts</h2>
-                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("calendar")}>Calendar</button>
-                </div>
-                {getUpcomingShifts().length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}><div style={{ fontSize: "1.8rem", marginBottom: 8 }}>🗓️</div><p style={{ fontSize: "0.85rem" }}>No upcoming shifts logged</p></div>
-                ) : getUpcomingShifts().map(shift => (
-                  <div key={shift.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
-                    <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#334155", textTransform: "uppercase" }}>{MONTHS[new Date(shift.date + "T12:00:00").getMonth()].slice(0, 3)}</span>
-                      <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#334155", lineHeight: 1 }}>{new Date(shift.date + "T12:00:00").getDate()}</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{shift.agency_name || "Unassigned"}</p>
-                      <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{shift.start_time?.slice(0,5)} – {shift.end_time?.slice(0,5)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="fade-up-2 card" style={{ position: "relative", overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                  <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Top Matching Agencies</h2>
-                  {isBase && <span style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>💎 PRO</span>}
-                </div>
-                <div style={{ position: "relative" }} onClick={() => isBase && handleUpgradeClick("Top Matching Agencies", "pro")}>
-                  <div style={{ filter: isBase ? "blur(3px)" : "none", pointerEvents: isBase ? "none" : "auto" }}>
-                    {matchingAgencies.length === 0 ? (
-                      <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}><p style={{ fontSize: "0.85rem" }}>No matching agencies yet</p></div>
-                    ) : matchingAgencies.slice(0, 5).map((ag, i) => (
-                      <div key={ag.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: i < Math.min(matchingAgencies.length, 5) - 1 ? "1px solid #f1f5f9" : "none" }}>
-                        <div>
-                          <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{ag.agency_name}</p>
-                          <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
-                            {ag.pay_range && <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", padding: "2px 7px", borderRadius: 100 }}>💷 {ag.pay_range}</span>}
-                            {ag.review_score && <span style={{ fontSize: "0.72rem", background: "#fffbeb", color: "#92400e", padding: "2px 7px", borderRadius: 100 }}>⭐ {ag.review_score}</span>}
-                            {ag.location_tags && <span style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#334155", padding: "2px 7px", borderRadius: 100 }}>📍 {ag.location_tags}</span>}
-                          </div>
-                        </div>
-                        <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("agencies")}>View →</button>
-                      </div>
-                    ))}
-                  </div>
-                  {isBase && (
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                      <div style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontSize: "0.85rem", fontWeight: 700, boxShadow: "0 4px 20px rgba(109,40,217,0.3)" }}>💎 Unlock with Pro</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="fade-up-3 card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Profile Summary</h2>
-                <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("profile")}>Edit</button>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-                {[
-                  { label: "Specialty", value: doctor?.specialty },
-                  { label: "Grade", value: doctor?.grade },
-                  { label: "GMC Number", value: doctor?.gmc_number },
-                  { label: "Preferred Location", value: doctor?.preferred_location },
-                ].map((item, i) => (
-                  <div key={i}>
-                    <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>{item.label}</p>
-                    <p style={{ fontSize: "0.88rem", color: item.value ? "#0f172a" : "#cbd5e1", fontWeight: 500 }}>{item.value || "Not set"}</p>
-                  </div>
-                ))}
-              </div>
-              {(!doctor?.specialty || !doctor?.grade) && (
-                <div style={{ marginTop: 16, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "10px 14px", fontSize: "0.85rem", color: "#92400e" }}>
-                  ⚠️ Set your <strong>Specialty</strong> and <strong>Grade</strong> to see matching agencies.
-                </div>
-              )}
-            </div>
-
-            {isBase && (
-              <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #fdf4ff, #f5f3ff)", border: "1.5px solid #d8b4fe" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                  <div>
-                    <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#6d28d9" }}>You're on the Base Plan</h2>
-                    <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 2 }}>Upgrade to unlock the full QuietMedical experience</p>
-                  </div>
-                  <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  {[
-                    { label: "Work Feed", tier: "Pro", icon: "📰" },
-                    { label: "Proactive Chat", tier: "Pro", icon: "💬" },
-                    { label: "Vacancy Calendar", tier: "Pro", icon: "📅" },
-                    { label: "BMA Rate Benchmarking", tier: "Pro", icon: "💷" },
-                    { label: "Priority Feed", tier: "Advanced", icon: "⚡" },
-                    { label: "Instant Grab", tier: "Advanced", icon: "🎯" },
-                  ].map((f, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#fff", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-                      <span>{f.icon}</span>
-                      <span style={{ fontSize: "0.78rem", color: "#374151", flex: 1 }}>{f.label}</span>
-                      <span style={{ fontSize: "0.68rem", fontWeight: 700, background: f.tier === "Advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", padding: "2px 6px", borderRadius: 100 }}>{f.tier}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Referral Card */}
-            <div className="fade-up-3 card" style={{ marginTop: 20, background: "linear-gradient(135deg, #f0fdf4, #f5f3ff)", border: "1.5px solid #bbf7d0" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-                <div>
-                  <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>👋 Know a colleague who does locum work?</h2>
-                  <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to QuietMedical — help them manage their compliance passport in one place.</p>
-                </div>
-                <button
-                  onClick={() => {
-                    const link = `${window.location.origin}/signup?ref=${userId}`;
-                    navigator.clipboard.writeText(link);
-                    setSaveMsg("Referral link copied!");
-                    setTimeout(() => setSaveMsg(""), 3000);
-                  }}
-                  style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}
-                >
-                  📋 Copy Invite Link
-                </button>
-              </div>
-            </div>
+          ))}
+        </div>
+        {!isPro && (
+          <div style={{ marginTop: 12, background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: "0.82rem", color: "#7c3aed", fontWeight: 500 }}>💎 Upgrade to Pro to see agency names and connect proactively</p>
+            <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "6px 14px", borderRadius: 8, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", marginLeft: 12 }}>Upgrade</button>
           </div>
         )}
+      </div>
+    )}
+
+    {/* Profile Matches — all tiers */}
+    {profileMatches.length > 0 && (
+      <div className="fade-up card" style={{ marginBottom: 20, background: "linear-gradient(135deg, #fdf4ff, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div style={{ width: 36, height: 36, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}>✨</div>
+          <div>
+            <h2 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Your profile has been matched!</h2>
+            <p style={{ fontSize: "0.78rem", color: "#64748b" }}>{profileMatches.length} {profileMatches.length === 1 ? "agency has" : "agencies have"} received your profile as a suggestion</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {profileMatches.map((match, i) => (
+            <div key={match.agency_id} style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1px solid #ddd6fe", borderRadius: 100, padding: "5px 12px" }}>
+              <div style={{ width: 24, height: 24, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem" }}>🏥</div>
+              <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "#0f172a" }}>
+                {isPro ? match.agency_name : `Agency ${i + 1}`}
+              </span>
+            </div>
+          ))}
+        </div>
+        {!isPro && (
+          <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 12 }}>💎 Upgrade to Pro to see agency names and connect with them directly</p>
+        )}
+      </div>
+    )}
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 20 }}>
+      {/* Upcoming Shifts */}
+      <div className="fade-up-2 card">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Upcoming Shifts</h2>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setShowAvailabilityModal(true)}
+              style={{ background: "#f5f3ff", color: "#7c3aed", border: "1.5px solid #ddd6fe", padding: "6px 12px", borderRadius: 8, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+            >
+              + Add Availability
+            </button>
+            <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("calendar")}>Calendar</button>
+          </div>
+        </div>
+        {getUpcomingShifts().length === 0 ? (
+          <div style={{ textAlign: "center", padding: "20px 0", color: "#94a3b8" }}>
+            <div style={{ fontSize: "1.8rem", marginBottom: 8 }}>🗓️</div>
+            <p style={{ fontSize: "0.85rem", marginBottom: 12 }}>No upcoming shifts logged</p>
+            <button
+              onClick={() => setShowAvailabilityModal(true)}
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              + Add your availability
+            </button>
+          </div>
+        ) : getUpcomingShifts().map(shift => (
+          <div key={shift.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ width: 40, height: 40, background: shift.type === "availability" ? "#f5f3ff" : "#eff6ff", borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, color: shift.type === "availability" ? "#7c3aed" : "#334155", textTransform: "uppercase" }}>{MONTHS[new Date(shift.date + "T12:00:00").getMonth()].slice(0, 3)}</span>
+              <span style={{ fontSize: "0.95rem", fontWeight: 700, color: shift.type === "availability" ? "#7c3aed" : "#334155", lineHeight: 1 }}>{new Date(shift.date + "T12:00:00").getDate()}</span>
+            </div>
+            <div>
+              <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{shift.type === "availability" ? "Available for Locum" : shift.agency_name || "Shift"}</p>
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{shift.start_time?.slice(0,5)} – {shift.end_time?.slice(0,5)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Top Matching Agencies */}
+      <div className="fade-up-2 card" style={{ position: "relative", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Top Matching Agencies</h2>
+          {isBase && <span style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>💎 PRO</span>}
+        </div>
+        <div style={{ position: "relative" }} onClick={() => isBase && handleUpgradeClick("Top Matching Agencies", "pro")}>
+          <div style={{ filter: isBase ? "blur(3px)" : "none", pointerEvents: isBase ? "none" : "auto" }}>
+            {matchingAgencies.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}><p style={{ fontSize: "0.85rem" }}>No matching agencies yet</p></div>
+            ) : matchingAgencies.slice(0, 5).map((ag, i) => (
+              <div key={ag.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: i < Math.min(matchingAgencies.length, 5) - 1 ? "1px solid #f1f5f9" : "none" }}>
+                <div>
+                  <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{ag.agency_name}</p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
+                    {ag.pay_range && <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", padding: "2px 7px", borderRadius: 100 }}>💷 {ag.pay_range}</span>}
+                    {ag.review_score && <span style={{ fontSize: "0.72rem", background: "#fffbeb", color: "#92400e", padding: "2px 7px", borderRadius: 100 }}>⭐ {ag.review_score}</span>}
+                    {ag.location_tags && <span style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#7c3aed", padding: "2px 7px", borderRadius: 100 }}>📍 {ag.location_tags}</span>}
+                  </div>
+                </div>
+                <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("agencies")}>View →</button>
+              </div>
+            ))}
+          </div>
+          {isBase && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <div style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", borderRadius: 12, padding: "10px 18px", fontSize: "0.85rem", fontWeight: 700, boxShadow: "0 4px 20px rgba(124,58,237,0.3)" }}>💎 Unlock with Pro</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* Profile Summary */}
+    <div className="fade-up-3 card" style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>Profile Summary</h2>
+        <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("profile")}>Edit</button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+        {[
+          { label: "Specialty", value: doctor?.specialty },
+          { label: "Grade", value: doctor?.grade },
+          { label: "GMC Number", value: doctor?.gmc_number },
+          { label: "Preferred Location", value: doctor?.preferred_location },
+        ].map((item, i) => (
+          <div key={i}>
+            <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>{item.label}</p>
+            <p style={{ fontSize: "0.88rem", color: item.value ? "#0f172a" : "#cbd5e1", fontWeight: 500 }}>{item.value || "Not set"}</p>
+          </div>
+        ))}
+      </div>
+      {(!doctor?.specialty || !doctor?.grade) && (
+        <div style={{ marginTop: 16, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "10px 14px", fontSize: "0.85rem", color: "#92400e" }}>
+          ⚠️ Set your <strong>Specialty</strong> and <strong>Grade</strong> to get matched with agencies.
+        </div>
+      )}
+    </div>
+
+    {/* Base plan upgrade prompt */}
+    {isBase && (
+      <div className="fade-up-3 card" style={{ marginBottom: 20, background: "linear-gradient(135deg, #fdf4ff, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#7c3aed" }}>You&apos;re on the Base Plan</h2>
+            <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 2 }}>Upgrade to unlock the full Quiet experience</p>
+          </div>
+          <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>View Plans</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
+          {[
+            { label: "Work Feed", tier: "Pro", icon: "📰" },
+            { label: "Proactive Chat", tier: "Pro", icon: "💬" },
+            { label: "Vacancy Calendar", tier: "Pro", icon: "📅" },
+            { label: "BMA Rate Benchmarking", tier: "Pro", icon: "💷" },
+            { label: "Priority Feed", tier: "Advanced", icon: "⚡" },
+            { label: "Instant Grab", tier: "Advanced", icon: "🎯" },
+          ].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "#fff", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+              <span>{f.icon}</span>
+              <span style={{ fontSize: "0.78rem", color: "#374151", flex: 1 }}>{f.label}</span>
+              <span style={{ fontSize: "0.68rem", fontWeight: 700, background: f.tier === "Advanced" ? "linear-gradient(135deg, #1e293b, #334155)" : "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", padding: "2px 6px", borderRadius: 100 }}>{f.tier}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* Referral Card */}
+    <div className="fade-up-3 card" style={{ background: "linear-gradient(135deg, #f0fdf4, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div>
+          <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>👋 Know a colleague who does locum work?</h2>
+          <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Invite them to Quiet — help them manage their compliance passport in one place.</p>
+        </div>
+        <button
+          onClick={() => {
+            const link = `${window.location.origin}/signup?ref=${userId}`;
+            navigator.clipboard.writeText(link);
+            setSaveMsg("Referral link copied!");
+            setTimeout(() => setSaveMsg(""), 3000);
+          }}
+          style={{ background: "#16a34a", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+        >
+          📋 Copy Invite Link
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {/* WORK FEED */}
         {activeTab === "workfeed" && (
           <div className="fade-up">
