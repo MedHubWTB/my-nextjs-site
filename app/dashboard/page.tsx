@@ -540,7 +540,75 @@ if (matches) {
   setAddingAvailability(false);
   setShowAvailabilityModal(false);
 };
-  const handleAddShift = async () => {
+const handleExportCalendar = () => {
+  const upcomingShifts = shifts.filter(s => s.type === "shift");
+  if (upcomingShifts.length === 0) {
+    setSaveMsg("No shifts to export yet.");
+    setTimeout(() => setSaveMsg(""), 3000);
+    return;
+  }
+
+  const icsLines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Quiet//Quiet Medical//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+  ];
+
+  upcomingShifts.forEach(shift => {
+    const dateStr = shift.date.replace(/-/g, "");
+    const startTime = shift.start_time?.replace(":", "") || "0900";
+    const endTime = shift.end_time?.replace(":", "") || "1700";
+    const uid = `${shift.id}@quiet.medical`;
+    const summary = shift.agency_name ? `Locum Shift — ${shift.agency_name}` : "Locum Shift";
+
+    icsLines.push("BEGIN:VEVENT");
+    icsLines.push(`UID:${uid}`);
+    icsLines.push(`DTSTART:${dateStr}T${startTime}00`);
+    icsLines.push(`DTEND:${dateStr}T${endTime}00`);
+    icsLines.push(`SUMMARY:${summary}`);
+    icsLines.push(`DESCRIPTION:Logged via Quiet — quietmedical.co.uk`);
+    icsLines.push("END:VEVENT");
+  });
+
+  // Add availability
+  shifts.filter(s => s.type === "availability").forEach(shift => {
+    const dateStr = shift.date.replace(/-/g, "");
+    const startTime = shift.start_time?.replace(":", "") || "0900";
+    const endTime = shift.end_time?.replace(":", "") || "1700";
+    icsLines.push("BEGIN:VEVENT");
+    icsLines.push(`UID:avail-${shift.id}@quiet.medical`);
+    icsLines.push(`DTSTART:${dateStr}T${startTime}00`);
+    icsLines.push(`DTEND:${dateStr}T${endTime}00`);
+    icsLines.push("SUMMARY:Available for Locum");
+    icsLines.push("DESCRIPTION:Availability logged via Quiet");
+    icsLines.push("END:VEVENT");
+  });
+
+  icsLines.push("END:VCALENDAR");
+
+  const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quiet-shifts.ics";
+  a.click();
+  URL.revokeObjectURL(url);
+  setSaveMsg("Calendar exported! Open the file to import into Google, Apple or Outlook.");
+  setTimeout(() => setSaveMsg(""), 5000);
+};
+
+const handleSyncGoogleCalendar = (shift: Shift) => {
+  const dateStr = shift.date.replace(/-/g, "");
+  const startTime = shift.start_time?.replace(":", "") || "0900";
+  const endTime = shift.end_time?.replace(":", "") || "1700";
+  const title = encodeURIComponent(shift.type === "availability" ? "Available for Locum — Quiet" : `Locum Shift${shift.agency_name ? ` — ${shift.agency_name}` : ""}`);
+  const details = encodeURIComponent("Logged via Quiet — quietmedical.co.uk");
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}T${startTime}00/${dateStr}T${endTime}00&details=${details}`;
+  window.open(url, "_blank");
+};  
+const handleAddShift = async () => {
     if (!selectedDate) return;
     setAddingShift(true);
     const { data, error } = await supabase.from("shifts").insert({
@@ -1351,6 +1419,34 @@ if (matches) {
               </div>
             </div>
 
+            {isBase && (
+  <div style={{ background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 16, padding: "24px 28px", marginBottom: 24, color: "#fff" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+      <div style={{ flex: 1, minWidth: 200 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 8 }}>📰 Work Feed — What you're missing</h3>
+        <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginBottom: 12 }}>
+          On Pro and Advanced, your Work Feed shows all live locum roles from agencies that match your specialty and grade — with pay rates, freshness timestamps and instant messaging.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            "See all roles matching your specialty and grade",
+            "Compare pay against BMA Rate Card",
+            "Message agencies directly (2/day on Pro)",
+            "Instant Grab shifts with one click (Advanced)",
+          ].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ color: "#7c3aed", fontWeight: 700 }}>✓</span>
+              <span style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.8)" }}>{f}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(124,58,237,0.4)" }}>
+        💎 Unlock Work Feed
+      </button>
+    </div>
+  </div>
+)}
             {vacancies.length === 0 ? (
               <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>📰</div>
@@ -1433,12 +1529,23 @@ if (matches) {
         {/* DOCUMENTS */}
         {activeTab === "documents" && (
           <div className="fade-up card">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-              <h2 style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f172a" }}>Document Vault</h2>
-              <button className="btn-blue" style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={() => { setUploadError(""); setShowUploadModal(true); }}>
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
-                Upload Document
-              </button>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h2 style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f172a" }}>Document Vault</h2>
+                <button className="btn-blue" style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={() => { setUploadError(""); setShowUploadModal(true); }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
+                  Upload Document
+                </button>
+              </div>
+              <div style={{ background: "linear-gradient(135deg, #f5f3ff, #f8f9fc)", border: "1px solid #ddd6fe", borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <span style={{ fontSize: "1.4rem", flexShrink: 0 }}>🔒</span>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: "0.88rem", color: "#0f172a", marginBottom: 4 }}>Your documents, your control</p>
+                  <p style={{ fontSize: "0.82rem", color: "#64748b", lineHeight: 1.6 }}>
+                    Upload your GMC certificate, DBS, Right to Work, indemnity and compliance documents once. Share them with agencies instantly with a single click — and revoke access at any time. <strong style={{ color: "#7c3aed" }}>Agencies never see your documents unless you actively share them.</strong>
+                  </p>
+                </div>
+              </div>
             </div>
             <div style={{ position: "relative", marginBottom: 24 }} onClick={() => isBase && handleUpgradeClick("Document Expiry Alerts", "pro")}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -1509,6 +1616,47 @@ if (matches) {
         {/* CALENDAR */}
         {activeTab === "calendar" && (
   <div className="fade-up">
+    {/* Helper text + export buttons */}
+    <div className="card" style={{ marginBottom: 20, background: "linear-gradient(135deg, #f8f9fc, #f5f3ff)", border: "1px solid #ddd6fe" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 4 }}>📅 Your Quiet Calendar</h3>
+          <p style={{ fontSize: "0.82rem", color: "#64748b" }}>Tap any day to add availability or log a shift worked. Sync with your existing calendar below.</p>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            onClick={() => setShowAvailabilityModal(true)}
+            style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+          >
+            + Available for Locum
+          </button>
+          <button
+            onClick={() => { setNewShift({ ...newShift, type: "shift" }); setSelectedDate(new Date().toISOString().split("T")[0]); setShowShiftModal(true); }}
+            style={{ background: "#fff", color: "#334155", border: "1.5px solid #e2e8f0", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+          >
+            + Shift Worked
+          </button>
+        </div>
+      </div>
+
+      {/* Sync options */}
+      <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e2e8f0" }}>
+        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Sync with your calendar</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            onClick={handleExportCalendar}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", color: "#334155", border: "1.5px solid #e2e8f0", padding: "8px 14px", borderRadius: 10, fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit" }}
+          >
+            <span>📥</span> Export .ics
+            <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 400 }}>(Google, Apple, Outlook)</span>
+          </button>
+        </div>
+        <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 8 }}>
+          💡 <strong>How to sync:</strong> Click Export .ics → open the file → your calendar app will import all your shifts automatically. Works with Google Calendar, Apple Calendar and Outlook.
+        </p>
+      </div>
+    </div>
+
     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
       <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}>Filter by agency:</span>
       <select className="input-field" style={{ width: "auto", minWidth: 200 }} value={filterAgencyId} onChange={e => setFilterAgencyId(e.target.value)}>
@@ -1517,12 +1665,11 @@ if (matches) {
       </select>
     </div>
 
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 16 }}>
       {[
         { label: `${MONTHS[calMonth]} Hours`, value: getMonthHours(filterAgencyId).toFixed(1) + "h", icon: "⏱️", color: "#f5f3ff" },
         { label: `${calYear} Total Hours`, value: getYearHours(filterAgencyId).toFixed(1) + "h", icon: "📅", color: "#f0fdf4" },
         { label: `${MONTHS[calMonth]} Shifts`, value: getMonthShifts(filterAgencyId).length, icon: "🗓️", color: "#fefce8" },
-        { label: "Open Spots", value: isPro ? vacancies.length : "—", icon: "📋", color: "#fff7ed" },
       ].map((s, i) => (
         <div key={i} className="card" style={{ background: s.color, border: "none", textAlign: "center" }}>
           <div style={{ fontSize: "1.3rem", marginBottom: 6 }}>{s.icon}</div>
@@ -1537,20 +1684,11 @@ if (matches) {
         <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 16 }}>Hours by Agency</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {agencies.map(ag => (
-            <div key={ag.id} style={{ background: "#f8faff", borderRadius: 12, padding: "14px 16px", border: "1px solid #e2e8f0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <span>🏥</span>
-                <span style={{ fontWeight: 600, fontSize: "0.88rem", color: "#0f172a" }}>{ag.agency_name}</span>
-              </div>
+            <div key={ag.id} style={{ background: "#f8f9fc", borderRadius: 12, padding: "14px 16px", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><span>🏥</span><span style={{ fontWeight: 600, fontSize: "0.88rem", color: "#0f172a" }}>{ag.agency_name}</span></div>
               <div style={{ display: "flex", gap: 16 }}>
-                <div>
-                  <p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>This month</p>
-                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#334155" }}>{getMonthHours(ag.id).toFixed(1)}h</p>
-                </div>
-                <div>
-                  <p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{calYear}</p>
-                  <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{getYearHours(ag.id).toFixed(1)}h</p>
-                </div>
+                <div><p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>This month</p><p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#7c3aed" }}>{getMonthHours(ag.id).toFixed(1)}h</p></div>
+                <div><p style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{calYear}</p><p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{getYearHours(ag.id).toFixed(1)}h</p></div>
               </div>
             </div>
           ))}
@@ -1561,16 +1699,12 @@ if (matches) {
     <div className="card">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <button className="btn-ghost" style={{ padding: "6px 14px" }} onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }}>← Prev</button>
-        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", color: "#0f172a" }}>{MONTHS[calMonth]} {calYear}</h2>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>{MONTHS[calMonth]} {calYear}</h2>
         <button className="btn-ghost" style={{ padding: "6px 14px" }} onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }}>Next →</button>
       </div>
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
-        {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
-          <div key={d} style={{ textAlign: "center", fontSize: "0.72rem", fontWeight: 700, color: "#94a3b8", padding: "4px 0", textTransform: "uppercase" }}>{d}</div>
-        ))}
+        {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => <div key={d} style={{ textAlign: "center", fontSize: "0.72rem", fontWeight: 700, color: "#94a3b8", padding: "4px 0", textTransform: "uppercase" }}>{d}</div>)}
       </div>
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -1578,9 +1712,6 @@ if (matches) {
           const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const dayShifts = getShiftsForDate(dateStr);
           const hasBookedShift = dayShifts.some(s => s.type === "shift");
-          const hasAvailability = dayShifts.some(s => s.type === "availability");
-
-          // Get vacancies for this month (Pro/Advanced only)
           const dayVacancies = isPro ? vacancies.filter(v => {
             const vDate = new Date(v.created_at);
             return vDate.getFullYear() === calYear && vDate.getMonth() === calMonth;
@@ -1588,87 +1719,82 @@ if (matches) {
           const hasVacancy = dayVacancies.length > 0;
           const isConflict = hasBookedShift && hasVacancy;
           const isOpenSpot = !hasBookedShift && hasVacancy;
-
           const isToday = dateStr === today.toISOString().split("T")[0];
           const isSelected = selectedDate === dateStr;
 
-          // Background color logic
           let dayBg = "transparent";
-          if (isSelected) dayBg = "#334155";
-          else if (isOpenSpot) dayBg = "#fff7ed"; // amber - open vacancy, no conflict
-          else if (isConflict) dayBg = "#fefce8"; // light yellow - conflict
+          if (isSelected) dayBg = "#7c3aed";
+          else if (isOpenSpot) dayBg = "#fff7ed";
+          else if (isConflict) dayBg = "#fefce8";
           else if (isToday) dayBg = "#f5f3ff";
 
           let dayBorder = "1.5px solid transparent";
-          if (isSelected) dayBorder = "1.5px solid #334155";
+          if (isSelected) dayBorder = "1.5px solid #7c3aed";
           else if (isOpenSpot) dayBorder = "1.5px solid #fed7aa";
           else if (isConflict) dayBorder = "1.5px solid #fde68a";
-          else if (isToday) dayBorder = "1.5px solid #334155";
+          else if (isToday) dayBorder = "1.5px solid #7c3aed";
 
           return (
-            <div
-              key={day}
-              style={{ minHeight: 72, borderRadius: 10, padding: 6, cursor: "pointer", background: dayBg, border: dayBorder, transition: "all 0.15s", position: "relative" }}
-              onClick={() => { setSelectedDate(dateStr); setShowShiftModal(true); }}
-            >
-              <span style={{ fontSize: "0.8rem", fontWeight: isToday ? 700 : 500, color: isSelected ? "#fff" : isToday ? "#334155" : "#374151" }}>{day}</span>
-
-              {/* Vacancy indicator for conflict days */}
-              {isConflict && isPro && (
-                <div style={{ position: "absolute", top: 4, right: 4, width: 6, height: 6, background: "#f59e0b", borderRadius: "50%", opacity: 0.6 }} />
-              )}
-
-              {/* Open spot indicator */}
-              {isOpenSpot && isPro && (
-                <div style={{ position: "absolute", top: 4, right: 4, width: 6, height: 6, background: "#f97316", borderRadius: "50%" }} />
-              )}
-
+            <div key={day} style={{ minHeight: 68, borderRadius: 10, padding: 6, cursor: "pointer", background: dayBg, border: dayBorder, transition: "all 0.15s", position: "relative" }}
+              onClick={() => { setSelectedDate(dateStr); setShowShiftModal(true); }}>
+              <span style={{ fontSize: "0.8rem", fontWeight: isToday ? 700 : 500, color: isSelected ? "#fff" : isToday ? "#7c3aed" : "#374151" }}>{day}</span>
+              {isConflict && isPro && <div style={{ position: "absolute", top: 4, right: 4, width: 6, height: 6, background: "#f59e0b", borderRadius: "50%", opacity: 0.6 }} />}
+              {isOpenSpot && isPro && <div style={{ position: "absolute", top: 4, right: 4, width: 6, height: 6, background: "#f97316", borderRadius: "50%" }} />}
               <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 2 }}>
                 {dayShifts.map(s => (
-                  <span key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: s.type === "shift" ? "#334155" : "#22c55e" }} />
+                  <span key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: s.type === "shift" ? "#334155" : "#7c3aed" }} />
                 ))}
-                {isOpenSpot && isPro && (
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: "#f97316" }} />
-                )}
-                {isConflict && isPro && (
-                  <span style={{ width: 8, height: 8, borderRadius: 2, display: "inline-block", margin: 1, background: "#f59e0b", opacity: 0.5 }} />
-                )}
+                {isOpenSpot && isPro && <span style={{ width: 8, height: 8, borderRadius: "50%", display: "inline-block", margin: 1, background: "#f97316" }} />}
+                {isConflict && isPro && <span style={{ width: 8, height: 8, borderRadius: 2, display: "inline-block", margin: 1, background: "#f59e0b", opacity: 0.5 }} />}
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Legend */}
       <div style={{ display: "flex", gap: 16, marginTop: 16, paddingTop: 16, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#334155", display: "inline-block" }} />
-          <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Shift logged</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-          <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Available</span>
-        </div>
-        {isPro && (
-          <>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f97316", display: "inline-block" }} />
-              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Open agency spot</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: "#f59e0b", display: "inline-block", opacity: 0.5 }} />
-              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Agency spot (you're busy)</span>
-            </div>
-          </>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#334155", display: "inline-block" }} /><span style={{ fontSize: "0.78rem", color: "#64748b" }}>Shift logged</span></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#7c3aed", display: "inline-block" }} /><span style={{ fontSize: "0.78rem", color: "#64748b" }}>Available</span></div>
+        {isPro && <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f97316", display: "inline-block" }} /><span style={{ fontSize: "0.78rem", color: "#64748b" }}>Open agency spot</span></div>}
         {!isPro && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#fdf4ff", border: "1px solid #d8b4fe", borderRadius: 8, padding: "4px 10px", cursor: "pointer" }} onClick={() => handleUpgradeClick("Live Vacancy Calendar", "pro")}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 8, padding: "4px 10px", cursor: "pointer" }} onClick={() => handleUpgradeClick("Live Vacancy Calendar", "pro")}>
             <span style={{ fontSize: "0.78rem", color: "#7c3aed", fontWeight: 600 }}>💎 Upgrade to see open agency spots</span>
           </div>
         )}
-        <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Click any day to add or view</span>
       </div>
     </div>
+
+    {/* Upcoming shifts with Google Calendar sync */}
+    {shifts.length > 0 && (
+      <div className="card" style={{ marginTop: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>All Logged Entries</h3>
+          <button onClick={handleExportCalendar} style={{ display: "flex", alignItems: "center", gap: 6, background: "#f5f3ff", color: "#7c3aed", border: "1.5px solid #ddd6fe", padding: "7px 12px", borderRadius: 10, fontWeight: 600, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit" }}>
+            📥 Export All
+          </button>
+        </div>
+        {shifts.slice(0, 10).map(shift => (
+          <div key={shift.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 36, height: 36, background: shift.type === "availability" ? "#f5f3ff" : "#f8f9fc", borderRadius: 8, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: "0.58rem", fontWeight: 700, color: shift.type === "availability" ? "#7c3aed" : "#334155", textTransform: "uppercase" }}>{MONTHS[new Date(shift.date + "T12:00:00").getMonth()].slice(0, 3)}</span>
+                <span style={{ fontSize: "0.88rem", fontWeight: 700, color: shift.type === "availability" ? "#7c3aed" : "#334155", lineHeight: 1 }}>{new Date(shift.date + "T12:00:00").getDate()}</span>
+              </div>
+              <div>
+                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#0f172a" }}>{shift.type === "availability" ? "Available for Locum" : shift.agency_name || "Shift"}</p>
+                <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{shift.start_time?.slice(0,5)} – {shift.end_time?.slice(0,5)}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => handleSyncGoogleCalendar(shift)}
+              style={{ display: "flex", alignItems: "center", gap: 4, background: "#fff", color: "#374151", border: "1.5px solid #e2e8f0", padding: "5px 10px", borderRadius: 8, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#4285F4" strokeWidth="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#4285F4" strokeWidth="2" strokeLinecap="round"/></svg>
+              Add to Google
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 )}
 
@@ -1698,13 +1824,13 @@ if (matches) {
 
             <div style={{ marginBottom: 28 }}>
               <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 12 }}>Connected Agencies ({agencies.length})</h2>
-              {agencies.length === 0 ? (
-                <div className="card" style={{ textAlign: "center", padding: "32px 24px", color: "#94a3b8" }}>
-                  <div style={{ fontSize: "2rem", marginBottom: 8 }}>🏥</div>
-                  <p style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No connected agencies yet</p>
-                  {isBase ? <p style={{ fontSize: "0.85rem" }}>On the Base plan, agencies find you. Upgrade to Pro to reach out proactively.</p>
-                  : <p style={{ fontSize: "0.85rem" }}>Send a connection request to an agency below</p>}
-                </div>
+              {agencies.length === 0 && profileMatches.length === 0 ? (
+  <div className="card" style={{ textAlign: "center", padding: "32px 24px", color: "#94a3b8" }}>
+    <div style={{ fontSize: "2rem", marginBottom: 8 }}>🏥</div>
+    <p style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No connected agencies yet</p>
+    {isBase ? <p style={{ fontSize: "0.85rem" }}>Your profile is being shared with matching agencies. When they connect, they'll appear here.</p>
+    : <p style={{ fontSize: "0.85rem" }}>Send a connection request to an agency below</p>}
+  </div>
               ) : agencies.map(ag => {
                 const conn = connections.find(c => c.agency_id === ag.id && c.status === "accepted");
                 return (
@@ -1730,6 +1856,44 @@ if (matches) {
               })}
             </div>
 
+            {/* Profile matches — visible to all tiers */}
+{profileMatches.length > 0 && (
+  <div style={{ marginBottom: 28 }}>
+    <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 4 }}>
+      ✨ Your profile has been shared with ({profileMatches.length})
+    </h2>
+    <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 12 }}>
+      These agencies have received your profile as a suggestion based on your specialty and grade.
+      {isBase && " Upgrade to Pro to connect with them proactively."}
+    </p>
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      {profileMatches.map((match, i) => (
+        <div key={match.agency_id} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #ddd6fe", borderRadius: 12, padding: "10px 14px" }}>
+          <div style={{ width: 36, height: 36, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", flexShrink: 0 }}>🏥</div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "#0f172a" }}>
+              {isPro ? match.agency_name : `Agency ${i + 1}`}
+            </p>
+            <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
+              Matched {new Date(match.matched_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+            </p>
+          </div>
+          {isPro && !agencies.find(a => a.id === match.agency_id) && !connections.find(c => c.agency_id === match.agency_id) && (
+            <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem", marginLeft: 8 }} onClick={() => handleSendConnectionRequest(match.agency_id)}>
+              Connect →
+            </button>
+          )}
+          {isBase && (
+            <button style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "5px 12px", borderRadius: 8, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginLeft: 8 }}
+              onClick={() => handleUpgradeClick("Proactive Agency Connection", "pro")}>
+              💎 Connect
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
             {connections.filter(c => c.status === "pending" && c.initiated_by === "doctor").length > 0 && (
               <div style={{ marginBottom: 28 }}>
                 <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 12 }}>Pending Requests</h2>
