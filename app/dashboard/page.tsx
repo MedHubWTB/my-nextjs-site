@@ -1985,176 +1985,302 @@ const handleAddShift = async () => {
 
         {/* APPRAISAL TAB */}
         {activeTab === "appraisal" && (
-          <div className="fade-up">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Medical Appraisal</h2>
-                  {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Includes RO Link</span>}
-                </div>
-                <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Track your annual medical appraisals and revalidation.</p>
-              </div>
-              <button className="btn-blue" onClick={() => setShowAppraisalModal(true)}>+ Log Appraisal</button>
-            </div>
+  <div className="fade-up">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>Medical Appraisal</h2>
+          {isAdvanced && <span style={{ background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>⚡ Includes RO Link</span>}
+        </div>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Track your annual medical appraisals and revalidation.</p>
+      </div>
+      <button className="btn-blue" onClick={() => setShowAppraisalModal(true)}>+ Log Appraisal</button>
+    </div>
 
-            {isAdvanced && (
-              <div style={{ background: "linear-gradient(135deg, #f0f9ff, #f5f3ff)", border: "1.5px solid #bae6fd", borderRadius: 14, padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0369a1", marginBottom: 4 }}>⚡ Designated Body & RO Link</p>
-                  <p style={{ fontSize: "0.82rem", color: "#64748b" }}>Advanced members get a direct link to a Responsible Officer (RO) for appraisals and revalidation.</p>
-                </div>
-                <button className="btn-advanced" style={{ padding: "8px 16px", fontSize: "0.82rem", whiteSpace: "nowrap" }}>Contact RO →</button>
-              </div>
-            )}
-
-            {folderDocs("appraisal").length > 0 && (
-              <div className="card" style={{ marginBottom: 20 }}>
-                <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 14 }}>📝 Appraisal Documents</h3>
-                {folderDocs("appraisal").map(doc => (
-                  <div key={doc.id} className="doc-row">
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 34, height: 34, background: "#f5f3ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>📝</div>
-                      <div>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
-                        <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
-                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {appraisals.length === 0 ? (
-              <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
-                <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>📝</div>
-                <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No appraisals logged yet</p>
-                <button className="btn-blue" onClick={() => setShowAppraisalModal(true)}>Log your first appraisal</button>
-              </div>
-            ) : appraisals.map(appr => {
-              const sc = getStatusColor(appr.status);
-              return (
-                <div key={appr.id} style={{ background: "#f8faff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>📝</div>
-                      <div>
-                        <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>{appr.appraisal_date ? new Date(appr.appraisal_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "Date not set"}</p>
-                        {appr.appraiser_name && <p style={{ fontSize: "0.78rem", color: "#64748b" }}>Appraiser: {appr.appraiser_name}</p>}
-                      </div>
-                    </div>
-                    <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "4px 10px", borderRadius: 100, background: sc.bg, color: sc.color, textTransform: "capitalize" }}>{appr.status.replace("_", " ")}</span>
-                  </div>
-                  {appr.next_review_date && <p style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 6 }}>📅 Next review: <strong>{new Date(appr.next_review_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</strong></p>}
-                  {appr.notes && <p style={{ fontSize: "0.82rem", color: "#64748b", background: "#fff", borderRadius: 8, padding: "8px 12px" }}>{appr.notes}</p>}
-                </div>
-              );
-            })}
+    {/* Pricing Cards */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 24 }}>
+      
+      {/* Annual Renewal */}
+      <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 2px 8px rgba(51,65,85,0.06)" }}>
+        <div style={{ background: "linear-gradient(135deg, #334155, #475569)", padding: "20px 24px" }}>
+          <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Annual Renewal</p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span style={{ fontSize: "2rem", fontWeight: 800, color: "#fff" }}>£599</span>
+            <span style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>/year</span>
           </div>
+          <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Same price for all plans</p>
+        </div>
+        <div style={{ padding: "20px 24px" }}>
+          {["Annual appraisal management", "Document preparation support", "Appraisal tracking on Quiet", "Reminder notifications"].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: i < 3 ? "1px solid #f1f5f9" : "none" }}>
+              <span style={{ color: "#334155", fontWeight: 700 }}>✓</span>
+              <span style={{ fontSize: "0.85rem", color: "#374151" }}>{f}</span>
+            </div>
+          ))}
+          <button
+            onClick={() => {
+              setSaveMsg("Appraisal renewal request sent! Our team will contact you within 24 hours.");
+              setTimeout(() => setSaveMsg(""), 5000);
+            }}
+            style={{ width: "100%", marginTop: 16, background: "linear-gradient(135deg, #334155, #475569)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Request Renewal — £599
+          </button>
+        </div>
+      </div>
+
+      {/* Designated Body */}
+      <div style={{ background: "#fff", borderRadius: 16, border: `2px solid ${isAdvanced ? "#7c3aed" : "#e2e8f0"}`, overflow: "hidden", boxShadow: isAdvanced ? "0 4px 20px rgba(124,58,237,0.15)" : "0 2px 8px rgba(51,65,85,0.06)", position: "relative" }}>
+        {isAdvanced && (
+          <div style={{ position: "absolute", top: 12, right: 12, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", fontSize: "0.68rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>⚡ Best price for you</div>
         )}
+        <div style={{ background: "linear-gradient(135deg, #6d28d9, #7c3aed)", padding: "20px 24px" }}>
+          <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Designated Body / RO Link</p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span style={{ fontSize: "2rem", fontWeight: 800, color: "#fff" }}>
+              {isAdvanced ? "£1,500" : isPro ? "£1,800" : "£2,000"}
+            </span>
+            <span style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>/year</span>
+          </div>
+          {isBase && (
+            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
+              💡 Upgrade to Pro to save £200 · Advanced saves £500
+            </p>
+          )}
+          {isPro && !isAdvanced && (
+            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
+              💡 Upgrade to Advanced to save a further £300
+            </p>
+          )}
+          {isAdvanced && (
+            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
+              ✓ Best price — £500 less than Base plan
+            </p>
+          )}
+        </div>
+        <div style={{ padding: "20px 24px" }}>
+          {["Direct link to a Responsible Officer (RO)", "Revalidation support", "Designated Body connection", "Priority response within 24hrs", "Full appraisal documentation"].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: i < 4 ? "1px solid #f1f5f9" : "none" }}>
+              <span style={{ color: "#7c3aed", fontWeight: 700 }}>✓</span>
+              <span style={{ fontSize: "0.85rem", color: "#374151" }}>{f}</span>
+            </div>
+          ))}
+
+          {!isAdvanced && (
+            <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", margin: "14px 0", fontSize: "0.78rem", color: "#7c3aed" }}>
+              💎 Upgrade to {isPro ? "Advanced" : "Pro"} to save {isPro ? "£300" : "£200"} on this service
+              <button
+                onClick={() => { setUpgradeTarget(isPro ? "advanced" : "pro"); setShowUpgradePage(true); }}
+                style={{ display: "block", marginTop: 6, background: "none", border: "none", color: "#7c3aed", fontWeight: 700, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+              >
+                View upgrade options →
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              const amount = isAdvanced ? 1500 : isPro ? 1800 : 2000;
+              setSaveMsg(`Designated Body request sent! Our team will contact you within 24 hours. Amount: £${amount.toLocaleString()}`);
+              setTimeout(() => setSaveMsg(""), 6000);
+            }}
+            style={{ width: "100%", marginTop: isAdvanced ? 16 : 4, background: "linear-gradient(135deg, #6d28d9, #7c3aed)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 12px rgba(124,58,237,0.3)" }}
+          >
+            Request RO Link — {isAdvanced ? "£1,500" : isPro ? "£1,800" : "£2,000"}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Appraisal documents */}
+    {folderDocs("appraisal").length > 0 && (
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 14 }}>📝 Appraisal Documents</h3>
+        {folderDocs("appraisal").map(doc => (
+          <div key={doc.id} className="doc-row">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 34, height: 34, background: "#f5f3ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>📝</div>
+              <div>
+                <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
+                <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
+              <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Logged appraisals */}
+    {appraisals.length === 0 ? (
+      <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>📝</div>
+        <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No appraisals logged yet</p>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginBottom: 20 }}>Keep track of your annual medical appraisals here.</p>
+        <button className="btn-blue" onClick={() => setShowAppraisalModal(true)}>Log your first appraisal</button>
+      </div>
+    ) : (
+      <div>
+        {appraisals.map(appr => {
+          const sc = getStatusColor(appr.status);
+          return (
+            <div key={appr.id} style={{ background: "#f8f9fc", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>📝</div>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>
+                      {appr.appraisal_date ? new Date(appr.appraisal_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "Date not set"}
+                    </p>
+                    {appr.appraiser_name && <p style={{ fontSize: "0.78rem", color: "#64748b" }}>Appraiser: {appr.appraiser_name}</p>}
+                  </div>
+                </div>
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "4px 10px", borderRadius: 100, background: sc.bg, color: sc.color, textTransform: "capitalize" }}>{appr.status.replace("_", " ")}</span>
+              </div>
+              {appr.next_review_date && <p style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 6 }}>📅 Next review: <strong>{new Date(appr.next_review_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</strong></p>}
+              {appr.notes && <p style={{ fontSize: "0.82rem", color: "#64748b", background: "#fff", borderRadius: 8, padding: "8px 12px" }}>{appr.notes}</p>}
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+)}
 
         {/* INSURANCE TAB */}
         {activeTab === "insurance" && (
-          <div className="fade-up">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <div>
-                <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Insurance</h2>
-                <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Manage claims, upload documents, and get support.</p>
-              </div>
-              <button className="btn-blue" onClick={() => setShowClaimModal(true)}>+ Log Claim</button>
-            </div>
+  <div className="fade-up">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      <div>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>Insurance</h2>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Manage your indemnity, upload documents, and apply for cover.</p>
+      </div>
+      <button className="btn-blue" onClick={() => setShowClaimModal(true)}>+ Log Claim</button>
+    </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginBottom: 24 }}>
-              {[
-                { label: "Open Claims", value: insuranceClaims.filter(c => c.status === "open").length, icon: "🔴", color: "#fff1f2" },
-                { label: "In Progress", value: insuranceClaims.filter(c => c.status === "in_progress").length, icon: "🔵", color: "#f5f3ff" },
-                { label: "Resolved", value: insuranceClaims.filter(c => c.status === "resolved").length, icon: "✅", color: "#f0fdf4" },
-                { label: "Insurance Docs", value: folderDocs("insurance").length, icon: "📄", color: "#fdf4ff" },
-              ].map((stat, i) => (
-                <div key={i} className="card" style={{ background: stat.color, border: "none" }}>
-                  <div style={{ fontSize: "1.3rem", marginBottom: 8 }}>{stat.icon}</div>
-                  <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{stat.value}</div>
-                  <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4 }}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
+    {/* Stats */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 24 }}>
+      {[
+        { label: "Open Claims", value: insuranceClaims.filter(c => c.status === "open").length, icon: "🔴", color: "#fff1f2" },
+        { label: "In Progress", value: insuranceClaims.filter(c => c.status === "in_progress").length, icon: "🔵", color: "#f5f3ff" },
+        { label: "Resolved", value: insuranceClaims.filter(c => c.status === "resolved").length, icon: "✅", color: "#f0fdf4" },
+        { label: "Insurance Docs", value: folderDocs("insurance").length, icon: "📄", color: "#f8f9fc" },
+      ].map((stat, i) => (
+        <div key={i} className="card" style={{ background: stat.color, border: "none" }}>
+          <div style={{ fontSize: "1.3rem", marginBottom: 8 }}>{stat.icon}</div>
+          <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{stat.value}</div>
+          <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4 }}>{stat.label}</div>
+        </div>
+      ))}
+    </div>
 
-            {folderDocs("insurance").length > 0 && (
-              <div className="card" style={{ marginBottom: 20 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>🛡️ Insurance Documents</h3>
-                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => { setUploadFolder("insurance"); setUploadError(""); setShowUploadModal(true); }}>+ Upload</button>
-                </div>
-                {folderDocs("insurance").map(doc => (
-                  <div key={doc.id} className="doc-row">
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 34, height: 34, background: "#fdf4ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>🛡️</div>
-                      <div>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
-                        <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
-                      <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "Inter, sans-serif", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+    {/* Apply for Insurance CTA */}
+    <div style={{ background: "linear-gradient(135deg, #1e293b, #334155)", borderRadius: 16, padding: "24px 28px", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+      <div>
+        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Need indemnity insurance?</p>
+        <h3 style={{ fontWeight: 700, fontSize: "1rem", color: "#fff", marginBottom: 6 }}>Apply for medical indemnity cover</h3>
+        <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", maxWidth: 420, lineHeight: 1.6 }}>
+          Get competitive quotes for MDU, MPS or MDDUS indemnity cover. Our team can help you find the right policy for your locum work.
+        </p>
+      </div>
+      <button
+        onClick={() => {
+          setSaveMsg("Insurance application request sent! Our team will contact you within 24 hours.");
+          setTimeout(() => setSaveMsg(""), 5000);
+        }}
+        style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "12px 24px", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(124,58,237,0.4)" }}
+      >
+        Apply for Cover →
+      </button>
+    </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 14 }}>Claims</h3>
-              {insuranceClaims.length === 0 ? (
-                <div className="card" style={{ textAlign: "center", padding: "32px 24px" }}>
-                  <div style={{ fontSize: "2rem", marginBottom: 8 }}>🛡️</div>
-                  <p style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No claims logged yet</p>
-                  <button className="btn-blue" style={{ marginTop: 12 }} onClick={() => setShowClaimModal(true)}>Log your first claim</button>
-                </div>
-              ) : insuranceClaims.map(claim => {
-                const sc = getStatusColor(claim.status);
-                return (
-                  <div key={claim.id} style={{ background: "#f8faff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 40, height: 40, background: "#fdf4ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>🛡️</div>
-                        <div>
-                          <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{claim.claim_type || "Insurance Claim"}</p>
-                          <p style={{ fontSize: "0.75rem", color: "#64748b" }}>{claim.insurer_name || "No insurer"}{claim.policy_number ? ` · ${claim.policy_number}` : ""}</p>
-                        </div>
-                      </div>
-                      <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "4px 10px", borderRadius: 100, background: sc.bg, color: sc.color, textTransform: "capitalize" }}>{claim.status.replace("_", " ")}</span>
-                    </div>
-                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                      {claim.incident_date && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>📅 {new Date(claim.incident_date).toLocaleDateString("en-GB")}</span>}
-                      {claim.amount && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>💷 £{claim.amount.toFixed(2)}</span>}
-                    </div>
-                    {claim.description && <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 8, background: "#fff", borderRadius: 8, padding: "8px 12px" }}>{claim.description}</p>}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="card">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div>
-                  <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>💬 Insurance Support</h3>
-                  <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>Need help with a claim or policy question?</p>
-                </div>
-                <button className="btn-ghost" style={{ padding: "7px 14px", fontSize: "0.82rem" }} onClick={() => setShowSupportForm(prev => !prev)}>{showSupportForm ? "Cancel" : "Get Support"}</button>
-              </div>
-              {showSupportForm && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <textarea className="input-field" rows={4} placeholder="Describe your insurance issue or question..." value={supportMsg} onChange={e => setSupportMsg(e.target.value)} style={{ resize: "vertical" }} />
-                  <button className="btn-blue" style={{ alignSelf: "flex-start", padding: "10px 24px" }} onClick={() => { setSupportMsg(""); setShowSupportForm(false); setSaveMsg("Support request sent!"); setTimeout(() => setSaveMsg(""), 3000); }}>Send Message</button>
-                </div>
-              )}
+    {/* Upload insurance documents */}
+    <div className="card" style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>🛡️ Insurance Documents</h3>
+          <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>Upload your indemnity certificates, policy documents and proof of cover.</p>
+        </div>
+        <button className="btn-ghost" style={{ padding: "7px 14px", fontSize: "0.82rem" }} onClick={() => { setUploadFolder("insurance"); setUploadError(""); setShowUploadModal(true); }}>+ Upload</button>
+      </div>
+      {folderDocs("insurance").length === 0 ? (
+        <div style={{ background: "#f8f9fc", border: "1.5px dashed #e2e8f0", borderRadius: 12, padding: "24px", textAlign: "center" }}>
+          <div style={{ fontSize: "1.8rem", marginBottom: 8 }}>🛡️</div>
+          <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 12 }}>No insurance documents uploaded yet</p>
+          <button className="btn-ghost" style={{ padding: "8px 16px", fontSize: "0.82rem" }} onClick={() => { setUploadFolder("insurance"); setUploadError(""); setShowUploadModal(true); }}>Upload your first document</button>
+        </div>
+      ) : folderDocs("insurance").map(doc => (
+        <div key={doc.id} className="doc-row">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 34, height: 34, background: "#f5f3ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>🛡️</div>
+            <div>
+              <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}</p>
             </div>
           </div>
-        )}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => handleDownload(doc)}>⬇ Download</button>
+            <button style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "6px 10px", borderRadius: 10, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }} onClick={() => handleDeleteDoc(doc)}>🗑</button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Claims */}
+    <div style={{ marginBottom: 24 }}>
+      <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 14 }}>Claims</h3>
+      {insuranceClaims.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: "32px 24px" }}>
+          <div style={{ fontSize: "2rem", marginBottom: 8 }}>🛡️</div>
+          <p style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No claims logged yet</p>
+          <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginBottom: 16 }}>Keep track of your insurance claims here.</p>
+          <button className="btn-blue" onClick={() => setShowClaimModal(true)}>Log your first claim</button>
+        </div>
+      ) : insuranceClaims.map(claim => {
+        const sc = getStatusColor(claim.status);
+        return (
+          <div key={claim.id} style={{ background: "#f8f9fc", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>🛡️</div>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{claim.claim_type || "Insurance Claim"}</p>
+                  <p style={{ fontSize: "0.75rem", color: "#64748b" }}>{claim.insurer_name || "No insurer"}{claim.policy_number ? ` · ${claim.policy_number}` : ""}</p>
+                </div>
+              </div>
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "4px 10px", borderRadius: 100, background: sc.bg, color: sc.color, textTransform: "capitalize" }}>{claim.status.replace("_", " ")}</span>
+            </div>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              {claim.incident_date && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>📅 {new Date(claim.incident_date).toLocaleDateString("en-GB")}</span>}
+              {claim.amount && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>💷 £{claim.amount.toFixed(2)}</span>}
+            </div>
+            {claim.description && <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 8, background: "#fff", borderRadius: 8, padding: "8px 12px" }}>{claim.description}</p>}
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Support */}
+    <div className="card">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>💬 Insurance Support</h3>
+          <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>Need help with a claim, policy question or switching provider?</p>
+        </div>
+        <button className="btn-ghost" style={{ padding: "7px 14px", fontSize: "0.82rem" }} onClick={() => setShowSupportForm(prev => !prev)}>{showSupportForm ? "Cancel" : "Get Support"}</button>
+      </div>
+      {showSupportForm && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <textarea className="input-field" rows={4} placeholder="Describe your insurance issue, question or what cover you need..." value={supportMsg} onChange={e => setSupportMsg(e.target.value)} style={{ resize: "vertical" }} />
+          <button className="btn-blue" style={{ alignSelf: "flex-start", padding: "10px 24px" }} onClick={() => { setSupportMsg(""); setShowSupportForm(false); setSaveMsg("Support request sent! We'll get back to you within 24 hours."); setTimeout(() => setSaveMsg(""), 4000); }}>Send Message</button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
         {/* PROFILE */}
         {activeTab === "profile" && (
