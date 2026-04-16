@@ -156,6 +156,11 @@ export default function DashboardPage() {
   const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
   const [insuranceClaims, setInsuranceClaims] = useState<InsuranceClaim[]>([]);
   const [chatLimitToday, setChatLimitToday] = useState(0);
+  const [partnerMatch, setPartnerMatch] = useState<{ card_title: string; card_description: string; card_color_from: string; card_color_to: string; partner_slug: string; partner_name: string } | null>(null);
+const [showPartnerForm, setShowPartnerForm] = useState(false);
+const [partnerMessage, setPartnerMessage] = useState("");
+const [sendingPartnerMessage, setSendingPartnerMessage] = useState(false);
+const [partnerDismissed, setPartnerDismissed] = useState(false);
   const [profileMatches, setProfileMatches] = useState<{ agency_id: string; agency_name: string; matched_at: string }[]>([]);
 const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 const [availabilityDate, setAvailabilityDate] = useState(new Date().toISOString().split("T")[0]);
@@ -346,7 +351,38 @@ if (matches) {
   }));
   setProfileMatches(mapped);
 }
-      setLoading(false);
+// Check partner matches (PsychAssociates etc)
+if (doctorData?.specialty || doctorData?.is_specialist_registrar) {
+  const { data: partners } = await supabase
+    .from("partner_configs")
+    .select("*")
+    .eq("active", true);
+  
+  if (partners) {
+    for (const partner of partners) {
+      const specialtyMatch = partner.match_specialties?.some(
+        (s: string) => s.toLowerCase() === doctorData.specialty?.toLowerCase()
+      );
+      const isSpecReg = doctorData.is_specialist_registrar;
+      
+      if (specialtyMatch && isSpecReg) {
+        // Check if doctor already dismissed
+        const { data: interaction } = await supabase
+          .from("partner_interactions")
+          .select("action")
+          .eq("doctor_id", user.id)
+          .eq("partner_slug", partner.partner_slug)
+          .single();
+        
+        if (!interaction || interaction.action !== "dismissed") {
+          setPartnerMatch(partner);
+        }
+        break;
+      }
+    }
+  }
+}      
+setLoading(false);
     };
     init();
   }, [router]);
@@ -992,6 +1028,60 @@ const handleAddShift = async () => {
         </div>
       )}
 
+      {/* PARTNER MATCH MODAL */}
+{showPartnerForm && partnerMatch && (
+  <div className="modal-overlay qm-modal-overlay" onClick={() => setShowPartnerForm(false)}>
+    <div className="modal qm-modal" onClick={e => e.stopPropagation()}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>
+          Express Interest — {partnerMatch.partner_name}
+        </h2>
+        <button onClick={() => setShowPartnerForm(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+      </div>
+      <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "12px 14px", marginBottom: 16, fontSize: "0.82rem", color: "#7c3aed" }}>
+        ✨ Your profile has been identified as a strong match for medical assessment work.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            Tell us about your availability and interest
+          </label>
+          <textarea
+            className="input-field"
+            rows={4}
+            placeholder="e.g. I'm available on weekends and interested in medico-legal assessments. My current specialty is..."
+            value={partnerMessage}
+            onChange={e => setPartnerMessage(e.target.value)}
+            style={{ resize: "vertical" }}
+          />
+        </div>
+        <p style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
+          Your profile details (name, specialty, grade, GMC number) will be shared with {partnerMatch.partner_name} along with your message.
+        </p>
+        <button
+          className="btn-blue"
+          style={{ width: "100%", background: `linear-gradient(135deg, ${partnerMatch.card_color_from}, ${partnerMatch.card_color_to})` }}
+          onClick={async () => {
+            setSendingPartnerMessage(true);
+            await supabase.from("partner_interactions").upsert({
+              doctor_id: userId,
+              partner_slug: partnerMatch.partner_slug,
+              action: "interested",
+            }, { onConflict: "doctor_id,partner_slug" });
+            setSendingPartnerMessage(false);
+            setShowPartnerForm(false);
+            setPartnerMessage("");
+            setSaveMsg(`Interest sent to ${partnerMatch.partner_name}! They'll be in touch within 48 hours.`);
+            setTimeout(() => setSaveMsg(""), 5000);
+          }}
+          disabled={sendingPartnerMessage || !partnerMessage.trim()}
+        >
+          {sendingPartnerMessage ? "Sending..." : `Express Interest to ${partnerMatch.partner_name}`}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {/* AVAILABILITY MODAL */}
 {showAvailabilityModal && (
   <div className="modal-overlay qm-modal-overlay" onClick={() => setShowAvailabilityModal(false)}>
@@ -1381,6 +1471,62 @@ const handleAddShift = async () => {
         </div>
       </div>
     )}
+{/* Partner Match Card */}
+{partnerMatch && !partnerDismissed && (
+  <div className="fade-up-3 card" style={{ marginTop: 20, marginBottom: 20, background: `linear-gradient(135deg, ${partnerMatch.card_color_from}, ${partnerMatch.card_color_to})`, border: "none", position: "relative", overflow: "hidden" }}>
+    <div style={{ position: "absolute", top: -20, right: -20, width: 120, height: 120, background: "rgba(255,255,255,0.05)", borderRadius: "50%" }} />
+    <div style={{ position: "absolute", bottom: -30, left: -10, width: 80, height: 80, background: "rgba(255,255,255,0.04)", borderRadius: "50%" }} />
+    <button
+      onClick={async () => {
+        await supabase.from("partner_interactions").upsert({
+          doctor_id: userId,
+          partner_slug: partnerMatch.partner_slug,
+          action: "dismissed",
+        }, { onConflict: "doctor_id,partner_slug" });
+        setPartnerDismissed(true);
+      }}
+      style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", fontFamily: "inherit", fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
+      ✕
+    </button>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap", position: "relative" }}>
+      <div style={{ width: 48, height: 48, background: "rgba(255,255,255,0.15)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>✨</div>
+      <div style={{ flex: 1, minWidth: 200 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", borderRadius: 100, padding: "3px 10px", marginBottom: 8 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#a78bfa", display: "inline-block" }} />
+          <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Specialist Opportunity</span>
+        </div>
+        <h3 style={{ fontWeight: 700, fontSize: "1rem", color: "#fff", marginBottom: 6, letterSpacing: "-0.01em" }}>
+          {partnerMatch.card_title}
+        </h3>
+        <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.8)", lineHeight: 1.6, marginBottom: 16, maxWidth: 480 }}>
+          {partnerMatch.card_description}
+        </p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            onClick={() => setShowPartnerForm(true)}
+            style={{ background: "#fff", color: partnerMatch.card_color_to, border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
+          >
+            Express Interest →
+          </button>
+          <button
+            onClick={async () => {
+              await supabase.from("partner_interactions").upsert({
+                doctor_id: userId,
+                partner_slug: partnerMatch.partner_slug,
+                action: "dismissed",
+              }, { onConflict: "doctor_id,partner_slug" });
+              setPartnerDismissed(true);
+            }}
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.3)", padding: "10px 20px", borderRadius: 10, fontWeight: 600, fontSize: "0.88rem", cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Not interested
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
     {/* Referral Card */}
     <div className="fade-up-3 card" style={{ background: "linear-gradient(135deg, #f0fdf4, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
