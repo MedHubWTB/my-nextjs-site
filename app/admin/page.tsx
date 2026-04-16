@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -50,12 +50,12 @@ type Connection = {
   status: string;
 };
 const WELCOME_EMAIL = {
-  subject: "Your QuietMedical account is ready — here's how to log in",
+  subject: "Your quiet account is ready — here's how to log in",
   body: `Hi Dr. [Name],
 
 We've been busy building something we think you're going to love.
 
-QuietMedical has launched — your all-in-one compliance passport and locum management platform.
+quiet has launched — your all-in-one compliance passport and locum management platform.
 
 Here's what's waiting for you:
 
@@ -76,14 +76,391 @@ No password needed — just your email.
 
 Any questions? Reply to this email and we'll help you get set up.
 
-Welcome to QuietMedical 👋
+Welcome to quiet 👋
 
-— The QuietMedical Team`,
+— The quiet Team`,
 };
 
 const SUPABASE_URL_CLIENT = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY_CLIENT = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+function ImportTab() {
+  const [importType, setImportType] = useState<"agencies" | "doctors">("agencies");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<Record<string, string>[]>([]);
+  const [importing, setImporting] = useState(false);
+  const [results, setResults] = useState<{ success: number; errors: string[] } | null>(null);
+  const [defaultTier, setDefaultTier] = useState("basic");
+  const [defaultPassword, setDefaultPassword] = useState("Quiet2026!");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const parseCSV = (text: string): Record<string, string>[] => {
+    const lines = text.split("\n").filter(l => l.trim());
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(",").map(h => h.trim().replace(/"/g, "").toLowerCase());
+    return lines.slice(1).map(line => {
+      const values = line.split(",").map(v => v.trim().replace(/"/g, ""));
+      const row: Record<string, string> = {};
+      headers.forEach((h, i) => { row[h] = values[i] || ""; });
+      return row;
+    }).filter(row => Object.values(row).some(v => v));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setResults(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const rows = parseCSV(text);
+      setPreview(rows.slice(0, 5));
+    };
+    reader.readAsText(f);
+  };
+
+  const getColumnValue = (row: Record<string, string>, possibleKeys: string[]): string => {
+    for (const key of possibleKeys) {
+      const found = Object.keys(row).find(k => k.toLowerCase().includes(key.toLowerCase()));
+      if (found && row[found]) return row[found];
+    }
+    return "";
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+    setImporting(true);
+    setResults(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      const rows = parseCSV(text);
+      let success = 0;
+      const errors: string[] = [];
+
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+      for (const row of rows) {
+        try {
+          if (importType === "agencies") {
+            const agencyName = getColumnValue(row, ["agency name", "agency", "name"]);
+            const contactEmail = getColumnValue(row, ["contact person's email", "contact email", "email"]);
+            const contactPerson = getColumnValue(row, ["contact person", "contact"]);
+            const phone = getColumnValue(row, ["phone", "phone number"]);
+            const address = getColumnValue(row, ["address", "location"]);
+
+            if (!agencyName) { errors.push(`Row skipped — no agency name`); continue; }
+            // Skip account creation for Not Interested
+            const statusVal = getColumnValue(row, ["status"]).toLowerCase();
+            const isNotInterested = statusVal.includes("not interested") || statusVal.includes("not_interested");
+
+            if (isNotInterested) {
+              await supabase.from("crm_leads").insert({
+                type: "agency",
+                name: agencyName,
+                email: getColumnValue(row, ["contact person's email", "contact email", "email"]) || null,
+                phone: getColumnValue(row, ["phone", "phone number"]) || null,
+                company: agencyName,
+                source: "direct",
+                status: "not_interested",
+                notes: `Imported from CSV. Status: Not Interested`,
+              });
+              success++;
+              continue;
+            }
+
+            // Map status to CRM
+            const crmStatus = statusVal.includes("inqui") ? "new" :
+                              statusVal.includes("active") ? "signed_up" :
+                              statusVal.includes("prospect") ? "contacted" : "new";
+
+            // Create auth user if email provided
+            let userId = null;
+            if (contactEmail) {
+              const res = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseKey}`,
+                  "apikey": supabaseKey,
+                },
+                body: JSON.stringify({
+                  email: contactEmail,
+                  password: defaultPassword,
+                  email_confirm: true,
+                }),
+              });
+              const userData = await res.json();
+              userId = userData.id;
+            }
+
+            // Create agency record
+            const { data: agData, error: agError } = await supabase
+              .from("agencies")
+              .insert({
+                agency_name: agencyName,
+                contact_person_name: contactPerson || null,
+                contact_email: contactEmail || null,
+                contact_phone: phone || null,
+                location_tags: address || null,
+                tier: defaultTier,
+              })
+              .select()
+              .single();
+
+            if (agError) { errors.push(`${agencyName}: ${agError.message}`); continue; }
+
+            // Link user to agency
+            if (userId && agData) {
+              await supabase.from("agency_users").insert({ user_id: userId, agency_id: agData.id });
+              await supabase.from("user_profiles").upsert({ id: userId, role: "agency" }, { onConflict: "id" });
+            }
+
+            success++;
+
+            // Add to CRM
+            await supabase.from("crm_leads").insert({
+              type: "agency",
+              name: agencyName,
+              email: contactEmail || null,
+              phone: phone || null,
+              company: agencyName,
+              source: "direct",
+              status: crmStatus,
+              notes: `Imported from CSV. Original status: ${getColumnValue(row, ["status"]) || "unknown"}`,
+            });
+
+          } else {
+            // Doctor import
+            const email = getColumnValue(row, ["email"]);
+            const fullName = getColumnValue(row, ["name", "full name", "doctor name"]);
+            const specialty = getColumnValue(row, ["specialty", "speciality"]);
+            const grade = getColumnValue(row, ["grade"]);
+            const gmc = getColumnValue(row, ["gmc", "gmc number"]);
+            const phone = getColumnValue(row, ["phone", "phone number"]);
+
+            if (!email) { errors.push(`Row skipped — no email`); continue; }
+
+            // Create auth user
+            const res = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${supabaseKey}`,
+                "apikey": supabaseKey,
+              },
+              body: JSON.stringify({
+                email,
+                password: defaultPassword,
+                email_confirm: true,
+              }),
+            });
+            const userData = await res.json();
+
+            if (!userData.id) { errors.push(`${email}: ${userData.message || "Failed to create user"}`); continue; }
+
+            // Create doctor record
+            await supabase.from("doctors").upsert({
+              user_id: userData.id,
+              full_name: fullName || null,
+              email,
+              phone: phone || null,
+              specialty: specialty || null,
+              grade: grade || null,
+              gmc_number: gmc || null,
+              tier: "basic",
+              onboarding_completed: fullName && specialty && grade ? true : false,
+            }, { onConflict: "user_id" });
+
+            await supabase.from("user_profiles").upsert({ id: userData.id, role: "doctor" }, { onConflict: "id" });
+
+            success++;
+          }
+        } catch (e) {
+          errors.push(`Row error: ${e}`);
+        }
+      }
+
+      setImporting(false);
+      setResults({ success, errors });
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="fade-up">
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>CSV Import</h2>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Bulk import agencies or doctors from your Microsoft list.</p>
+      </div>
+
+      {/* Type selector */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 16 }}>What are you importing?</h3>
+        <div style={{ display: "flex", gap: 12 }}>
+          {[
+            { key: "agencies", label: "🏥 Agencies", desc: "Import agency accounts from your list" },
+            { key: "doctors", label: "👨‍⚕️ Doctors", desc: "Import doctor accounts from your list" },
+          ].map(option => (
+            <div
+              key={option.key}
+              onClick={() => { setImportType(option.key as "agencies" | "doctors"); setFile(null); setPreview([]); setResults(null); }}
+              style={{ flex: 1, padding: "16px", borderRadius: 12, border: `2px solid ${importType === option.key ? "#7c3aed" : "#e2e8f0"}`, background: importType === option.key ? "#f5f3ff" : "#fff", cursor: "pointer", transition: "all 0.15s" }}
+            >
+              <p style={{ fontWeight: 700, fontSize: "0.9rem", color: importType === option.key ? "#7c3aed" : "#0f172a", marginBottom: 4 }}>{option.label}</p>
+              <p style={{ fontSize: "0.78rem", color: "#64748b" }}>{option.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Settings */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 16 }}>Import Settings</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Default Tier
+            </label>
+            <select className="input-field" value={defaultTier} onChange={e => setDefaultTier(e.target.value)}>
+              <option value="basic">Base</option>
+              <option value="pro">Pro</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Default Password
+            </label>
+            <input className="input-field" type="text" value={defaultPassword} onChange={e => setDefaultPassword(e.target.value)} placeholder="Quiet2026!" />
+          </div>
+        </div>
+        <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 10 }}>
+          💡 All imported users will be created with this password. They can reset it via Forgot Password.
+        </p>
+      </div>
+
+      {/* Expected format */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 12 }}>Expected CSV Format</h3>
+        {importType === "agencies" ? (
+          <div>
+            <p style={{ fontSize: "0.82rem", color: "#64748b", marginBottom: 8 }}>Your agency CSV should have these columns (in any order):</p>
+            <div style={{ background: "#f8f9fc", borderRadius: 8, padding: "12px 14px", fontFamily: "monospace", fontSize: "0.78rem", color: "#334155", border: "1px solid #e2e8f0" }}>
+              Agency name (T), Email, Contact person, Contact person&apos;s email, Phone number, Address, Status
+            </div>
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+              <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 4 }}>Status mapping:</p>
+              {[
+                { status: "Active", maps: "Creates agency account + CRM: Signed Up", color: "#16a34a" },
+                { status: "Inquiry", maps: "Creates agency account + CRM: New lead", color: "#7c3aed" },
+                { status: "Not Interested", maps: "CRM only — no account created", color: "#dc2626" },
+                { status: "Prospect / Other", maps: "Creates agency account + CRM: Contacted", color: "#92400e" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: "#f8f9fc", color: item.color, border: `1px solid ${item.color}20`, whiteSpace: "nowrap" }}>{item.status}</span>
+                  <span style={{ fontSize: "0.75rem", color: "#64748b" }}>→ {item.maps}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p style={{ fontSize: "0.82rem", color: "#64748b", marginBottom: 8 }}>Your doctor CSV should have these columns (in any order):</p>
+            <div style={{ background: "#f8f9fc", borderRadius: 8, padding: "12px 14px", fontFamily: "monospace", fontSize: "0.78rem", color: "#334155", border: "1px solid #e2e8f0" }}>
+              full_name, email, phone, specialty, grade, gmc_number
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* File upload */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 16 }}>Upload CSV File</h3>
+        <div
+          onClick={() => fileRef.current?.click()}
+          style={{ border: `2px dashed ${file ? "#7c3aed" : "#e2e8f0"}`, borderRadius: 12, padding: "32px", textAlign: "center", cursor: "pointer", background: file ? "#f5f3ff" : "#f8f9fc", transition: "all 0.2s" }}
+        >
+          <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={handleFileChange} />
+          {file ? (
+            <div>
+              <div style={{ fontSize: "2rem", marginBottom: 8 }}>✅</div>
+              <p style={{ fontWeight: 700, color: "#7c3aed", fontSize: "0.9rem" }}>{file.name}</p>
+              <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 4 }}>{(file.size / 1024).toFixed(0)} KB · Click to change</p>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: "2rem", marginBottom: 8 }}>📂</div>
+              <p style={{ fontWeight: 600, color: "#374151", fontSize: "0.9rem" }}>Click to select your CSV file</p>
+              <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 4 }}>CSV or TXT format</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Preview */}
+      {preview.length > 0 && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 12 }}>
+            Preview (first {preview.length} rows)
+          </h3>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
+              <thead>
+                <tr>
+                  {Object.keys(preview[0]).map(h => (
+                    <th key={h} style={{ padding: "8px 10px", textAlign: "left", borderBottom: "1px solid #e2e8f0", color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.map((row, i) => (
+                  <tr key={i}>
+                    {Object.values(row).map((val, j) => (
+                      <td key={j} style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9", color: "#374151", maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val || "—"}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {results && (
+        <div className="card" style={{ marginBottom: 20, background: results.errors.length === 0 ? "#f0fdf4" : "#fffbeb", border: `1px solid ${results.errors.length === 0 ? "#bbf7d0" : "#fde68a"}` }}>
+          <h3 style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a", marginBottom: 12 }}>Import Results</h3>
+          <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+            <span style={{ fontSize: "0.88rem", color: "#16a34a", fontWeight: 600 }}>✅ {results.success} imported successfully</span>
+            {results.errors.length > 0 && <span style={{ fontSize: "0.88rem", color: "#dc2626", fontWeight: 600 }}>❌ {results.errors.length} failed</span>}
+          </div>
+          {results.errors.length > 0 && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "12px", maxHeight: 200, overflowY: "auto" }}>
+              {results.errors.map((err, i) => (
+                <p key={i} style={{ fontSize: "0.78rem", color: "#dc2626", marginBottom: 4 }}>• {err}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Import button */}
+      {file && !results && (
+        <button
+          onClick={handleImport}
+          disabled={importing}
+          style={{ width: "100%", background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "14px", borderRadius: 12, fontWeight: 700, fontSize: "0.95rem", cursor: importing ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: importing ? 0.7 : 1 }}
+        >
+          {importing ? "Importing... please wait" : `Import ${importType === "agencies" ? "Agencies" : "Doctors"} from CSV`}
+        </button>
+      )}
+    </div>
+  );
+}
 function BroadcastTab() {
   const [subject, setSubject] = useState(WELCOME_EMAIL.subject);
   const [body, setBody] = useState(WELCOME_EMAIL.body);
@@ -115,7 +492,7 @@ function BroadcastTab() {
     <div className="fade-up">
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 4 }}>Email Broadcasts</h2>
-        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Send emails to all doctors on QuietMedical via Resend. Personalised with their first name automatically.</p>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Send emails to all doctors on quiet via Resend. Personalised with their first name automatically.</p>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
@@ -163,7 +540,7 @@ function BroadcastTab() {
       <div className="card">
         <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 16 }}>Send Broadcast</h3>
         <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 16px", marginBottom: 16, fontSize: "0.85rem", color: "#92400e" }}>
-          ⚠️ This will send an email to <strong>every doctor</strong> registered on QuietMedical. Make sure your email is ready before sending.
+          ⚠️ This will send an email to <strong>every doctor</strong> registered on quiet. Make sure your email is ready before sending.
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, padding: "12px 14px", background: "#f8faff", borderRadius: 10, border: "1px solid #e2e8f0", cursor: "pointer" }} onClick={() => setConfirmed(!confirmed)}>
@@ -200,7 +577,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports">("overview");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -361,7 +738,7 @@ if (usersData) setUsers(usersData);
           <div style={{ width: 30, height: 30, background: "#334155", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M2 9h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></svg>
           </div>
-          <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#334155" }}>QuietMedical</span>
+          <span style={{ fontWeight: 700, fontSize: "1rem", color: "#7c3aed", letterSpacing: "-0.02em" }}>Quiet<span style={{ color: "#334155" }}>.</span></span>
         </div>
         <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 6px", marginBottom: 20 }}>Admin Panel</div>
 
@@ -378,7 +755,8 @@ if (usersData) setUsers(usersData);
     { key: "connections", label: "Connections", icon: "🔗", count: connections.length },
     { key: "broadcasts", label: "Email Broadcasts", icon: "📧" },
     { key: "users", label: "User Management", icon: "👥" },
-  ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"; label: string; icon: string; count?: number }[]).map(item => (
+    { key: "imports", label: "CSV Import", icon: "📥" },
+  ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"; label: string; icon: string; count?: number }[]).map(item => (
             <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { setActiveTab(item.key); setSearch(""); }}>
               <span>{item.icon}</span>{item.label}
               {item.count !== undefined && (
@@ -403,7 +781,7 @@ if (usersData) setUsers(usersData);
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
           <div>
-            <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>QuietMedical Admin</p>
+            <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>quiet Admin</p>
             <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.6rem", color: "#0f172a" }}>
               {activeTab === "overview" ? "Dashboard Overview" :
                activeTab === "doctors" ? "All Doctors" :
@@ -681,7 +1059,12 @@ if (usersData) setUsers(usersData);
         )}
         {/* BROADCASTS */}
         {activeTab === "broadcasts" && (
+          
           <BroadcastTab />
+        )}
+        {/* IMPORTS */}
+        {activeTab === "imports" && (
+          <ImportTab />
         )}
         {/* USERS */}
         {activeTab === "users" && (
