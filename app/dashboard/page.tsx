@@ -161,6 +161,9 @@ const [showPartnerForm, setShowPartnerForm] = useState(false);
 const [partnerMessage, setPartnerMessage] = useState("");
 const [sendingPartnerMessage, setSendingPartnerMessage] = useState(false);
 const [partnerDismissed, setPartnerDismissed] = useState(false);
+const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+const [showProfileMenu, setShowProfileMenu] = useState(false);
+const [uploadingAvatar, setUploadingAvatar] = useState(false);
 const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string }[]>([]);
 const [showFeatureModal, setShowFeatureModal] = useState(false);
 const [featureTitle, setFeatureTitle] = useState("");
@@ -394,6 +397,13 @@ const { data: featureData } = await supabase
   .eq("doctor_id", user.id)
   .order("created_at", { ascending: false });
 if (featureData) setFeatureRequests(featureData);
+// Load avatar
+const { data: avatarData } = await supabase
+  .from("doctors")
+  .select("avatar_url")
+  .eq("user_id", user.id)
+  .single();
+if (avatarData?.avatar_url) setAvatarUrl(avatarData.avatar_url);
 setLoading(false);
     };
     init();
@@ -1344,7 +1354,7 @@ const handleAddShift = async () => {
           <div>
             <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 2 }}>Welcome back</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.6rem", color: "#0f172a" }}>Good day, Dr. {firstName} 👋</h1>
+              <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.6rem", color: "#0f172a" }}>{new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening"}, Dr. {firstName} 👋</h1>
               {tierBadge && <span style={{ background: tierBadge.bg, color: "#fff", fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>{tierBadge.label}</span>}
             </div>
           </div>
