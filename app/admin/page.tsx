@@ -577,7 +577,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"|"feedback">("overview");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -586,11 +586,11 @@ export default function AdminPage() {
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<UserView[]>([]);
-const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
-const [userSearch, setUserSearch] = useState("");
-const [roleFilter, setRoleFilter] = useState("all");
-const [tierFilter, setTierFilter] = useState("all");
-
+  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [tierFilter, setTierFilter] = useState("all");
+  const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string; doctor_id: string }[]>([]);
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -632,11 +632,19 @@ const [tierFilter, setTierFilter] = useState("all");
         }));
         setConnections(mapped);
       }
-const { data: usersData } = await supabase
-  .from("admin_users_view")
-  .select("*")
-  .order("created_at", { ascending: false });
-if (usersData) setUsers(usersData);
+
+      const { data: usersData } = await supabase
+        .from("admin_users_view")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (usersData) setUsers(usersData);
+
+      const { data: featData } = await supabase
+        .from("feature_requests")
+        .select("*")
+        .order("votes", { ascending: false });
+      if (featData) setFeatureRequests(featData);
+
       setLoading(false);
     };
     init();
@@ -756,6 +764,7 @@ if (usersData) setUsers(usersData);
     { key: "broadcasts", label: "Email Broadcasts", icon: "📧" },
     { key: "users", label: "User Management", icon: "👥" },
     { key: "imports", label: "CSV Import", icon: "📥" },
+    { key: "feedback", label: "Feature Requests", icon: "💡" },
   ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"; label: string; icon: string; count?: number }[]).map(item => (
             <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { setActiveTab(item.key); setSearch(""); }}>
               <span>{item.icon}</span>{item.label}
@@ -1066,6 +1075,74 @@ if (usersData) setUsers(usersData);
         {activeTab === "imports" && (
           <ImportTab />
         )}
+        {/* FEATURE REQUESTS */}
+{activeTab === "feedback" && (
+  <div className="fade-up">
+    <div style={{ marginBottom: 24 }}>
+      <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>💡 Feature Requests</h2>
+      <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Suggestions from doctors. Click status to update.</p>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+      {[
+        { label: "Total", value: featureRequests.length, color: "#f8f9fc" },
+        { label: "Submitted", value: featureRequests.filter(f => f.status === "submitted").length, color: "#f1f5f9" },
+        { label: "Under Review", value: featureRequests.filter(f => f.status === "under_review").length, color: "#fefce8" },
+        { label: "Planned", value: featureRequests.filter(f => f.status === "planned").length, color: "#f0fdf4" },
+        { label: "Live", value: featureRequests.filter(f => f.status === "live").length, color: "#f5f3ff" },
+      ].map((s, i) => (
+        <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+          <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {featureRequests.length === 0 ? (
+      <div className="card" style={{ textAlign: "center", padding: "48px 24px", color: "#94a3b8" }}>
+        <div style={{ fontSize: "2rem", marginBottom: 8 }}>💡</div>
+        <p>No feature requests yet</p>
+      </div>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {featureRequests.map(req => (
+          <div key={req.id} className="card">
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: 100, textTransform: "capitalize" }}>{req.category}</span>
+                  <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{new Date(req.created_at).toLocaleDateString("en-GB")}</span>
+                  <span style={{ fontSize: "0.72rem", color: "#7c3aed", fontWeight: 600 }}>👍 {req.votes}</span>
+                </div>
+                <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 4 }}>{req.title}</p>
+                {req.description && <p style={{ fontSize: "0.82rem", color: "#64748b", lineHeight: 1.6 }}>{req.description}</p>}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+                <select
+                  className="tier-select"
+                  value={req.status}
+                  onChange={async e => {
+                    const newStatus = e.target.value;
+                    await supabase.from("feature_requests").update({ status: newStatus }).eq("id", req.id);
+                    setFeatureRequests(prev => prev.map(f => f.id === req.id ? { ...f, status: newStatus } : f));
+                    setMsg("Status updated!");
+                    setTimeout(() => setMsg(""), 2000);
+                  }}
+                >
+                  <option value="submitted">📬 Submitted</option>
+                  <option value="under_review">🔍 Under Review</option>
+                  <option value="planned">📅 Planned</option>
+                  <option value="live">✅ Live</option>
+                  <option value="declined">❌ Declined</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
         {/* USERS */}
         {activeTab === "users" && (
           <div className="fade-up">

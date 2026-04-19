@@ -161,6 +161,12 @@ const [showPartnerForm, setShowPartnerForm] = useState(false);
 const [partnerMessage, setPartnerMessage] = useState("");
 const [sendingPartnerMessage, setSendingPartnerMessage] = useState(false);
 const [partnerDismissed, setPartnerDismissed] = useState(false);
+const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string }[]>([]);
+const [showFeatureModal, setShowFeatureModal] = useState(false);
+const [featureTitle, setFeatureTitle] = useState("");
+const [featureDesc, setFeatureDesc] = useState("");
+const [featureCategory, setFeatureCategory] = useState("dashboard");
+const [submittingFeature, setSubmittingFeature] = useState(false);
   const [profileMatches, setProfileMatches] = useState<{ agency_id: string; agency_name: string; matched_at: string }[]>([]);
 const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
 const [availabilityDate, setAvailabilityDate] = useState(new Date().toISOString().split("T")[0]);
@@ -382,6 +388,12 @@ if (doctorData?.specialty || doctorData?.is_specialist_registrar) {
     }
   }
 }      
+const { data: featureData } = await supabase
+  .from("feature_requests")
+  .select("*")
+  .eq("doctor_id", user.id)
+  .order("created_at", { ascending: false });
+if (featureData) setFeatureRequests(featureData);
 setLoading(false);
     };
     init();
@@ -557,6 +569,28 @@ setLoading(false);
     setSaving(false);
   };
 
+  const handleSubmitFeature = async () => {
+  if (!featureTitle.trim()) return;
+  setSubmittingFeature(true);
+  const { data, error } = await supabase.from("feature_requests").insert({
+    doctor_id: userId,
+    title: featureTitle,
+    description: featureDesc,
+    category: featureCategory,
+    status: "submitted",
+    votes: 1,
+  }).select().single();
+  if (!error && data) {
+    setFeatureRequests(prev => [data, ...prev]);
+    setSaveMsg("Feature request submitted! We review all suggestions.");
+    setTimeout(() => setSaveMsg(""), 4000);
+    setShowFeatureModal(false);
+    setFeatureTitle("");
+    setFeatureDesc("");
+    setFeatureCategory("dashboard");
+  }
+  setSubmittingFeature(false);
+};
   const handleAddAvailability = async () => {
   if (!availabilityDate) return;
   setAddingAvailability(true);
@@ -1077,6 +1111,75 @@ const handleAddShift = async () => {
           disabled={sendingPartnerMessage || !partnerMessage.trim()}
         >
           {sendingPartnerMessage ? "Sending..." : `Express Interest to ${partnerMatch.partner_name}`}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+      {/* FEATURE REQUEST MODAL */}
+{showFeatureModal && (
+  <div className="modal-overlay qm-modal-overlay" onClick={() => setShowFeatureModal(false)}>
+    <div className="modal qm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div>
+          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>💡 Suggest a Feature</h2>
+          <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>We read every suggestion</p>
+        </div>
+        <button onClick={() => setShowFeatureModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+      </div>
+
+      <div style={{ background: "linear-gradient(135deg, #f5f3ff, #ede9fe)", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: "0.82rem", color: "#7c3aed" }}>
+        ✨ Your feedback shapes Quiet. The best suggestions get built into the platform.
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Category</label>
+          <select
+            className="input-field"
+            value={featureCategory}
+            onChange={e => setFeatureCategory(e.target.value)}
+          >
+            <option value="dashboard">Dashboard / Overview</option>
+            <option value="documents">Document Vault</option>
+            <option value="agencies">Agencies</option>
+            <option value="calendar">Calendar</option>
+            <option value="payments">Payments / Billing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Feature Title *</label>
+          <input
+            className="input-field"
+            placeholder="e.g. Add a dark mode option"
+            value={featureTitle}
+            onChange={e => setFeatureTitle(e.target.value)}
+            maxLength={100}
+          />
+          <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 4 }}>{featureTitle.length}/100</p>
+        </div>
+
+        <div>
+          <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Description</label>
+          <textarea
+            className="input-field"
+            rows={4}
+            placeholder="Tell us more about what you'd like and why it would help you..."
+            value={featureDesc}
+            onChange={e => setFeatureDesc(e.target.value)}
+            style={{ resize: "vertical" }}
+          />
+        </div>
+
+        <button
+          className="qm-btn-primary"
+          style={{ width: "100%", padding: "13px", borderRadius: 12 }}
+          onClick={handleSubmitFeature}
+          disabled={submittingFeature || !featureTitle.trim()}
+        >
+          {submittingFeature ? "Submitting..." : "Submit Suggestion →"}
         </button>
       </div>
     </div>
@@ -2480,7 +2583,65 @@ const handleAddShift = async () => {
                 <button onClick={() => { setUpgradeTarget("pro"); setShowUpgradePage(true); }} style={{ background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>View Plans</button>
               </div>
             )}
+
+            {/* Feature Requests */}
+            <div className="card" style={{ marginTop: 20 }}>
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+    <div>
+      <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>💡 Feature Requests</h3>
+      <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>Suggest features you'd like to see in Quiet</p>
+    </div>
+    <button
+      onClick={() => setShowFeatureModal(true)}
+      style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit" }}
+    >
+      + Suggest Feature
+    </button>
+  </div>
+
+  {featureRequests.length === 0 ? (
+    <div style={{ textAlign: "center", padding: "32px 24px", background: "#f8f9fc", borderRadius: 12 }}>
+      <div style={{ fontSize: "2rem", marginBottom: 8 }}>💡</div>
+      <p style={{ fontWeight: 600, color: "#374151", marginBottom: 4 }}>No suggestions yet</p>
+      <p style={{ fontSize: "0.82rem", color: "#94a3b8", marginBottom: 16 }}>Have an idea for making Quiet better? We'd love to hear it.</p>
+      <button
+        onClick={() => setShowFeatureModal(true)}
+        style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
+      >
+        Submit your first suggestion
+      </button>
+    </div>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {featureRequests.map(req => {
+        const statusConfig: Record<string, { label: string; bg: string; color: string }> = {
+          submitted: { label: "📬 Submitted", bg: "#f1f5f9", color: "#64748b" },
+          under_review: { label: "🔍 Under Review", bg: "#fefce8", color: "#92400e" },
+          planned: { label: "📅 Planned", bg: "#f0fdf4", color: "#16a34a" },
+          live: { label: "✅ Live!", bg: "#f5f3ff", color: "#7c3aed" },
+          declined: { label: "❌ Declined", bg: "#fef2f2", color: "#dc2626" },
+        };
+        const sc = statusConfig[req.status] || statusConfig.submitted;
+        return (
+          <div key={req.id} style={{ background: "#f8f9fc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: "0.88rem", color: "#0f172a", marginBottom: 2 }}>{req.title}</p>
+                {req.description && <p style={{ fontSize: "0.78rem", color: "#64748b", lineHeight: 1.5 }}>{req.description}</p>}
+              </div>
+              <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: sc.bg, color: sc.color, whiteSpace: "nowrap", flexShrink: 0 }}>{sc.label}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+              <span style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: 100, textTransform: "capitalize" }}>{req.category}</span>
+              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{new Date(req.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+            </div>
           </div>
+        );
+      })}
+    </div>
+          )}
+        </div>
+      </div>
         )}
         {/* BOTTOM NAV — Mobile/Tablet */}
       <div className="qm-bottom-nav">
