@@ -91,6 +91,11 @@ export default function AgencyDashboardPage() {
   const [spotsUsedThisWeek, setSpotsUsedThisWeek] = useState(0);
   const [outreachUsedThisWeek, setOutreachUsedThisWeek] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [agencyUserId, setAgencyUserId] = useState("");
+const [showSupportModal, setShowSupportModal] = useState(false);
+const [supportSubject, setSupportSubject] = useState("");
+const [supportMessage, setSupportMessage] = useState("");
+const [sendingSupport, setSendingSupport] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing">("overview");
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState("");
@@ -110,6 +115,7 @@ export default function AgencyDashboardPage() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/agency-login"); return; }
+      setAgencyUserId(user.id);
 
       const { data: agencyUser } = await supabase
         .from("agency_users")
@@ -216,6 +222,23 @@ const gradeMatch = grades.length === 0 || grades.some((g: string) => d.grade?.to
     init();
   }, [router]);
 
+  const handleSendSupport = async () => {
+  if (!supportMessage.trim()) return;
+  setSendingSupport(true);
+  await supabase.from("support_messages").insert({
+    user_id: agencyUserId,
+    user_type: "agency",
+    subject: supportSubject || "General enquiry",
+    message: supportMessage,
+    status: "open",
+  });
+  setSendingSupport(false);
+  setShowSupportModal(false);
+  setSupportSubject("");
+  setSupportMessage("");
+  setMsg("Support message sent! We'll get back to you within 24 hours.");
+  setTimeout(() => setMsg(""), 5000);
+};
   const handleSignOut = async () => { await supabase.auth.signOut(); router.push("/"); };
 
   const tier = agency?.tier || "basic";
@@ -1253,26 +1276,60 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
         ))}
       </div>
 
-      {/* BOTTOM NAV — Mobile/Tablet */}
-      <div className="qm-bottom-nav">
-        {([
-          { key: "overview", label: "Home", icon: "⊞" },
-          { key: "leads", label: "Leads", icon: "👨‍⚕️" },
-          { key: "market", label: "Market", icon: "🔍" },
-          { key: "vacancies", label: "Spots", icon: "📋" },
-          { key: "documents", label: "Docs", icon: "📄" },
-          { key: "billing", label: "Billing", icon: "💳" },
-        ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
-          <button
-            key={item.key}
-            className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
-            onClick={() => setActiveTab(item.key)}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* SUPPORT MODAL */}
+      {showSupportModal && (
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowSupportModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>💬 Contact Support</h2>
+                <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>We usually reply within 24 hours</p>
+              </div>
+              <button onClick={() => setShowSupportModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Subject</label>
+                <select className="input-field" value={supportSubject} onChange={e => setSupportSubject(e.target.value)}>
+                  <option value="">Select a topic</option>
+                  <option value="Posting shifts">Posting shifts</option>
+                  <option value="Doctor leads">Doctor leads</option>
+                  <option value="Billing question">Billing question</option>
+                  <option value="Account issue">Account issue</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Message *</label>
+                <textarea
+                  className="input-field"
+                  rows={5}
+                  placeholder="Describe your issue or question in detail..."
+                  value={supportMessage}
+                  onChange={e => setSupportMessage(e.target.value)}
+                  style={{ resize: "vertical" }}
+                />
+              </div>
+              <button
+                className="qm-btn-primary"
+                style={{ width: "100%", padding: "13px", borderRadius: 12 }}
+                onClick={handleSendSupport}
+                disabled={sendingSupport || !supportMessage.trim()}
+              >
+                {sendingSupport ? "Sending..." : "Send Message →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING SUPPORT BUTTON */}
+      <button
+        onClick={() => setShowSupportModal(true)}
+        style={{ position: "fixed", bottom: 80, right: 20, background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", borderRadius: 100, padding: "10px 18px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 16px rgba(51,65,85,0.3)", display: "flex", alignItems: "center", gap: 6, zIndex: 40 }}
+      >
+        💬 <span>Help</span>
+      </button>
     </div>
   );
 }
