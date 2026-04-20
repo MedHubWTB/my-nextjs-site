@@ -590,6 +590,11 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
+  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false);
+const [newDoctorEmail, setNewDoctorEmail] = useState("");
+const [newDoctorName, setNewDoctorName] = useState("");
+const [newDoctorPassword, setNewDoctorPassword] = useState("Quiet2026!");
+const [addingDoctor, setAddingDoctor] = useState(false);
   const [supportMessages, setSupportMessages] = useState<{ id: string; user_id: string; user_type: string; subject: string; message: string; status: string; created_at: string }[]>([]);
   const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string; doctor_id: string }[]>([]);
   useEffect(() => {
@@ -711,6 +716,62 @@ export default function AdminPage() {
       <div style={{ textAlign: "center" }}>
         <div style={{ width: 40, height: 40, border: "3px solid #e0eaff", borderTop: "3px solid #334155", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
         <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>Loading admin dashboard...</p>
+      {/* ADD DOCTOR MODAL */}
+      {showAddDoctorModal && (
+        <div className="modal-overlay" onClick={() => setShowAddDoctorModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, padding: 32, width: "100%", maxWidth: 440, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>Add Doctor</h2>
+              <button onClick={() => setShowAddDoctorModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Full Name</label>
+                <input className="input-field" placeholder="Dr. Jane Smith" value={newDoctorName} onChange={e => setNewDoctorName(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Email *</label>
+                <input className="input-field" type="email" placeholder="doctor@example.com" value={newDoctorEmail} onChange={e => setNewDoctorEmail(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Password</label>
+                <input className="input-field" type="text" value={newDoctorPassword} onChange={e => setNewDoctorPassword(e.target.value)} />
+              </div>
+              <button
+                onClick={async () => {
+                  if (!newDoctorEmail) return;
+                  setAddingDoctor(true);
+                  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+                  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+                  const res = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}`, "apikey": supabaseKey },
+                    body: JSON.stringify({ email: newDoctorEmail, password: newDoctorPassword, email_confirm: true }),
+                  });
+                  const userData = await res.json();
+                  if (userData.id) {
+                    await supabase.from("doctors").upsert({ user_id: userData.id, full_name: newDoctorName || null, email: newDoctorEmail, tier: "basic", onboarding_completed: false }, { onConflict: "user_id" });
+                    await supabase.from("user_profiles").upsert({ id: userData.id, role: "doctor" }, { onConflict: "id" });
+                    setDoctors(prev => [...prev, { user_id: userData.id, full_name: newDoctorName, email: newDoctorEmail, specialty: null, grade: null, phone: null, gmc_number: null, preferred_location: null, tier: "basic" }]);
+                    setMsg("Doctor added successfully!");
+                    setTimeout(() => setMsg(""), 3000);
+                    setShowAddDoctorModal(false);
+                    setNewDoctorEmail("");
+                    setNewDoctorName("");
+                  } else {
+                    setMsg("Failed to create doctor account.");
+                  }
+                  setAddingDoctor(false);
+                }}
+                disabled={addingDoctor || !newDoctorEmail}
+                style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {addingDoctor ? "Adding..." : "Add Doctor"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
@@ -894,7 +955,22 @@ export default function AdminPage() {
 
         {/* DOCTORS TABLE */}
         {activeTab === "doctors" && (
-          <div className="fade-up card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="fade-up">
+            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+              <button
+                onClick={() => setActiveTab("imports")}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                + Import CSV
+              </button>
+              <button
+                onClick={() => setShowAddDoctorModal(true)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                + Add Doctor
+              </button>
+            </div>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             {filteredDoctors.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 24px", color: "#94a3b8" }}>
                 <div style={{ fontSize: "2rem", marginBottom: 8 }}>👨‍⚕️</div>
@@ -943,6 +1019,20 @@ export default function AdminPage() {
                               <option value="advanced">Advanced</option>
                             </select>
                           </td>
+                          <td>
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Delete ${doc.full_name}? This cannot be undone.`)) return;
+                                await supabase.from("doctors").delete().eq("user_id", doc.user_id);
+                                setDoctors(prev => prev.filter(d => d.user_id !== doc.user_id));
+                                setMsg("Doctor deleted.");
+                                setTimeout(() => setMsg(""), 2000);
+                              }}
+                              style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "5px 10px", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                            >
+                              🗑 Delete
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -950,6 +1040,7 @@ export default function AdminPage() {
                 </table>
               </div>
             )}
+          </div>
           </div>
         )}
 
@@ -973,6 +1064,7 @@ export default function AdminPage() {
                       <th>Specialties</th>
                       <th>Current Tier</th>
                       <th>Change Tier</th>
+<th>Actions</th>
                       <th>Top Agency</th>
                     </tr>
                   </thead>
