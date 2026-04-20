@@ -577,7 +577,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"|"feedback">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"|"feedback"|"support">("overview");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -590,6 +590,7 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
+  const [supportMessages, setSupportMessages] = useState<{ id: string; user_id: string; user_type: string; subject: string; message: string; status: string; created_at: string }[]>([]);
   const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string; doctor_id: string }[]>([]);
   useEffect(() => {
     const init = async () => {
@@ -644,6 +645,11 @@ export default function AdminPage() {
         .select("*")
         .order("votes", { ascending: false });
       if (featData) setFeatureRequests(featData);
+      const { data: supportData } = await supabase
+        .from("support_messages")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (supportData) setSupportMessages(supportData);
 
       setLoading(false);
     };
@@ -765,6 +771,7 @@ export default function AdminPage() {
     { key: "users", label: "User Management", icon: "👥" },
     { key: "imports", label: "CSV Import", icon: "📥" },
     { key: "feedback", label: "Feature Requests", icon: "💡" },
+    { key: "support", label: "Support Messages", icon: "💬" },
   ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"; label: string; icon: string; count?: number }[]).map(item => (
             <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { setActiveTab(item.key); setSearch(""); }}>
               <span>{item.icon}</span>{item.label}
@@ -1352,6 +1359,68 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+        {/* SUPPORT MESSAGES */}
+        {activeTab === "support" && (
+          <div className="fade-up">
+            <div style={{ marginBottom: 24 }}>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>💬 Support Messages</h2>
+              <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Messages from doctors and agencies. Click status to update.</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+              {[
+                { label: "Total", value: supportMessages.length, color: "#f8f9fc" },
+                { label: "Open", value: supportMessages.filter(m => m.status === "open").length, color: "#fef2f2" },
+                { label: "In Progress", value: supportMessages.filter(m => m.status === "in_progress").length, color: "#fefce8" },
+                { label: "Resolved", value: supportMessages.filter(m => m.status === "resolved").length, color: "#f0fdf4" },
+              ].map((s, i) => (
+                <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+                  <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            {supportMessages.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "48px 24px", color: "#94a3b8" }}>
+                <div style={{ fontSize: "2rem", marginBottom: 8 }}>💬</div>
+                <p>No support messages yet</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {supportMessages.map(msg => (
+                  <div key={msg.id} className="card">
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: "0.72rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: msg.user_type === "doctor" ? "#f5f3ff" : "#f0fdf4", color: msg.user_type === "doctor" ? "#7c3aed" : "#16a34a" }}>
+                            {msg.user_type === "doctor" ? "👨‍⚕️ Doctor" : "🏥 Agency"}
+                          </span>
+                          {msg.subject && <span style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: 100 }}>{msg.subject}</span>}
+                          <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </div>
+                        <p style={{ fontSize: "0.88rem", color: "#374151", lineHeight: 1.6 }}>{msg.message}</p>
+                      </div>
+                      <select
+                        className="tier-select"
+                        value={msg.status}
+                        onChange={async e => {
+                          const newStatus = e.target.value;
+                          await supabase.from("support_messages").update({ status: newStatus }).eq("id", msg.id);
+                          setSupportMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: newStatus } : m));
+                          setMsg("Status updated!");
+                          setTimeout(() => setMsg(""), 2000);
+                        }}
+                      >
+                        <option value="open">🔴 Open</option>
+                        <option value="in_progress">🟡 In Progress</option>
+                        <option value="resolved">✅ Resolved</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
