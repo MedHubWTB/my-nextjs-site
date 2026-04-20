@@ -37,6 +37,8 @@ type Shift = {
   notes: string;
   agency_id: string | null;
   agency_name?: string;
+  pay_rate?: number | null;
+  total_earned?: number | null;
 };
 
 type Agency = {
@@ -233,7 +235,7 @@ const [addingAvailability, setAddingAvailability] = useState(false);
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showShiftModal, setShowShiftModal] = useState(false);
-  const [newShift, setNewShift] = useState({ type: "availability", start_time: "09:00", end_time: "17:00", agency_id: "", notes: "" });
+  const [newShift, setNewShift] = useState({ type: "shift", start_time: "09:00", end_time: "17:00", notes: "", agency_id: "", pay_rate: 0 });
   const [addingShift, setAddingShift] = useState(false);
 
   useEffect(() => {
@@ -605,6 +607,33 @@ setLoading(false);
   }
   setSubmittingFeature(false);
 };
+const getMonthEarnings = (agencyId?: string) => {
+  return shifts
+    .filter(s => {
+      const d = new Date(s.date + "T12:00:00");
+      const matchMonth = d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear();
+      const matchAgency = !agencyId || s.agency_id === agencyId;
+      return s.type === "shift" && matchMonth && matchAgency && s.total_earned;
+    })
+    .reduce((sum, s) => sum + (s.total_earned || 0), 0);
+};
+
+const getYearEarnings = (agencyId?: string) => {
+  return shifts
+    .filter(s => {
+      const d = new Date(s.date + "T12:00:00");
+      const matchYear = d.getFullYear() === new Date().getFullYear();
+      const matchAgency = !agencyId || s.agency_id === agencyId;
+      return s.type === "shift" && matchYear && matchAgency && s.total_earned;
+    })
+    .reduce((sum, s) => sum + (s.total_earned || 0), 0);
+};
+
+const getTotalEarnings = () => {
+  return shifts
+    .filter(s => s.type === "shift" && s.total_earned)
+    .reduce((sum, s) => sum + (s.total_earned || 0), 0);
+};
 const handleSendSupport = async () => {
   if (!supportMessage.trim()) return;
   setSendingSupport(true);
@@ -714,11 +743,18 @@ const handleAddShift = async () => {
     setAddingShift(true);
     const { data, error } = await supabase.from("shifts").insert({
       doctor_id: userId, date: selectedDate, start_time: newShift.start_time, end_time: newShift.end_time, type: newShift.type, agency_id: newShift.agency_id || null, notes: newShift.notes,
+      pay_rate: newShift.pay_rate || null,
+      total_earned: newShift.pay_rate && newShift.start_time && newShift.end_time ? (() => {
+        const start = new Date(`2000-01-01T${newShift.start_time}`);
+        const end = new Date(`2000-01-01T${newShift.end_time}`);
+        const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        return Math.round(newShift.pay_rate * hours * 100) / 100;
+      })() : null,
     }).select().single();
     if (!error && data) { const agencyName = agencies.find(a => a.id === newShift.agency_id)?.agency_name; setShifts(prev => [...prev, { ...data, agency_name: agencyName }]); }
     setAddingShift(false);
     setShowShiftModal(false);
-    setNewShift({ type: "availability", start_time: "09:00", end_time: "17:00", agency_id: "", notes: "" });
+    setNewShift({ type: "availability", start_time: "09:00", end_time: "17:00", agency_id: "", notes: "", pay_rate: 0 });
   };
 
   const handleSaveAppraisal = async () => {
@@ -1311,6 +1347,16 @@ const handleAddShift = async () => {
                 <div><label>Start Time</label><input className="input-field" type="time" value={newShift.start_time} onChange={e => setNewShift({ ...newShift, start_time: e.target.value })} /></div>
                 <div><label>End Time</label><input className="input-field" type="time" value={newShift.end_time} onChange={e => setNewShift({ ...newShift, end_time: e.target.value })} /></div>
               </div>
+              <div>
+  <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Pay Rate (£/hr)</label>
+  <input
+    className="input-field"
+    type="number"
+    placeholder="e.g. 75"
+    value={newShift.pay_rate || ""}
+    onChange={e => setNewShift({ ...newShift, pay_rate: parseFloat(e.target.value) || 0 })}
+  />
+</div>
               <div><label>Notes (optional)</label><input className="input-field" placeholder="e.g. Night shift, A&E" value={newShift.notes} onChange={e => setNewShift({ ...newShift, notes: e.target.value })} /></div>
               <button className="btn-blue" style={{ width: "100%", marginTop: 4 }} onClick={handleAddShift} disabled={addingShift}>{addingShift ? "Saving..." : "Save Entry"}</button>
             </div>
@@ -1410,6 +1456,8 @@ const handleAddShift = async () => {
         { label: "Hours This Year", value: getYearHours().toFixed(1) + "h", icon: "📅", color: "#fefce8" },
         { label: "Connected Agencies", value: agencies.length, icon: "🏥", color: "#f8f9fc" },
         { label: "Matched Agencies", value: profileMatches.length, icon: "✨", color: "#fdf4ff" },
+        { label: "Earned This Month", value: `£${getMonthEarnings().toFixed(0)}`, icon: "💷", color: "#f0fdf4" },
+{ label: "Earned This Year", value: `£${getYearEarnings().toFixed(0)}`, icon: "📈", color: "#fefce8" },
       ].map((stat, i) => (
         <div key={i} className="card" style={{ background: stat.color, border: "none" }}>
           <div style={{ fontSize: "1.3rem", marginBottom: 8 }}>{stat.icon}</div>
@@ -1661,7 +1709,47 @@ const handleAddShift = async () => {
     </div>
   </div>
 )}
-
+{/* Earnings Breakdown */}
+{getTotalEarnings() > 0 && (
+  <div className="fade-up-3 card" style={{ marginBottom: 20 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>💷 Earnings Breakdown</h2>
+      <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("calendar")}>View all shifts →</button>
+    </div>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 16 }}>
+      {[
+        { label: "This Month", value: `£${getMonthEarnings().toFixed(2)}`, icon: "📅", color: "#f0fdf4" },
+        { label: "This Year", value: `£${getYearEarnings().toFixed(2)}`, icon: "📈", color: "#fefce8" },
+        { label: "All Time", value: `£${getTotalEarnings().toFixed(2)}`, icon: "💰", color: "#f5f3ff" },
+      ].map((s, i) => (
+        <div key={i} style={{ background: s.color, borderRadius: 12, padding: "14px 16px", border: "1px solid #e2e8f0", textAlign: "center" }}>
+          <div style={{ fontSize: "1.2rem", marginBottom: 4 }}>{s.icon}</div>
+          <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+    {agencies.length > 0 && (
+      <div>
+        <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>By Agency</p>
+        {agencies.map(ag => {
+          const agEarnings = getYearEarnings(ag.id);
+          if (agEarnings === 0) return null;
+          return (
+            <div key={ag.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "1rem" }}>🏥</span>
+                <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{ag.agency_name}</span>
+              </div>
+              <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#16a34a" }}>£{agEarnings.toFixed(2)}</span>
+            </div>
+          );
+        })}
+      </div>
+    )}
+    <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 12 }}>💡 Earnings are calculated from logged shifts with pay rates. Add a pay rate when logging a shift to track earnings.</p>
+  </div>
+)}
     {/* Referral Card */}
     <div className="fade-up-3 card" style={{ background: "linear-gradient(135deg, #f0fdf4, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
