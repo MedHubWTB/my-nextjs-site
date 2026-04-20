@@ -1231,6 +1231,48 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
           </div>
         )}
       </div>
+
+      {/* BOTTOM NAV — Mobile/Tablet */}
+      <div className="qm-bottom-nav">
+        {([
+          { key: "overview", label: "Home", icon: "⊞" },
+          { key: "leads", label: "Leads", icon: "👨‍⚕️" },
+          { key: "market", label: "Market", icon: "🔍" },
+          { key: "vacancies", label: "Spots", icon: "📋" },
+          { key: "documents", label: "Docs", icon: "📄" },
+          { key: "billing", label: "Billing", icon: "💳" },
+        ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
+          <button
+            key={item.key}
+            className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
+            onClick={() => setActiveTab(item.key)}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* BOTTOM NAV — Mobile/Tablet */}
+      <div className="qm-bottom-nav">
+        {([
+          { key: "overview", label: "Home", icon: "⊞" },
+          { key: "leads", label: "Leads", icon: "👨‍⚕️" },
+          { key: "market", label: "Market", icon: "🔍" },
+          { key: "vacancies", label: "Spots", icon: "📋" },
+          { key: "documents", label: "Docs", icon: "📄" },
+          { key: "billing", label: "Billing", icon: "💳" },
+        ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
+          <button
+            key={item.key}
+            className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
+            onClick={() => setActiveTab(item.key)}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
