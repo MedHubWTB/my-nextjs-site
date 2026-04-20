@@ -6,7 +6,7 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   };
   const s = sizes[size];
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <a href="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
       <div style={{
         width: s.box,
         height: s.box,
@@ -23,6 +23,6 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
       <span style={{ fontWeight: 700, fontSize: size === "lg" ? "1.2rem" : "1rem", color: "#7c3aed", letterSpacing: "-0.02em" }}>
         Quiet<span style={{ color: "#334155" }}>.</span>
       </span>
-    </div>
+    </a>
   );
 }
