@@ -2675,16 +2675,14 @@ const handleAddShift = async () => {
               <div style={{ width: 64, height: 64, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "1.3rem" }}>{initials}</div>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-  <p style={{ fontWeight: 700, fontSize: "1.05rem", color: "#0f172a" }}>{doctor?.full_name}</p>
-  {doctor?.is_verified && (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 100, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 700, color: "#16a34a" }}>
-      ✅ Verified
-    </span>
-  )}
-</div>
-                  {tierBadge && <span style={{ background: tierBadge.bg, color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100 }}>{tierBadge.label}</span>}
-                </div>
+                    <p style={{ fontWeight: 700, fontSize: "1.05rem", color: "#0f172a" }}>{doctor?.full_name}</p>
+                    {doctor?.is_verified && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 100, padding: "2px 8px", fontSize: "0.72rem", fontWeight: 700, color: "#16a34a" }}>
+                        ✅ Verified
+                      </span>
+                    )}
+                    {tierBadge && <span style={{ background: tierBadge.bg, color: "#fff", fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100 }}>{tierBadge.label}</span>}
+                  </div>
                 <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>{doctor?.email}</p>
               </div>
             </div>
