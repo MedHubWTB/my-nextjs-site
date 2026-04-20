@@ -164,6 +164,10 @@ const [partnerDismissed, setPartnerDismissed] = useState(false);
 const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 const [showProfileMenu, setShowProfileMenu] = useState(false);
 const [uploadingAvatar, setUploadingAvatar] = useState(false);
+const [showSupportModal, setShowSupportModal] = useState(false);
+const [supportSubject, setSupportSubject] = useState("");
+const [supportMessage, setSupportMessage] = useState("");
+const [sendingSupport, setSendingSupport] = useState(false);
 const [featureRequests, setFeatureRequests] = useState<{ id: string; title: string; description: string; category: string; status: string; votes: number; created_at: string }[]>([]);
 const [showFeatureModal, setShowFeatureModal] = useState(false);
 const [featureTitle, setFeatureTitle] = useState("");
@@ -601,7 +605,24 @@ setLoading(false);
   }
   setSubmittingFeature(false);
 };
-  const handleAddAvailability = async () => {
+const handleSendSupport = async () => {
+  if (!supportMessage.trim()) return;
+  setSendingSupport(true);
+  await supabase.from("support_messages").insert({
+    user_id: userId,
+    user_type: "doctor",
+    subject: supportSubject || "General enquiry",
+    message: supportMessage,
+    status: "open",
+  });
+  setSendingSupport(false);
+  setShowSupportModal(false);
+  setSupportSubject("");
+  setSupportMessage("");
+  setSaveMsg("Support message sent! We'll get back to you within 24 hours.");
+  setTimeout(() => setSaveMsg(""), 5000);
+};  
+const handleAddAvailability = async () => {
   if (!availabilityDate) return;
   setAddingAvailability(true);
   const { data, error } = await supabase.from("shifts").insert({
@@ -2680,6 +2701,62 @@ const handleAddShift = async () => {
         ))}
       </div>
       </div>
+
+      {/* SUPPORT MODAL */}
+      {showSupportModal && (
+        <div className="modal-overlay qm-modal-overlay" onClick={() => setShowSupportModal(false)}>
+          <div className="modal qm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>💬 Contact Support</h2>
+                <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>We usually reply within 24 hours</p>
+              </div>
+              <button onClick={() => setShowSupportModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Subject</label>
+                <select className="input-field" value={supportSubject} onChange={e => setSupportSubject(e.target.value)}>
+                  <option value="">Select a topic</option>
+                  <option value="Account issue">Account issue</option>
+                  <option value="Document upload problem">Document upload problem</option>
+                  <option value="Agency connection issue">Agency connection issue</option>
+                  <option value="Calendar issue">Calendar issue</option>
+                  <option value="Billing question">Billing question</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Message *</label>
+                <textarea
+                  className="input-field"
+                  rows={5}
+                  placeholder="Describe your issue or question in detail..."
+                  value={supportMessage}
+                  onChange={e => setSupportMessage(e.target.value)}
+                  style={{ resize: "vertical" }}
+                />
+              </div>
+              <button
+                className="qm-btn-primary"
+                style={{ width: "100%", padding: "13px", borderRadius: 12 }}
+                onClick={handleSendSupport}
+                disabled={sendingSupport || !supportMessage.trim()}
+              >
+                {sendingSupport ? "Sending..." : "Send Message →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING SUPPORT BUTTON */}
+      <button
+        onClick={() => setShowSupportModal(true)}
+        style={{ position: "fixed", bottom: 80, right: 20, background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", borderRadius: 100, padding: "10px 18px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 16px rgba(51,65,85,0.3)", display: "flex", alignItems: "center", gap: 6, zIndex: 40 }}
+      >
+        💬 <span>Help</span>
+      </button>
     </div>
   );
 }
