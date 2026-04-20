@@ -29,6 +29,7 @@ type Doctor = {
   gmc_number: string | null;
   preferred_location: string | null;
   tier: string;
+  is_verified?: boolean;
 };
 
 type Agency = {
@@ -1022,6 +1023,20 @@ const [addingDoctor, setAddingDoctor] = useState(false);
                           <td>
                             <button
                               onClick={async () => {
+                                const newVal = !doc.is_verified;
+                                await supabase.from("doctors").update({ is_verified: newVal, verified_at: newVal ? new Date().toISOString() : null }).eq("user_id", doc.user_id);
+                                setDoctors(prev => prev.map(d => d.user_id === doc.user_id ? { ...d, is_verified: newVal } : d));
+                                setMsg(newVal ? "Doctor verified!" : "Verification removed.");
+                                setTimeout(() => setMsg(""), 2000);
+                              }}
+                              style={{ background: doc.is_verified ? "#f0fdf4" : "#f8f9fc", color: doc.is_verified ? "#16a34a" : "#94a3b8", border: `1.5px solid ${doc.is_verified ? "#bbf7d0" : "#e2e8f0"}`, padding: "5px 10px", borderRadius: 8, fontSize: "0.78rem", cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                            >
+                              {doc.is_verified ? "✅ Verified" : "○ Verify"}
+                            </button>
+                          </td>
+                          <td>
+                            <button
+                              onClick={async () => {
                                 if (!confirm(`Delete ${doc.full_name}? This cannot be undone.`)) return;
                                 await supabase.from("doctors").delete().eq("user_id", doc.user_id);
                                 setDoctors(prev => prev.filter(d => d.user_id !== doc.user_id));
@@ -1064,6 +1079,7 @@ const [addingDoctor, setAddingDoctor] = useState(false);
                       <th>Specialties</th>
                       <th>Current Tier</th>
                       <th>Change Tier</th>
+<th>Verified</th>
 <th>Actions</th>
                       <th>Top Agency</th>
                     </tr>
