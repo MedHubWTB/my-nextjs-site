@@ -1,24 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 import Logo from "../components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
+  useEffect(() => {
+    router.prefetch("/dashboard");
+    router.prefetch("/admin");
+    router.prefetch("/agency-dashboard");
+    router.prefetch("/onboarding");
+  }, [router]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const redirectAfterLogin = async (userId: string) => {
-    const { data: adminData } = await supabase.from("admins").select("id").eq("user_id", userId).single();
-    if (adminData) { router.push("/admin"); return; }
-    const { data: agencyUser } = await supabase.from("agency_users").select("id").eq("user_id", userId).single();
-    if (agencyUser) { router.push("/agency-dashboard"); return; }
-    const { data: doctorData } = await supabase.from("doctors").select("onboarding_completed").eq("user_id", userId).single();
-    if (!doctorData || !doctorData.onboarding_completed) { router.push("/onboarding"); return; }
+    const [adminResult, agencyResult, doctorResult] = await Promise.all([
+      supabase.from("admins").select("id").eq("user_id", userId).single(),
+      supabase.from("agency_users").select("id").eq("user_id", userId).single(),
+      supabase.from("doctors").select("onboarding_completed").eq("user_id", userId).single(),
+    ]);
+    if (adminResult.data) { router.push("/admin"); return; }
+    if (agencyResult.data) { router.push("/agency-dashboard"); return; }
+    if (!doctorResult.data || !doctorResult.data.onboarding_completed) { router.push("/onboarding"); return; }
     router.push("/dashboard");
   };
 
@@ -32,44 +40,204 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8f9fc 0%, #f1f0f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-inter), Inter, sans-serif", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 440 }}>
-        <div style={{ marginBottom: 40 }}><Logo /></div>
+    <div style={{
+      minHeight: "100dvh",
+      background: "linear-gradient(135deg, #f8f9fc 0%, #f1f0f8 100%)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "var(--font-inter), Inter, sans-serif",
+      padding: "24px 16px",
+    }}>
+      <style>{`
+        * { box-sizing: border-box; }
+        .login-card {
+          width: 100%;
+          max-width: 440px;
+        }
+        .qm-input {
+          width: 100%;
+          padding: 13px 16px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 12px;
+          font-size: 1rem;
+          color: #0f172a;
+          background: #fff;
+          outline: none;
+          font-family: inherit;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          -webkit-appearance: none;
+        }
+        .qm-input:focus {
+          border-color: #7c3aed;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+        }
+        .qm-input::placeholder { color: #94a3b8; }
+        .qm-btn-primary {
+          width: 100%;
+          padding: 14px;
+          background: linear-gradient(135deg, #7c3aed, #6d28d9);
+          color: #fff;
+          font-weight: 600;
+          font-size: 1rem;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.2s;
+          box-shadow: 0 2px 12px rgba(124,58,237,0.3);
+          -webkit-appearance: none;
+        }
+        .qm-btn-primary:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+        }
+        .qm-btn-primary:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+        @media (max-width: 480px) {
+          .login-card {
+            max-width: 100%;
+          }
+          .login-box {
+            padding: 28px 20px !important;
+            border-radius: 16px !important;
+          }
+          .login-title {
+            font-size: 1.4rem !important;
+          }
+        }
+        @media (min-width: 481px) and (max-width: 768px) {
+          .login-card {
+            max-width: 420px;
+          }
+        }
+      `}</style>
 
-        <div style={{ background: "#fff", borderRadius: 20, padding: "36px", border: "1px solid #e2e8f0", boxShadow: "0 4px 24px rgba(51,65,85,0.08)" }}>
-          <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0f172a", marginBottom: 6, letterSpacing: "-0.02em" }}>Welcome back</h1>
+      <div className="login-card">
+        <div style={{ marginBottom: 32 }}><Logo /></div>
+
+        <div
+          className="login-box"
+          style={{
+            background: "#fff",
+            borderRadius: 20,
+            padding: "36px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 4px 24px rgba(51,65,85,0.08)",
+          }}
+        >
+          <h1
+            className="login-title"
+            style={{
+              fontSize: "1.6rem",
+              fontWeight: 700,
+              color: "#0f172a",
+              marginBottom: 6,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Welcome back
+          </h1>
           <p style={{ color: "#64748b", fontSize: "0.88rem", marginBottom: 28 }}>
             Don&apos;t have an account?{" "}
-            <a href="/signup" style={{ color: "#7c3aed", fontWeight: 600, textDecoration: "none" }}>Create one</a>
+            <a href="/signup" style={{ color: "#7c3aed", fontWeight: 600, textDecoration: "none" }}>
+              Create one
+            </a>
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <div>
-              <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Email address</label>
-              <input className="qm-input" type="email" placeholder="doctor@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} />
+              <label style={{
+                display: "block",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                color: "#64748b",
+                marginBottom: 8,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}>
+                Email address
+              </label>
+              <input
+                className="qm-input"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="doctor@example.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
+              />
             </div>
 
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>Password</label>
-                <a href="/forgot-password" style={{ fontSize: "0.78rem", color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}>Forgot password?</a>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <label style={{
+                    display: "block",
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    color: "#64748b",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}>
+                    Password
+                  </label>
+                  <a
+                    href="/forgot-password"
+                    style={{ fontSize: "0.82rem", color: "#7c3aed", textDecoration: "none", fontWeight: 500 }}
+                  >
+                    Forgot password?
+                  </a>
+                </div>
               </div>
-              <input className="qm-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} />
+              <input
+                className="qm-input"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
+              />
             </div>
 
             {error && (
-              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "10px 14px", color: "#dc2626", fontSize: "0.85rem" }}>{error}</div>
+              <div style={{
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: 10,
+                padding: "12px 14px",
+                color: "#dc2626",
+                fontSize: "0.88rem",
+                lineHeight: 1.5,
+              }}>
+                {error}
+              </div>
             )}
 
-            <button className="qm-btn-primary" style={{ width: "100%", padding: "13px", fontSize: "0.95rem", borderRadius: 12 }} onClick={handleLogin} disabled={loading}>
-              {loading ? "Signing in..." : "Sign in to QuietMedical"}
+            <button
+              className="qm-btn-primary"
+              onClick={handleLogin}
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in to Quiet"}
             </button>
-
           </div>
         </div>
 
-        <p style={{ marginTop: 20, fontSize: "0.75rem", color: "#94a3b8", textAlign: "center", lineHeight: 1.6 }}>
-          By signing in you agree to QuietMedical&apos;s Terms of Service and Privacy Policy.
+        <p style={{
+          marginTop: 20,
+          fontSize: "0.75rem",
+          color: "#94a3b8",
+          textAlign: "center",
+          lineHeight: 1.6,
+          padding: "0 8px",
+        }}>
+          By signing in you agree to Quiet&apos;s Terms of Service and Privacy Policy.
         </p>
       </div>
     </div>
