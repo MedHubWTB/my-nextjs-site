@@ -1175,9 +1175,136 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
         {activeTab === "billing" && (
           <div className="fade-up">
             <div style={{ marginBottom: 24 }}>
-              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a" }}>Billing & Subscription</h2>
-              <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Manage your quiet plan.</p>
+              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>Billing & Subscription</h2>
+              <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Your current plan and available upgrades.</p>
             </div>
+
+            {/* Current plan */}
+            <div className="card" style={{ marginBottom: 24, background: "linear-gradient(135deg, #f8f9fc, #f5f3ff)", border: "1.5px solid #ddd6fe" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, background: isAdvanced ? "linear-gradient(135deg, #1e293b, #334155)" : isPro ? "linear-gradient(135deg, #7c3aed, #6d28d9)" : "#f1f5f9", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem" }}>
+                    {isAdvanced ? "⚡" : isPro ? "💎" : "🏥"}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>
+                      {isAdvanced ? "Advanced Plan" : isPro ? "Pro Plan" : "Base Plan (Free)"}
+                    </p>
+                    <p style={{ fontSize: "0.82rem", color: "#64748b" }}>
+                      {isAdvanced ? "£800/month · No referral fees" : isPro ? "£275/month · £200 referral fee" : "Free · £500 referral fee per placement"}
+                    </p>
+                  </div>
+                </div>
+                {!isAdvanced && (
+                  <span style={{ fontSize: "0.78rem", background: "#f5f3ff", color: "#7c3aed", border: "1px solid #ddd6fe", padding: "4px 12px", borderRadius: 100, fontWeight: 600 }}>
+                    Upgrade available ↓
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Pricing cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
+
+              {/* Base */}
+              <div style={{ background: "#fff", borderRadius: 16, border: `2px solid ${!isPro && !isAdvanced ? "#7c3aed" : "#e2e8f0"}`, padding: "24px", position: "relative" }}>
+                {!isPro && !isAdvanced && (
+                  <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "#7c3aed", color: "#fff", fontSize: "0.68rem", fontWeight: 700, padding: "3px 12px", borderRadius: 100, whiteSpace: "nowrap" }}>CURRENT PLAN</div>
+                )}
+                <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Base</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#0f172a" }}>Free</span>
+                </div>
+                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", fontSize: "0.75rem", color: "#dc2626", fontWeight: 600, marginBottom: 16 }}>
+                  £500 referral fee per placement
+                </div>
+                {["1 spot/week", "Summarised CV", "Passive leads", "Blurred profiles"].map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                    <span style={{ color: "#16a34a", fontWeight: 700, fontSize: "0.85rem" }}>✓</span>
+                    <span style={{ fontSize: "0.82rem", color: "#374151" }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pro */}
+              <div style={{ background: "#fff", borderRadius: 16, border: `2px solid ${isPro && !isAdvanced ? "#7c3aed" : "#e2e8f0"}`, padding: "24px", position: "relative" }}>
+                {isPro && !isAdvanced && (
+                  <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "#7c3aed", color: "#fff", fontSize: "0.68rem", fontWeight: 700, padding: "3px 12px", borderRadius: 100, whiteSpace: "nowrap" }}>CURRENT PLAN</div>
+                )}
+                <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Pro</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#0f172a" }}>£275</span>
+                  <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>/month</span>
+                </div>
+                <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: 4 }}>or £2,750/year</p>
+                <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", fontSize: "0.75rem", color: "#dc2626", fontWeight: 600, marginBottom: 16 }}>
+                  £200 referral fee per placement
+                </div>
+                {["2 spots/week", "2 outreach/week", "Registration Pathways", "Newsletter access"].map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                    <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "0.85rem" }}>✓</span>
+                    <span style={{ fontSize: "0.82rem", color: "#374151" }}>{f}</span>
+                  </div>
+                ))}
+                {isBase && (
+                  <button disabled style={{ width: "100%", marginTop: 16, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "11px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "not-allowed", fontFamily: "inherit", opacity: 0.7 }}>
+                    💳 Upgrade to Pro — Coming Soon
+                  </button>
+                )}
+              </div>
+
+              {/* Advanced */}
+              <div style={{ background: isAdvanced ? "linear-gradient(135deg, #f8f9fc, #f1f0f8)" : "#fff", borderRadius: 16, border: `2px solid ${isAdvanced ? "#334155" : "#e2e8f0"}`, padding: "24px", position: "relative" }}>
+                {isAdvanced && (
+                  <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", fontSize: "0.68rem", fontWeight: 700, padding: "3px 12px", borderRadius: 100, whiteSpace: "nowrap" }}>CURRENT PLAN</div>
+                )}
+                <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#334155", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Advanced</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#0f172a" }}>£800</span>
+                  <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>/month</span>
+                </div>
+                <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: 4 }}>or £8,000/year</p>
+                <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "6px 10px", fontSize: "0.75rem", color: "#16a34a", fontWeight: 600, marginBottom: 16 }}>
+                  ✅ No referral fee
+                </div>
+                {["Unlimited spots", "Full name access", "Unlimited outreach", "Top Agency Status", "2x email blasts/month", "API integration"].map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                    <span style={{ color: "#334155", fontWeight: 700, fontSize: "0.85rem" }}>✓</span>
+                    <span style={{ fontSize: "0.82rem", color: "#374151" }}>{f}</span>
+                  </div>
+                ))}
+                {!isAdvanced && (
+                  <button disabled style={{ width: "100%", marginTop: 16, background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "11px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "not-allowed", fontFamily: "inherit", opacity: 0.7 }}>
+                    💳 Upgrade to Advanced — Coming Soon
+                  </button>
+                )}
+              </div>
+
+              {/* Enterprise */}
+              <div style={{ background: "linear-gradient(135deg, #f8f9fc, #f1f0f8)", borderRadius: 16, border: "1.5px dashed #ddd6fe", padding: "24px" }}>
+                <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Enterprise</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#0f172a" }}>Custom</span>
+                </div>
+                <p style={{ fontSize: "0.78rem", color: "#94a3b8", marginBottom: 16 }}>Tailored for large agencies and NHS trusts</p>
+                {["Everything in Advanced", "Dedicated account manager", "Custom integrations", "SLA guarantee", "Volume pricing"].map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0" }}>
+                    <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "0.85rem" }}>✓</span>
+                    <span style={{ fontSize: "0.82rem", color: "#374151" }}>{f}</span>
+                  </div>
+                ))}
+                <a href="mailto:hello@quietmedical.co.uk" style={{ display: "block", textAlign: "center", marginTop: 16, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "11px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", textDecoration: "none" }}>
+                  Contact Sales
+                </a>
+              </div>
+            </div>
+
+            <div className="card" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+              <p style={{ fontSize: "0.85rem", color: "#92400e", fontWeight: 600, marginBottom: 4 }}>💳 Online payments coming soon</p>
+              <p style={{ fontSize: "0.82rem", color: "#92400e" }}>To upgrade your plan, please contact us at <a href="mailto:hello@quietmedical.co.uk" style={{ color: "#7c3aed", fontWeight: 600 }}>hello@quietmedical.co.uk</a> and we'll upgrade your account manually.</p>
+            </div>
+          </div>
+        )}
             <div className="card" style={{ marginBottom: 20 }}>
               <h3 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 16 }}>Current Plan</h3>
               <div style={{ background: tierBadge ? "linear-gradient(135deg, #fdf4ff, #f5f3ff)" : "#f8faff", border: `1.5px solid ${tierBadge ? "#d8b4fe" : "#e2e8f0"}`, borderRadius: 14, padding: "20px 24px" }}>
@@ -1246,14 +1373,10 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
             {isAdvanced && (
               <div className="card">
                 <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 16 }}>Subscription Details</h3>
-                <div style={{ background: "#f0f9ff", borderRadius: 12, padding: "16px", border: "1px solid #bae6fd" }}>
-                  <p style={{ fontSize: "0.85rem", color: "#0369a1", textAlign: "center" }}>💳 Billing portal coming soon — manage your subscription via Stripe.</p>
-                </div>
+                <p style={{ fontSize: "0.85rem", color: "#64748b" }}>You are on the Advanced plan. Contact us to manage your subscription.</p>
               </div>
             )}
           </div>
-        )}
-      </div>
 
       {/* BOTTOM NAV — Mobile/Tablet */}
       <div className="qm-bottom-nav">
