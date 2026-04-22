@@ -34,11 +34,11 @@ export default function NotificationBell({ userId }: { userId: string }) {
   };
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
+    <div ref={ref} style={{ position: "relative", zIndex: 50 }}>
       {/* Bell Button */}
       <button
         onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead(); }}
-        style={{ position: "relative", background: "#f8f9fc", border: "1.5px solid #e2e8f0", borderRadius: 12, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "1.1rem" }}
+        style={{ position: "relative", background: "#f8f9fc", border: "1.5px solid #e2e8f0", borderRadius: 12, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "1.1rem", flexShrink: 0 }}
       >
         🔔
         {unreadCount > 0 && (
