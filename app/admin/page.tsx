@@ -1,5 +1,6 @@
 "use client";
 
+import { notify } from "../lib/notify";
 import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
@@ -698,6 +699,10 @@ const [addingDoctor, setAddingDoctor] = useState(false);
   const handleDoctorTier = async (user_id: string, tier: string) => {
     setSavingTier(user_id);
     const { error } = await supabase.from("doctors").update({ tier }).eq("user_id", user_id);
+    // Notify doctor of tier change
+if (!error) {
+  await notify(user_id, "Your Plan Has Been Updated! 🎉", `Your account has been upgraded to the ${tier.charAt(0).toUpperCase() + tier.slice(1)} plan.`, "success", "/dashboard");
+}
     if (!error) {
       setDoctors(prev => prev.map(d => d.user_id === user_id ? { ...d, tier } : d));
       setMsg("Tier updated!");
@@ -709,6 +714,16 @@ const [addingDoctor, setAddingDoctor] = useState(false);
   const handleAgencyTier = async (id: string, tier: string) => {
     setSavingTier(id);
     const { error } = await supabase.from("agencies").update({ tier }).eq("id", id);
+    // Notify agency of tier change
+if (!error) {
+  const agencyToNotify = agencies.find(a => a.id === id);
+  if (agencyToNotify) {
+    const { data: agUser } = await supabase.from("agency_users").select("user_id").eq("agency_id", id).single();
+    if (agUser) {
+      await notify(agUser.user_id, "Your Plan Has Been Updated! 🎉", `Your agency has been upgraded to the ${tier.charAt(0).toUpperCase() + tier.slice(1)} plan.`, "success", "/agency-dashboard");
+    }
+  }
+}
     if (!error) {
       setAgencies(prev => prev.map(a => a.id === id ? { ...a, tier } : a));
       setMsg("Tier updated!");

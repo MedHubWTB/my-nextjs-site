@@ -1,5 +1,6 @@
 "use client";
 
+import { notify } from "../lib/notify";
 import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
@@ -320,6 +321,11 @@ if (extDocs) setExternalDoctors(extDocs);
 
   const handleAcceptDoctorConnection = async (connId: string) => {
     await supabase.from("doctor_agencies").update({ status: "accepted", responded_at: new Date().toISOString() }).eq("id", connId);
+    // Notify doctor their connection was accepted
+const acceptedConn = connectionRequests.find(r => r.id === connId);
+if (acceptedConn?.doctor_id) {
+  await notify(acceptedConn.doctor_id, "Connection Accepted! 🎉", `${agency?.agency_name} accepted your connection request.`, "success", "/dashboard");
+}
     setConnectionRequests(prev => prev.filter(c => c.id !== connId));
     const { data: doctorLinks } = await supabase.from("doctor_agencies").select("doctor_id, doctors(*)").eq("agency_id", agency?.id).eq("status", "accepted");
     if (doctorLinks) {
@@ -333,6 +339,11 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
 
   const handleDeclineDoctorConnection = async (connId: string) => {
     await supabase.from("doctor_agencies").update({ status: "declined", responded_at: new Date().toISOString() }).eq("id", connId);
+    // Notify doctor their connection was declined
+const declinedConn = connectionRequests.find(r => r.id === connId);
+if (declinedConn?.doctor_id) {
+  await notify(declinedConn.doctor_id, "Connection Update", `${agency?.agency_name} was unable to connect at this time.`, "warning", "/dashboard");
+}
     setConnectionRequests(prev => prev.filter(c => c.id !== connId));
     setMsg("Connection declined.");
     setTimeout(() => setMsg(""), 2500);
@@ -407,6 +418,10 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
       doctor_id: messageDoctor.user_id,
       message: messageText,
     });
+    // Notify doctor of new message
+if (messageDoctor?.user_id) {
+  await notify(messageDoctor.user_id, `New Message from ${agency?.agency_name}`, messageText, "info", "/dashboard");
+}
     // Update outreach usage
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());

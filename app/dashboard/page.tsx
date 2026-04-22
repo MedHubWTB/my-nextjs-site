@@ -1,5 +1,6 @@
 "use client";
 
+import { notify } from "../lib/notify";
 import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
@@ -511,6 +512,10 @@ setLoading(false);
       const agencyInfo = Array.isArray(d.agencies) ? d.agencies[0] : d.agencies;
       setConnections(prev => [...prev, { ...d, agency_name: agencyInfo?.agency_name, agency_email: agencyInfo?.contact_email }]);
       await triggerEmail("connection_request", { agency_email: agencyInfo?.contact_email, agency_name: agencyInfo?.agency_name, doctor_name: doctor?.full_name, doctor_specialty: doctor?.specialty, doctor_grade: doctor?.grade });
+      // Notify the agency of new connection request
+if (agencyInfo?.user_id) {
+  await notify(agencyInfo.user_id, "New Connection Request", `Dr. ${doctor?.full_name} wants to connect with your agency.`, "info", "/agency-dashboard");
+}
       setSaveMsg("Connection request sent!");
       setTimeout(() => setSaveMsg(""), 3000);
     }
@@ -595,6 +600,10 @@ setLoading(false);
         const agencyInfo = Array.isArray(d.agencies) ? d.agencies[0] : d.agencies;
         setShareRequests(prev => { const filtered = prev.filter(s => !(s.document_id === sendingDoc.id && s.agency_id === agencyId)); return [...filtered, { ...d, agency_name: agencyInfo?.agency_name } as ShareRequest]; });
         await triggerEmail("document_share", { agency_email: agencyInfo?.contact_email, agency_name: agencyInfo?.agency_name, doctor_name: doctor?.full_name, file_name: sendingDoc.file_name });
+        // Notify the agency of shared document
+if (agencyInfo?.user_id) {
+  await notify(agencyInfo.user_id, "New Document Shared", `Dr. ${doctor?.full_name} shared a document: ${sendingDoc?.file_name}`, "info", "/agency-dashboard");
+}
       }
     }
     setSending(false);
