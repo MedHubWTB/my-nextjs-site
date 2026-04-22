@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
+import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 type Agency = {
   id: string;
@@ -110,6 +111,27 @@ const [sendingSupport, setSendingSupport] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [msg, setMsg] = useState("");
+  useRealtimeSync({
+  agencyId: agency?.id,
+  onAgencyUpdate: (updated) => {
+    setAgency(prev => prev ? { ...prev, ...updated } : prev);
+  },
+  onAnyConnectionUpdate: (updated) => {
+    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+  },
+  onAnyVacancyUpdate: (updated) => {
+    setVacancies(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
+  },
+  onAnyMessageUpdate: (updated) => {
+    setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
+  },
+  onAnyInvoiceUpdate: (updated) => {
+    setInvoices(prev => prev.map(i => i.id === updated.id ? { ...i, ...updated } : i));
+  },
+  onAnyDocumentUpdate: (updated) => {
+    setShareRequests(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+  },
+});
 
   useEffect(() => {
     const init = async () => {
