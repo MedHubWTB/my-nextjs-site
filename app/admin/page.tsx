@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
+import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 type UserView = {
   id: string;
@@ -583,6 +584,25 @@ export default function AdminPage() {
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [savingTier, setSavingTier] = useState<string | null>(null);
+  useRealtimeSync({
+  isAdmin: true,
+  onAnyDoctorUpdate: (updated) => {
+    setDoctors(prev => prev.map(d => d.user_id === updated.user_id ? { ...d, ...updated } : d));
+    setUsers(prev => prev.map(u => u.id === updated.user_id ? { ...u, ...updated } : u));
+  },
+  onAnyAgencyUpdate: (updated) => {
+    setAgencies(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+  },
+  onAnyConnectionUpdate: (updated) => {
+    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+  },
+  onAnySupportUpdate: (updated) => {
+    setSupportMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
+  },
+  onAnyFeatureRequestUpdate: (updated) => {
+    setFeatureRequests(prev => prev.map(f => f.id === updated.id ? { ...f, ...updated } : f));
+  },
+});
   const [msg, setMsg] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [search, setSearch] = useState("");
