@@ -1,5 +1,6 @@
 "use client";
 
+import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
@@ -738,6 +739,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {msg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>{msg}</span>}
+            <NotificationBell userId={agencyUserId} />
             <div style={{ width: 40, height: 40, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>{initials}</div>
           </div>
         </div>
