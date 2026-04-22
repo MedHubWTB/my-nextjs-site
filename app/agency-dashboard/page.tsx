@@ -5,6 +5,20 @@ import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
+type ExternalDoctor = {
+  id: string;
+  full_name: string;
+  email: string | null;
+  specialty: string | null;
+  grade: string | null;
+  phone: string | null;
+  gmc_number: string | null;
+  preferred_location: string | null;
+  notes: string | null;
+  invite_sent: boolean;
+  quiet_user_id: string | null;
+};
+
 type Agency = {
   id: string;
   agency_name: string;
@@ -97,7 +111,12 @@ const [showSupportModal, setShowSupportModal] = useState(false);
 const [supportSubject, setSupportSubject] = useState("");
 const [supportMessage, setSupportMessage] = useState("");
 const [sendingSupport, setSendingSupport] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"|"mydoctors">("overview");
+  const [externalDoctors, setExternalDoctors] = useState<ExternalDoctor[]>([]);
+const [showExternalModal, setShowExternalModal] = useState(false);
+const [newExternal, setNewExternal] = useState({ full_name: "", email: "", specialty: "", grade: "", phone: "", gmc_number: "", preferred_location: "", notes: "" });
+const [savingExternal, setSavingExternal] = useState(false);
+const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 
 
 
@@ -252,6 +271,12 @@ const gradeMatch = grades.length === 0 || grades.some((g: string) => d.grade?.to
       const { data: outreachData } = await supabase.from("agency_outreach_usage").select("messages_sent").eq("agency_id", ag.id).eq("week_start", weekStartStr).single();
       if (outreachData) setOutreachUsedThisWeek(outreachData.messages_sent);
 
+      const { data: extDocs } = await supabase
+  .from("external_doctors")
+  .select("*")
+  .eq("agency_id", agency?.id)
+  .order("created_at", { ascending: false });
+if (extDocs) setExternalDoctors(extDocs);
       setLoading(false);
     };
     init();
@@ -651,6 +676,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
             { key: "placed", label: "Placed Doctors", icon: "✅" },
             { key: "invoices", label: "Invoices", icon: "🧾" },
             { key: "documents", label: "Documents", icon: "📄" },
+            { key: "mydoctors", label: "My Doctors", icon: "🩺" },
             { key: "billing", label: "Billing", icon: "💳" },
           ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
             <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => changeTab(item.key)}>
@@ -1206,6 +1232,204 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
           </div>
         )}
 
+        {/* MY DOCTORS */}
+{activeTab === "mydoctors" && (
+  <div className="fade-up">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      <div>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>🩺 My Doctors</h2>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Manage all your doctors in one place — including those not yet on Quiet.</p>
+      </div>
+      <button
+        onClick={() => setShowExternalModal(true)}
+        style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "10px 18px", borderRadius: 12, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
+      >
+        + Add Doctor
+      </button>
+    </div>
+
+    {/* Stats */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+      {[
+        { label: "Total Doctors", value: doctors.length + externalDoctors.length, color: "#f8f9fc" },
+        { label: "On Quiet", value: doctors.length, color: "#f5f3ff" },
+        { label: "External", value: externalDoctors.length, color: "#f0fdf4" },
+        { label: "Invited", value: externalDoctors.filter(d => d.invite_sent).length, color: "#fffbeb" },
+        { label: "Not Invited", value: externalDoctors.filter(d => !d.invite_sent && !d.quiet_user_id).length, color: "#fef2f2" },
+      ].map((s, i) => (
+        <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+          <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Quiet Doctors */}
+    {doctors.length > 0 && (
+      <div style={{ marginBottom: 24 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 12 }}>
+          ✅ On Quiet ({doctors.length})
+        </h3>
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {doctors.map((doc, i) => (
+            <div key={doc.user_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: i < doctors.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 38, height: 38, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", color: "#334155" }}>
+                  {doc.full_name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "DR"}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: "0.9rem", color: "#0f172a" }}>{doc.full_name}</p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+                    {[doc.specialty, doc.grade, doc.preferred_location].filter(Boolean).map((v, i) => (
+                      <span key={i} style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "1px 7px", borderRadius: 100 }}>{v}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>✓ On Quiet</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* External Doctors */}
+    <div>
+      <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 12 }}>
+        👤 External Doctors ({externalDoctors.length})
+      </h3>
+      {externalDoctors.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🩺</div>
+          <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No external doctors yet</p>
+          <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginBottom: 20 }}>Add doctors you work with who aren't on Quiet yet.</p>
+          <button onClick={() => setShowExternalModal(true)} style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}>
+            + Add Doctor
+          </button>
+        </div>
+      ) : (
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {externalDoctors.map((doc, i) => (
+            <div key={doc.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: i < externalDoctors.length - 1 ? "1px solid #f1f5f9" : "none", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 38, height: 38, background: "#f1f5f9", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", color: "#94a3b8" }}>
+                  {doc.full_name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() || "DR"}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: "0.9rem", color: "#0f172a" }}>{doc.full_name}</p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
+                    {[doc.specialty, doc.grade, doc.preferred_location].filter(Boolean).map((v, j) => (
+                      <span key={j} style={{ fontSize: "0.72rem", background: "#f1f5f9", color: "#64748b", padding: "1px 7px", borderRadius: 100 }}>{v}</span>
+                    ))}
+                    {doc.email && <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{doc.email}</span>}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {doc.quiet_user_id ? (
+                  <span style={{ fontSize: "0.72rem", background: "#f0fdf4", color: "#16a34a", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>✓ On Quiet</span>
+                ) : doc.invite_sent ? (
+                  <span style={{ fontSize: "0.72rem", background: "#fffbeb", color: "#92400e", fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>⏳ Invite Sent</span>
+                ) : (
+                  <button
+                    disabled={sendingInvite === doc.id || !doc.email}
+                    onClick={async () => {
+                      if (!doc.email) return;
+                      setSendingInvite(doc.id);
+                      await supabase.from("external_doctors").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", doc.id);
+                      await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}` },
+                        body: JSON.stringify({ type: "invite_doctor", data: { email: doc.email, full_name: doc.full_name, agency_name: agency?.agency_name } }),
+                      });
+                      setExternalDoctors(prev => prev.map(d => d.id === doc.id ? { ...d, invite_sent: true } : d));
+                      setSendingInvite(null);
+                    }}
+                    style={{ fontSize: "0.78rem", background: "#f5f3ff", color: "#7c3aed", border: "1.5px solid #ddd6fe", padding: "5px 12px", borderRadius: 8, fontWeight: 600, cursor: doc.email ? "pointer" : "not-allowed", fontFamily: "inherit", opacity: doc.email ? 1 : 0.5 }}
+                  >
+                    {sendingInvite === doc.id ? "Sending..." : "✉ Invite to Quiet"}
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Delete ${doc.full_name}?`)) return;
+                    await supabase.from("external_doctors").delete().eq("id", doc.id);
+                    setExternalDoctors(prev => prev.filter(d => d.id !== doc.id));
+                  }}
+                  style={{ fontSize: "0.78rem", background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "5px 10px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{/* ADD EXTERNAL DOCTOR MODAL */}
+{showExternalModal && (
+  <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }} onClick={() => setShowExternalModal(false)}>
+    <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, padding: 32, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>Add External Doctor</h2>
+        <button onClick={() => setShowExternalModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+      </div>
+      <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: "0.82rem", color: "#334155" }}>
+        💡 If the doctor's email matches an existing Quiet account, they will be linked automatically.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {[
+          { label: "Full Name *", key: "full_name", placeholder: "Dr. Jane Smith" },
+          { label: "Email", key: "email", placeholder: "doctor@example.com" },
+          { label: "Specialty", key: "specialty", placeholder: "e.g. Emergency Medicine" },
+          { label: "Grade", key: "grade", placeholder: "e.g. Consultant, Registrar" },
+          { label: "Phone", key: "phone", placeholder: "+44 7700 000000" },
+          { label: "GMC Number", key: "gmc_number", placeholder: "e.g. 1234567" },
+          { label: "Preferred Location", key: "preferred_location", placeholder: "e.g. London" },
+          { label: "Notes", key: "notes", placeholder: "Any additional notes..." },
+        ].map(field => (
+          <div key={field.key}>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>{field.label}</label>
+            <input
+              className="input-field"
+              placeholder={field.placeholder}
+              value={newExternal[field.key as keyof typeof newExternal]}
+              onChange={e => setNewExternal(prev => ({ ...prev, [field.key]: e.target.value }))}
+            />
+          </div>
+        ))}
+        <button
+          disabled={savingExternal || !newExternal.full_name}
+          onClick={async () => {
+            setSavingExternal(true);
+            let quiet_user_id = null;
+            if (newExternal.email) {
+              const { data: existingDoctor } = await supabase.from("doctors").select("user_id").eq("email", newExternal.email).single();
+              if (existingDoctor) quiet_user_id = existingDoctor.user_id;
+            }
+            const { data: inserted } = await supabase.from("external_doctors").insert({
+              agency_id: agency?.id,
+              ...newExternal,
+              quiet_user_id,
+            }).select().single();
+            if (inserted) {
+              setExternalDoctors(prev => [inserted, ...prev]);
+              setShowExternalModal(false);
+              setNewExternal({ full_name: "", email: "", specialty: "", grade: "", phone: "", gmc_number: "", preferred_location: "", notes: "" });
+            }
+            setSavingExternal(false);
+          }}
+          style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit", opacity: savingExternal || !newExternal.full_name ? 0.6 : 1 }}
+        >
+          {savingExternal ? "Saving..." : "Add Doctor"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {/* BILLING */}
         {activeTab === "billing" && (
           <div className="fade-up">
