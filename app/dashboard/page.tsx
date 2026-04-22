@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
+import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 type Doctor = {
   full_name: string;
@@ -232,6 +233,25 @@ const [addingAvailability, setAddingAvailability] = useState(false);
   const [showSupportForm, setShowSupportForm] = useState(false);
   const [supportMsg, setSupportMsg] = useState("");
 
+  useRealtimeSync({
+  doctorUserId: userId,
+  onDoctorUpdate: (updated) => {
+    setDoctor(prev => prev ? { ...prev, ...updated } : prev);
+    setEditData(prev => prev ? { ...prev, ...updated } : prev);
+  },
+  onAnyConnectionUpdate: (updated) => {
+    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+  },
+  onAnyShiftUpdate: (updated) => {
+    setShifts(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+  },
+  onAnyDocumentUpdate: (updated) => {
+    setDocuments(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d));
+  },
+  onAnyVacancyUpdate: (updated) => {
+    setVacancies(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
+  },
+});
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
