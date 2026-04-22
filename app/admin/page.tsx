@@ -1,5 +1,6 @@
 "use client";
 
+import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
@@ -615,6 +616,7 @@ useEffect(() => {
 });
   const [msg, setMsg] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<UserView[]>([]);
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
@@ -633,6 +635,7 @@ const [addingDoctor, setAddingDoctor] = useState(false);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
       setCurrentUserEmail(user.email || "");
+      setCurrentUserId(user.id);
 
       const { data: adminData } = await supabase
         .from("admins")
@@ -898,6 +901,7 @@ const [addingDoctor, setAddingDoctor] = useState(false);
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {msg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>✅ {msg}</span>}
+            <NotificationBell userId={currentUserId} />
             <div style={{ width: 36, height: 36, background: "#1d4ed8", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.78rem" }}>
   {currentUserEmail.slice(0, 2).toUpperCase()}
 </div>
