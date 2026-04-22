@@ -1,5 +1,6 @@
 "use client";
 
+import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
@@ -1458,8 +1459,9 @@ const handleAddShift = async () => {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {saveMsg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>{saveMsg}</span>}
-            <div style={{ width: 40, height: 40, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>{initials}</div>
+           {saveMsg && <span style={{ fontSize: "0.82rem", color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "6px 12px", borderRadius: 8 }}>{saveMsg}</span>}
+<NotificationBell userId={userId} />
+<div style={{ width: 40, height: 40, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>{initials}</div>
           </div>
         </div>
 
