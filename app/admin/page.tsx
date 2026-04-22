@@ -594,7 +594,7 @@ export default function AdminPage() {
     setAgencies(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
   },
   onAnyConnectionUpdate: (updated) => {
-    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+    setConnections(prev => prev.map(c => c.doctor_email === updated.doctor_email ? { ...c, ...updated } : c));
   },
   onAnySupportUpdate: (updated) => {
     setSupportMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));

@@ -187,6 +187,16 @@ const [availabilityEnd, setAvailabilityEnd] = useState("17:00");
 const [addingAvailability, setAddingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile">("overview");
+
+const changeTab = (tab: typeof activeTab) => {
+  setActiveTab(tab);
+  localStorage.setItem("doctor_active_tab", tab);
+};
+
+useEffect(() => {
+  const saved = localStorage.getItem("doctor_active_tab");
+  if (saved) setActiveTab(saved as typeof activeTab);
+}, []);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Partial<Doctor>>({});
   const [saving, setSaving] = useState(false);
@@ -1030,7 +1040,7 @@ const handleAddShift = async () => {
               <div style={{ textAlign: "center", padding: "32px 0", color: "#94a3b8" }}>
                 <div style={{ fontSize: "2rem", marginBottom: 8 }}>🏥</div>
                 <p style={{ fontSize: "0.88rem" }}>No connected agencies yet.</p>
-                <button className="btn-blue" style={{ marginTop: 12 }} onClick={() => { setShowSendModal(false); setActiveTab("agencies"); }}>Find Agencies</button>
+                <button className="btn-blue" style={{ marginTop: 12 }} onClick={() => { setShowSendModal(false); changeTab("agencies"); }}>Find Agencies</button>
               </div>
             ) : (
               <>
@@ -1412,7 +1422,7 @@ const handleAddShift = async () => {
                 onClick={() => {
                   if (locked) { handleUpgradeClick(item.label, "pro"); return; }
                   if (lockedAdv) { handleUpgradeClick(item.label, "advanced"); return; }
-                  setActiveTab(item.key);
+                  changeTab(item.key);
                 }}>
                 <span>{item.icon}</span>{item.label}
                 {locked && <span style={{ marginLeft: "auto", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 100 }}>PRO</span>}
@@ -1462,7 +1472,7 @@ const handleAddShift = async () => {
                   <span style={{ fontWeight: 600, fontSize: "0.88rem", color: alert.urgent ? "#dc2626" : "#92400e" }}>{alert.urgent ? "URGENT: " : "Expiring soon: "}</span>
                   <span style={{ fontSize: "0.88rem", color: alert.urgent ? "#dc2626" : "#92400e" }}><strong>{alert.file_name}</strong> expires in <strong>{alert.days} day{alert.days !== 1 ? "s" : ""}</strong></span>
                 </div>
-                <button className="btn-ghost" style={{ padding: "4px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("documents")}>View</button>
+                <button className="btn-ghost" style={{ padding: "4px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("documents")}>View</button>
               </div>
             ))}
           </div>
@@ -1501,7 +1511,7 @@ const handleAddShift = async () => {
         <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
           {matchingAgencies.map((ag, i) => (
             <div key={ag.id} style={{ flexShrink: 0, background: "linear-gradient(135deg, #f8f9fc, #f5f3ff)", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", minWidth: 160, cursor: "pointer", transition: "all 0.2s" }}
-              onClick={() => setActiveTab("agencies")}
+              onClick={() => changeTab("agencies")}
             >
               <div style={{ width: 40, height: 40, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10, fontSize: "1.1rem" }}>🏥</div>
               <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "#0f172a", marginBottom: 4 }}>
@@ -1560,7 +1570,7 @@ const handleAddShift = async () => {
             >
               + Add Availability
             </button>
-            <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("calendar")}>Calendar</button>
+            <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("calendar")}>Calendar</button>
           </div>
         </div>
         {getUpcomingShifts().length === 0 ? (
@@ -1608,7 +1618,7 @@ const handleAddShift = async () => {
                     {ag.location_tags && <span style={{ fontSize: "0.72rem", background: "#f5f3ff", color: "#7c3aed", padding: "2px 7px", borderRadius: 100 }}>📍 {ag.location_tags}</span>}
                   </div>
                 </div>
-                <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("agencies")}>View →</button>
+                <button className="btn-blue" style={{ padding: "5px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("agencies")}>View →</button>
               </div>
             ))}
           </div>
@@ -1632,7 +1642,7 @@ const handleAddShift = async () => {
     </span>
   )}
 </div>
-        <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("profile")}>Edit</button>
+        <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("profile")}>Edit</button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
         {[
@@ -1743,7 +1753,7 @@ const handleAddShift = async () => {
   <div className="fade-up-3 card" style={{ marginBottom: 20 }}>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
       <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>💷 Earnings Breakdown</h2>
-      <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("calendar")}>View all shifts →</button>
+      <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("calendar")}>View all shifts →</button>
     </div>
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 16 }}>
       {[
@@ -2811,7 +2821,7 @@ const handleAddShift = async () => {
             className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
             onClick={() => {
               if (item.minTier === "pro" && isBase) { handleUpgradeClick(item.label, "pro"); return; }
-              setActiveTab(item.key);
+              changeTab(item.key);
             }}
           >
             <span>{item.icon}</span>

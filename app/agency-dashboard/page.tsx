@@ -116,15 +116,11 @@ const [sendingSupport, setSendingSupport] = useState(false);
   onAgencyUpdate: (updated) => {
     setAgency(prev => prev ? { ...prev, ...updated } : prev);
   },
-  onAnyConnectionUpdate: (updated) => {
-    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
-  },
+  
   onAnyVacancyUpdate: (updated) => {
     setVacancies(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   },
-  onAnyMessageUpdate: (updated) => {
-    setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
-  },
+  
   onAnyInvoiceUpdate: (updated) => {
     setInvoices(prev => prev.map(i => i.id === updated.id ? { ...i, ...updated } : i));
   },
