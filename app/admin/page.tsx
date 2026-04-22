@@ -580,6 +580,16 @@ export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"|"feedback"|"support">("overview");
+
+const changeTab = (tab: typeof activeTab) => {
+  changeTab(tab);
+  localStorage.setItem("admin_active_tab", tab);
+};
+
+useEffect(() => {
+  const saved = localStorage.getItem("admin_active_tab");
+  if (saved) changeTab(saved as typeof activeTab);
+}, []);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -855,7 +865,7 @@ const [addingDoctor, setAddingDoctor] = useState(false);
     { key: "feedback", label: "Feature Requests", icon: "💡" },
     { key: "support", label: "Support Messages", icon: "💬" },
   ] as { key: "overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"; label: string; icon: string; count?: number }[]).map(item => (
-            <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { setActiveTab(item.key); setSearch(""); }}>
+            <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => { changeTab(item.key); setSearch(""); }}>
               <span>{item.icon}</span>{item.label}
               {item.count !== undefined && (
                 <span style={{ marginLeft: "auto", background: activeTab === item.key ? "rgba(255,255,255,0.25)" : "#f1f5f9", color: activeTab === item.key ? "#fff" : "#64748b", fontSize: "0.72rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100 }}>{item.count}</span>
@@ -979,7 +989,7 @@ const [addingDoctor, setAddingDoctor] = useState(false);
           <div className="fade-up">
             <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
               <button
-                onClick={() => setActiveTab("imports")}
+                onClick={() => changeTab("imports")}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "9px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
               >
                 + Import CSV

@@ -98,6 +98,23 @@ const [supportSubject, setSupportSubject] = useState("");
 const [supportMessage, setSupportMessage] = useState("");
 const [sendingSupport, setSendingSupport] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing">("overview");
+
+
+
+useEffect(() => {
+  const saved = localStorage.getItem("agency_active_tab");
+  if (saved) changeTab(saved as typeof activeTab);
+}, []);
+
+const changeTab = (tab: typeof activeTab) => {
+  changeTab(tab);
+  localStorage.setItem("agency_active_tab", tab);
+};
+
+useEffect(() => {
+  const saved = localStorage.getItem("agency_active_tab");
+  if (saved) changeTab(saved as typeof activeTab);
+}, []);
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState("");
   const [upgradeRequired, setUpgradeRequired] = useState<"pro"|"advanced">("pro");
@@ -456,7 +473,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
             <p style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: 24 }}>
               <strong style={{ color: upgradeRequired === "advanced" ? "#334155" : "#7c3aed" }}>{upgradeFeature}</strong> requires the {upgradeRequired === "advanced" ? "Advanced" : "Pro"} plan.
             </p>
-            <button onClick={() => { setShowUpgradePopup(false); setActiveTab("billing"); }} style={{ width: "100%", background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "Inter, sans-serif", marginBottom: 10 }}>
+            <button onClick={() => { setShowUpgradePopup(false); changeTab("billing"); }} style={{ width: "100%", background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "Inter, sans-serif", marginBottom: 10 }}>
               {upgradeRequired === "advanced" ? "⚡ Upgrade to Advanced" : "💎 Upgrade to Pro"}
             </button>
             <button onClick={() => setShowUpgradePopup(false)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Maybe later</button>
@@ -636,7 +653,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
             { key: "documents", label: "Documents", icon: "📄" },
             { key: "billing", label: "Billing", icon: "💳" },
           ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
-            <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => setActiveTab(item.key)}>
+            <button key={item.key} className={`sidebar-link ${activeTab === item.key ? "active" : ""}`} onClick={() => changeTab(item.key)}>
               <span>{item.icon}</span>{item.label}
               {item.key === "leads" && connectionRequests.length > 0 && (
                 <span style={{ marginLeft: "auto", background: "#f59e0b", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>{connectionRequests.length}</span>
@@ -673,7 +690,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
             <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff" }}>{tierBadge.label} Plan</p>
           </div>
         ) : (
-          <button onClick={() => setActiveTab("billing")} style={{ margin: "0 0 12px", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", border: "none", borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", fontFamily: "Inter, sans-serif" }}>
+          <button onClick={() => changeTab("billing")} style={{ margin: "0 0 12px", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", border: "none", borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", fontFamily: "Inter, sans-serif" }}>
             <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.7)", marginBottom: 2 }}>You are on</p>
             <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff" }}>Base Plan · Upgrade 💎</p>
           </button>
@@ -760,7 +777,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
               <div className="card">
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Recent Leads</h3>
-                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("leads")}>View all</button>
+                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("leads")}>View all</button>
                 </div>
                 {connectionRequests.length > 0 && (
                   <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "8px 12px", marginBottom: 12, fontSize: "0.82rem", color: "#92400e", fontWeight: 600 }}>
@@ -782,7 +799,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
               <div className="card">
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                   <h3 style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Active Spots</h3>
-                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => setActiveTab("vacancies")}>View all</button>
+                  <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: "0.78rem" }} onClick={() => changeTab("vacancies")}>View all</button>
                 </div>
                 {vacancies.filter(v => v.active).length === 0 ? (
                   <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8" }}><div style={{ fontSize: "1.8rem", marginBottom: 8 }}>📋</div><p style={{ fontSize: "0.85rem" }}>No active spots posted</p></div>
@@ -1409,7 +1426,7 @@ const docs = doctorLinks.map((l: any) => l.doctors).filter(Boolean) as Doctor[];
           <button
             key={item.key}
             className={`qm-bottom-nav-item ${activeTab === item.key ? "active" : ""}`}
-            onClick={() => setActiveTab(item.key)}
+            onClick={() => changeTab(item.key)}
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>
