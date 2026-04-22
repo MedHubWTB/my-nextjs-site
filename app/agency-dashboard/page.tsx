@@ -1,5 +1,6 @@
 "use client";
 
+import AutocompleteInput from "../components/AutocompleteInput";
 import { notify } from "../lib/notify";
 import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState } from "react";
@@ -94,6 +95,25 @@ type ShareRequest = {
   doctor_name?: string;
   storage_path?: string;
 };
+const SPECIALTIES = [
+  "General Practice (GP)", "Acute Internal Medicine", "Cardiology", "Clinical Genetics",
+  "Clinical Neurophysiology", "Clinical Oncology", "Clinical Pharmacology & Therapeutics",
+  "Dermatology", "Endocrinology & Diabetes Mellitus", "Gastroenterology",
+  "Genitourinary Medicine", "Geriatric Medicine", "Haematology", "Immunology",
+  "Infectious Diseases", "Medical Microbiology", "Medical Oncology", "Medical Ophthalmology",
+  "Nuclear Medicine", "Paediatric Cardiology", "Palliative Medicine", "Pharmaceutical Medicine",
+  "Rehabilitation Medicine", "Renal Medicine (Nephrology)", "Respiratory Medicine",
+  "Rheumatology", "Sport and Exercise Medicine", "Tropical Medicine",
+  "Aviation & Space Medicine", "Chemical Pathology", "Community Sexual & Reproductive Health",
+  "Emergency Medicine", "Intensive Care Medicine", "Ophthalmology", "Paediatrics",
+  "Psychiatry", "Child & Adolescent Psychiatry", "Old Age Psychiatry", "Forensic Psychiatry",
+  "Liaison Psychiatry", "Public Health Medicine", "Occupational Medicine",
+  "Cardiothoracic Surgery", "ENT (Otolaryngology)", "General Surgery", "Neurosurgery",
+  "Oral & Maxillofacial Surgery", "Orthopaedic Surgery", "Paediatric Surgery",
+  "Plastic Surgery", "Urology", "Vascular Surgery", "Other"
+];
+
+const GRADES = ["Junior Doctor", "SHO", "Middle Grade", "Registrar", "Specialist Registrar", "Consultant", "Other"];
 
 export default function AgencyDashboardPage() {
   const router = useRouter();
@@ -662,8 +682,24 @@ if (messageDoctor?.user_id) {
               📋 Weekly spots remaining: <strong>{spotsRemaining}</strong> {spotLimit !== Infinity ? `/ ${spotLimit}` : "(unlimited)"}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div><label>Specialty *</label><input className="input-field" placeholder="e.g. Emergency Medicine" value={newVacancy.specialty} onChange={e => setNewVacancy({ ...newVacancy, specialty: e.target.value })} /></div>
-              <div><label>Grade</label><input className="input-field" placeholder="e.g. Consultant, Registrar" value={newVacancy.grade} onChange={e => setNewVacancy({ ...newVacancy, grade: e.target.value })} /></div>
+              <div>
+  <label>Specialty *</label>
+  <AutocompleteInput
+    value={newVacancy.specialty}
+    onChange={val => setNewVacancy({ ...newVacancy, specialty: val })}
+    options={SPECIALTIES}
+    placeholder="e.g. Emergency Medicine"
+  />
+</div>
+              <div>
+  <label>Grade</label>
+  <AutocompleteInput
+    value={newVacancy.grade}
+    onChange={val => setNewVacancy({ ...newVacancy, grade: val })}
+    options={GRADES}
+    placeholder="e.g. Consultant, Registrar"
+  />
+</div>
               <div><label>Location</label><input className="input-field" placeholder="e.g. London, Manchester" value={newVacancy.location} onChange={e => setNewVacancy({ ...newVacancy, location: e.target.value })} /></div>
               <div><label>Number of Vacancies</label><input className="input-field" type="number" min="1" value={newVacancy.vacancies} onChange={e => setNewVacancy({ ...newVacancy, vacancies: e.target.value })} /></div>
               <div><label>Notes (optional)</label><input className="input-field" placeholder="Any additional details" value={newVacancy.notes} onChange={e => setNewVacancy({ ...newVacancy, notes: e.target.value })} /></div>
