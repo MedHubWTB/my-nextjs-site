@@ -160,7 +160,7 @@ useEffect(() => {
   const [upgradeFeature, setUpgradeFeature] = useState("");
   const [upgradeRequired, setUpgradeRequired] = useState<"pro"|"advanced">("pro");
   const [showVacancyModal, setShowVacancyModal] = useState(false);
-  const [newVacancy, setNewVacancy] = useState({ specialty: "", grade: "", location: "", vacancies: "1", notes: "" });
+  const [newVacancy, setNewVacancy] = useState({ specialty: "", grade: "", location: "", vacancies: "1", notes: "", shift_date: "", shift_start: "09:00", shift_end: "17:00" });
   const [savingVacancy, setSavingVacancy] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
@@ -398,6 +398,9 @@ if (declinedConn?.doctor_id) {
       vacancies: parseInt(newVacancy.vacancies),
       notes: newVacancy.notes,
       active: true,
+      shift_date: newVacancy.shift_date || null,
+      shift_start: newVacancy.shift_start || null,
+      shift_end: newVacancy.shift_end || null,
     }).select().single();
     if (!error && data) {
       setVacancies(prev => [data, ...prev]);
@@ -416,7 +419,7 @@ if (declinedConn?.doctor_id) {
     }
     setSavingVacancy(false);
     setShowVacancyModal(false);
-    setNewVacancy({ specialty: "", grade: "", location: "", vacancies: "1", notes: "" });
+    setNewVacancy({ specialty: "", grade: "", location: "", vacancies: "1", notes: "", shift_date: "", shift_start: "09:00", shift_end: "17:00" });
   };
 
   const handleToggleVacancy = async (id: string, active: boolean) => {

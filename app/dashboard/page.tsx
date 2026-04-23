@@ -124,6 +124,9 @@ type Vacancy = {
   created_at: string;
   agency_name?: string;
   pay_range?: string | null;
+  shift_date: string | null;
+  shift_start: string | null;
+  shift_end: string | null;
 };
 
 const FOLDERS = [
@@ -2185,9 +2188,12 @@ const handleAddShift = async () => {
           const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const dayShifts = getShiftsForDate(dateStr);
           const hasBookedShift = dayShifts.some(s => s.type === "shift");
-          const dayVacancies = isPro ? vacancies.filter(v => {
+          const dayVacancies = (isPro || isAdvanced) ? vacancies.filter(v => {
+            if (v.shift_date) {
+              return v.shift_date === dateStr;
+            }
             const vDate = new Date(v.created_at);
-            return vDate.getFullYear() === calYear && vDate.getMonth() === calMonth;
+            return vDate.getFullYear() === calYear && vDate.getMonth() === calMonth && vDate.getDate() === day;
           }) : [];
           const hasVacancy = dayVacancies.length > 0;
           const isConflict = hasBookedShift && hasVacancy;
