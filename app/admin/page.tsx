@@ -71,10 +71,9 @@ Here's what's waiting for you:
 
 How to log in:
 
-1. Go to https://my-nextjs-site.vercel.app/otp-login
-2. Enter your email address
-3. You'll receive a 6-digit code — enter it and you're in
-4. Complete your profile in under 2 minutes
+1. Enter your email address
+2. You'll receive a 6-digit code — enter it and you're in
+3. Complete your profile in under 2 minutes
 
 No password needed — just your email.
 
@@ -647,49 +646,39 @@ const [addingDoctor, setAddingDoctor] = useState(false);
       if (!adminData) { router.push("/"); return; }
       setAuthorized(true);
 
-      const { data: docs } = await supabase
-        .from("doctors")
-        .select("*")
-        .order("full_name", { ascending: true });
-      if (docs) setDoctors(docs);
+      // Run all queries in parallel for faster loading
+const [
+  { data: docs },
+  { data: ags },
+  { data: conns },
+  { data: usersData },
+  { data: featData },
+  { data: supportData },
+] = await Promise.all([
+  supabase.from("doctors").select("*").order("full_name", { ascending: true }),
+  supabase.from("agencies").select("*").order("agency_name", { ascending: true }),
+  supabase.from("doctor_agencies").select("connected_at, status, doctors(full_name, email), agencies(agency_name)"),
+  supabase.from("admin_users_view").select("*").order("created_at", { ascending: false }),
+  supabase.from("feature_requests").select("*").order("votes", { ascending: false }),
+  supabase.from("support_messages").select("*").order("created_at", { ascending: false }),
+]);
 
-      const { data: ags } = await supabase
-        .from("agencies")
-        .select("*")
-        .order("agency_name", { ascending: true });
-      if (ags) setAgencies(ags);
-
-      const { data: conns } = await supabase
-        .from("doctor_agencies")
-        .select("connected_at, status, doctors(full_name, email), agencies(agency_name)");
-      if (conns) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = conns.map((c: any) => ({
-          doctor_name: Array.isArray(c.doctors) ? c.doctors[0]?.full_name || "Unknown" : c.doctors?.full_name || "Unknown",
-          doctor_email: Array.isArray(c.doctors) ? c.doctors[0]?.email || "" : c.doctors?.email || "",
-          agency_name: Array.isArray(c.agencies) ? c.agencies[0]?.agency_name || "Unknown" : c.agencies?.agency_name || "Unknown",
-          connected_at: c.connected_at,
-          status: c.status,
-        }));
-        setConnections(mapped);
-      }
-
-      const { data: usersData } = await supabase
-        .from("admin_users_view")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (usersData) setUsers(usersData);
-
-      const { data: featData } = await supabase
-        .from("feature_requests")
-        .select("*")
-        .order("votes", { ascending: false });
-      if (featData) setFeatureRequests(featData);
-      const { data: supportData } = await supabase
-        .from("support_messages")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (supportData) setSupportMessages(supportData);
+if (docs) setDoctors(docs);
+if (ags) setAgencies(ags);
+if (conns) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapped = conns.map((c: any) => ({
+    doctor_name: Array.isArray(c.doctors) ? c.doctors[0]?.full_name || "Unknown" : c.doctors?.full_name || "Unknown",
+    doctor_email: Array.isArray(c.doctors) ? c.doctors[0]?.email || "" : c.doctors?.email || "",
+    agency_name: Array.isArray(c.agencies) ? c.agencies[0]?.agency_name || "Unknown" : c.agencies?.agency_name || "Unknown",
+    connected_at: c.connected_at,
+    status: c.status,
+  }));
+  setConnections(mapped);
+}
+if (usersData) setUsers(usersData);
+if (featData) setFeatureRequests(featData);
+if (supportData) setSupportMessages(supportData);
 
       setLoading(false);
     };

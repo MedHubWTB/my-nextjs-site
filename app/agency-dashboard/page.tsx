@@ -256,14 +256,20 @@ const gradeMatch = grades.length === 0 || grades.some((g: string) => d.grade?.to
         }
       }
 
-      const { data: placed } = await supabase.from("placed_doctors").select("*").eq("agency_id", ag.id).order("placed_at", { ascending: false });
-      if (placed) setPlacedDoctors(placed);
+      // Run all queries in parallel for faster loading
+const [
+  { data: placed },
+  { data: inv },
+  { data: vac },
+] = await Promise.all([
+  supabase.from("placed_doctors").select("*").eq("agency_id", ag.id).order("placed_at", { ascending: false }),
+  supabase.from("invoices").select("*").eq("agency_id", ag.id).order("invoice_date", { ascending: false }),
+  supabase.from("vacancy_posts").select("*").eq("agency_id", ag.id).order("created_at", { ascending: false }),
+]);
 
-      const { data: inv } = await supabase.from("invoices").select("*").eq("agency_id", ag.id).order("invoice_date", { ascending: false });
-      if (inv) setInvoices(inv);
-
-      const { data: vac } = await supabase.from("vacancy_posts").select("*").eq("agency_id", ag.id).order("created_at", { ascending: false });
-      if (vac) setVacancies(vac);
+if (placed) setPlacedDoctors(placed);
+if (inv) setInvoices(inv);
+if (vac) setVacancies(vac);
 
       const { data: shares } = await supabase
         .from("document_share_requests")

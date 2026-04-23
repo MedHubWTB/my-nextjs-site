@@ -315,49 +315,48 @@ if (doctorData) {
   return;
 }
 
-      const { data: docs } = await supabase.from("documents").select("*").eq("user_id", user.id).order("uploaded_at", { ascending: false });
-      if (docs) setDocuments(docs);
+      // Run all queries in parallel for faster loading
+const [
+  { data: docs },
+  { data: exp },
+  { data: agencyLinks },
+  { data: allConns },
+  { data: sh },
+  { data: shares },
+] = await Promise.all([
+  supabase.from("documents").select("*").eq("user_id", user.id).order("uploaded_at", { ascending: false }),
+  supabase.from("document_expiry").select("*").eq("doctor_id", user.id),
+  supabase.from("doctor_agencies").select("agency_id, agencies(id, agency_name, required_specialties, required_grades, pay_range, review_score, location_tags)").eq("doctor_id", user.id).eq("status", "accepted"),
+  supabase.from("doctor_agencies").select("*, agencies(agency_name, contact_email)").eq("doctor_id", user.id),
+  supabase.from("shifts").select("*").eq("doctor_id", user.id).order("date", { ascending: true }),
+  supabase.from("document_share_requests").select("*, agencies(agency_name)").eq("doctor_id", user.id),
+]);
 
-      const { data: exp } = await supabase.from("document_expiry").select("*").eq("doctor_id", user.id);
-      if (exp) setExpiries(exp);
-
-      const { data: agencyLinks } = await supabase
-        .from("doctor_agencies")
-        .select("agency_id, agencies(id, agency_name, required_specialties, required_grades, pay_range, review_score, location_tags)")
-        .eq("doctor_id", user.id)
-        .eq("status", "accepted");
-      if (agencyLinks) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
-        setAgencies(ag);
-      }
-
-      const { data: allConns } = await supabase
-        .from("doctor_agencies")
-        .select("*, agencies(agency_name, contact_email)")
-        .eq("doctor_id", user.id);
-      if (allConns) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = allConns.map((c: any) => ({
-          ...c,
-          agency_name: Array.isArray(c.agencies) ? c.agencies[0]?.agency_name : c.agencies?.agency_name,
-          agency_email: Array.isArray(c.agencies) ? c.agencies[0]?.contact_email : c.agencies?.contact_email,
-        }));
-        setConnections(mapped);
-      }
-
-      const { data: sh } = await supabase.from("shifts").select("*").eq("doctor_id", user.id).order("date", { ascending: true });
-      if (sh) setShifts(sh);
-
-      const { data: shares } = await supabase.from("document_share_requests").select("*, agencies(agency_name)").eq("doctor_id", user.id);
-      if (shares) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = shares.map((s: any) => ({
-          ...s,
-          agency_name: Array.isArray(s.agencies) ? s.agencies[0]?.agency_name : s.agencies?.agency_name,
-        }));
-        setShareRequests(mapped);
-      }
+if (docs) setDocuments(docs);
+if (exp) setExpiries(exp);
+if (agencyLinks) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ag = agencyLinks.map((l: any) => l.agencies).filter(Boolean) as Agency[];
+  setAgencies(ag);
+}
+if (allConns) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapped = allConns.map((c: any) => ({
+    ...c,
+    agency_name: Array.isArray(c.agencies) ? c.agencies[0]?.agency_name : c.agencies?.agency_name,
+    agency_email: Array.isArray(c.agencies) ? c.agencies[0]?.contact_email : c.agencies?.contact_email,
+  }));
+  setConnections(mapped);
+}
+if (sh) setShifts(sh);
+if (shares) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapped = shares.map((s: any) => ({
+    ...s,
+    agency_name: Array.isArray(s.agencies) ? s.agencies[0]?.agency_name : s.agencies?.agency_name,
+  }));
+  setShareRequests(mapped);
+}
 
       if (doctorData) {
         const { data: allAgencies } = await supabase.from("agencies").select("id, agency_name, required_specialties, required_grades, pay_range, review_score, location_tags");
