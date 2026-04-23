@@ -98,6 +98,20 @@ type InsuranceClaim = {
   created_at: string;
 };
 
+type Reference = {
+  id: string;
+  referee_name: string;
+  referee_email: string;
+  referee_phone: string | null;
+  referee_job_title: string | null;
+  referee_organisation: string | null;
+  relationship: string | null;
+  status: "pending" | "requested" | "received";
+  reference_text: string | null;
+  requested_at: string;
+  received_at: string | null;
+};
+
 type Vacancy = {
   id: string;
   agency_id: string;
@@ -209,7 +223,12 @@ const [availabilityStart, setAvailabilityStart] = useState("09:00");
 const [availabilityEnd, setAvailabilityEnd] = useState("17:00");
 const [addingAvailability, setAddingAvailability] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"references"|"profile">("overview");
+  const [references, setReferences] = useState<Reference[]>([]);
+const [showReferenceModal, setShowReferenceModal] = useState(false);
+const [newReference, setNewReference] = useState({ referee_name: "", referee_email: "", referee_phone: "", referee_job_title: "", referee_organisation: "", relationship: "" });
+const [savingReference, setSavingReference] = useState(false);
+const [requestingRef, setRequestingRef] = useState<string | null>(null);
 
 const changeTab = (tab: typeof activeTab) => {
   setActiveTab(tab);
@@ -395,6 +414,8 @@ if (shares) {
         }
       }
 
+      const { data: refs } = await supabase.from("doctor_references").select("*").eq("doctor_id", user.id).order("created_at", { ascending: false });
+if (refs) setReferences(refs);
       const { data: appr } = await supabase.from("appraisals").select("*").eq("doctor_id", user.id).order("created_at", { ascending: false });
       if (appr) setAppraisals(appr);
 
@@ -2735,6 +2756,183 @@ const handleAddShift = async () => {
 )}
 
         {/* PROFILE */}
+        {/* REFERENCES */}
+{activeTab === "references" && (
+  <div className="fade-up">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      <div>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>📜 References</h2>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Add your referees once — Quiet reaches out and shares with all your connected agencies.</p>
+      </div>
+      {references.length < 2 && (
+        <button
+          onClick={() => setShowReferenceModal(true)}
+          style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "10px 18px", borderRadius: 12, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}
+        >
+          + Add Referee
+        </button>
+      )}
+    </div>
+
+    {/* Info banner */}
+    <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 12, padding: "14px 16px", marginBottom: 20, display: "flex", gap: 10 }}>
+      <span style={{ fontSize: "1.1rem" }}>💡</span>
+      <div>
+        <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", marginBottom: 3 }}>How references work on Quiet</p>
+        <p style={{ fontSize: "0.78rem", color: "#64748b", lineHeight: 1.6 }}>Add up to 2 referees. We contact them once on your behalf and store the reference securely. All your connected agencies can then access it — no more repeated reference requests.</p>
+      </div>
+    </div>
+
+    {/* Stats */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+      {[
+        { label: "Total Referees", value: references.length, color: "#f8f9fc" },
+        { label: "Pending", value: references.filter(r => r.status === "pending").length, color: "#fffbeb" },
+        { label: "Requested", value: references.filter(r => r.status === "requested").length, color: "#f5f3ff" },
+        { label: "Received", value: references.filter(r => r.status === "received").length, color: "#f0fdf4" },
+      ].map((s, i) => (
+        <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+          <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {references.length === 0 ? (
+      <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>📜</div>
+        <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No referees added yet</p>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginBottom: 20 }}>Add up to 2 referees and we'll handle the rest.</p>
+        <button onClick={() => setShowReferenceModal(true)} style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit" }}>
+          + Add Referee
+        </button>
+      </div>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {references.map(ref => (
+          <div key={ref.id} className="card">
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 44, height: 44, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", flexShrink: 0 }}>👤</div>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a", marginBottom: 3 }}>{ref.referee_name}</p>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {ref.referee_job_title && <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#64748b", padding: "1px 7px", borderRadius: 100 }}>{ref.referee_job_title}</span>}
+                    {ref.referee_organisation && <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#64748b", padding: "1px 7px", borderRadius: 100 }}>🏥 {ref.referee_organisation}</span>}
+                    {ref.relationship && <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#64748b", padding: "1px 7px", borderRadius: 100 }}>{ref.relationship}</span>}
+                  </div>
+                  <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>{ref.referee_email}{ref.referee_phone ? ` · ${ref.referee_phone}` : ""}</p>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "4px 10px", borderRadius: 100, background: ref.status === "received" ? "#f0fdf4" : ref.status === "requested" ? "#f5f3ff" : "#fffbeb", color: ref.status === "received" ? "#16a34a" : ref.status === "requested" ? "#7c3aed" : "#92400e" }}>
+                  {ref.status === "received" ? "✅ Received" : ref.status === "requested" ? "📨 Requested" : "⏳ Pending"}
+                </span>
+                {ref.status === "pending" && (
+                  <button
+                    disabled={requestingRef === ref.id}
+                    onClick={async () => {
+                      setRequestingRef(ref.id);
+                      await supabase.from("doctor_references").update({ status: "requested", requested_at: new Date().toISOString() }).eq("id", ref.id);
+                      await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}` },
+                        body: JSON.stringify({ type: "reference_request", data: { referee_email: ref.referee_email, referee_name: ref.referee_name, doctor_name: doctor?.full_name } }),
+                      });
+                      setReferences(prev => prev.map(r => r.id === ref.id ? { ...r, status: "requested" } : r));
+                      setRequestingRef(null);
+                      setSaveMsg("Reference request sent!");
+                      setTimeout(() => setSaveMsg(""), 3000);
+                    }}
+                    style={{ fontSize: "0.78rem", background: "#f5f3ff", color: "#7c3aed", border: "1.5px solid #ddd6fe", padding: "5px 12px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    {requestingRef === ref.id ? "Sending..." : "📨 Request Reference"}
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    if (!confirm(`Remove ${ref.referee_name}?`)) return;
+                    await supabase.from("doctor_references").delete().eq("id", ref.id);
+                    setReferences(prev => prev.filter(r => r.id !== ref.id));
+                  }}
+                  style={{ fontSize: "0.78rem", background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "5px 10px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+            {ref.reference_text && (
+              <div style={{ marginTop: 12, padding: "12px 14px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0" }}>
+                <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#16a34a", marginBottom: 4 }}>✅ Reference received</p>
+                <p style={{ fontSize: "0.82rem", color: "#374151", lineHeight: 1.6 }}>{ref.reference_text}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {references.length >= 2 && (
+      <div style={{ marginTop: 16, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "12px 16px", fontSize: "0.85rem", color: "#16a34a", fontWeight: 600 }}>
+        ✅ You have 2 referees — all connected agencies can access your references.
+      </div>
+    )}
+  </div>
+)}
+
+{/* ADD REFEREE MODAL */}
+{showReferenceModal && (
+  <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 }} onClick={() => setShowReferenceModal(false)}>
+    <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, padding: 32, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#0f172a" }}>Add Referee</h2>
+        <button onClick={() => setShowReferenceModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {[
+          { label: "Full Name *", key: "referee_name", placeholder: "Dr. John Smith" },
+          { label: "Email *", key: "referee_email", placeholder: "referee@hospital.com" },
+          { label: "Phone", key: "referee_phone", placeholder: "+44 7700 000000" },
+          { label: "Job Title", key: "referee_job_title", placeholder: "Consultant Cardiologist" },
+          { label: "Organisation", key: "referee_organisation", placeholder: "NHS Trust / Hospital" },
+          { label: "Relationship", key: "relationship", placeholder: "e.g. Supervisor, Consultant" },
+        ].map(field => (
+          <div key={field.key}>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>{field.label}</label>
+            <input
+              className="input-field"
+              placeholder={field.placeholder}
+              value={newReference[field.key as keyof typeof newReference]}
+              onChange={e => setNewReference(prev => ({ ...prev, [field.key]: e.target.value }))}
+            />
+          </div>
+        ))}
+        <button
+          disabled={savingReference || !newReference.referee_name || !newReference.referee_email}
+          onClick={async () => {
+            setSavingReference(true);
+            const { data: inserted } = await supabase.from("doctor_references").insert({
+              doctor_id: userId,
+              ...newReference,
+              status: "pending",
+            }).select().single();
+            if (inserted) {
+              setReferences(prev => [inserted, ...prev]);
+              setShowReferenceModal(false);
+              setNewReference({ referee_name: "", referee_email: "", referee_phone: "", referee_job_title: "", referee_organisation: "", relationship: "" });
+              setSaveMsg("Referee added!");
+              setTimeout(() => setSaveMsg(""), 3000);
+            }
+            setSavingReference(false);
+          }}
+          style={{ background: "linear-gradient(135deg, #1e293b, #334155)", color: "#fff", border: "none", padding: "13px", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "inherit", opacity: savingReference || !newReference.referee_name || !newReference.referee_email ? 0.6 : 1 }}
+        >
+          {savingReference ? "Saving..." : "Add Referee"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {activeTab === "profile" && (
           <div className="fade-up card">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
@@ -2859,6 +3057,7 @@ const handleAddShift = async () => {
           { key: "documents", label: "Vault", icon: "📄" },
           { key: "calendar", label: "Calendar", icon: "🗓️" },
           { key: "agencies", label: "Agencies", icon: "🏥" },
+          { key: "references", label: "References", icon: "📜" },
           { key: "profile", label: "Profile", icon: "👤" },
         ] as { key: "overview"|"workfeed"|"documents"|"calendar"|"agencies"|"appraisal"|"insurance"|"profile"; label: string; icon: string; minTier?: string }[]).map(item => (
           <button
