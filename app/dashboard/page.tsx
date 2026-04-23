@@ -26,6 +26,7 @@ type Document = {
   folder: string;
   uploaded_at: string;
   storage_path: string;
+  module_name: string | null;
 };
 
 type Expiry = {
@@ -117,6 +118,26 @@ const FOLDERS = [
   { key: "tax", label: "Tax Documents", icon: "🧾" },
   { key: "appraisal", label: "Medical Appraisals", icon: "📝" },
   { key: "insurance", label: "Insurance", icon: "🛡️" },
+  { key: "mandatory_training", label: "Mandatory Training", icon: "🎓" },
+];
+
+const MANDATORY_MODULES = [
+  "Fire Safety",
+  "Health & Safety",
+  "Safeguarding Adults (Level 2)",
+  "Safeguarding Children (Level 2)",
+  "Infection Prevention & Control",
+  "Data Protection & GDPR",
+  "Equality, Diversity & Inclusion",
+  "Manual Handling",
+  "Basic Life Support",
+  "Mental Capacity Act",
+  "Conflict Resolution",
+  "Information Governance",
+  "Lone Worker Safety",
+  "Resuscitation",
+  "Violence & Aggression",
+  "Other",
 ];
 
 function getDaysInMonth(year: number, month: number) {
@@ -215,6 +236,7 @@ useEffect(() => {
   const [uploadFolder, setUploadFolder] = useState("cvs");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadExpiry, setUploadExpiry] = useState("");
+  const [uploadModule, setUploadModule] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -552,7 +574,7 @@ if (agencyInfo?.user_id) {
     const filePath = `${userId}/${uploadFolder}/${Date.now()}_${uploadFile.name}`;
     const { error: storageError } = await supabase.storage.from("doctor-documents").upload(filePath, uploadFile);
     if (storageError) { setUploadError(storageError.message); setUploading(false); return; }
-    const { data: docData, error: dbError } = await supabase.from("documents").insert({ user_id: userId, file_name: uploadFile.name, folder: uploadFolder, storage_path: filePath }).select().single();
+    const { data: docData, error: dbError } = await supabase.from("documents").insert({ user_id: userId, file_name: uploadFile.name, folder: uploadFolder, storage_path: filePath, module_name: uploadFolder === "mandatory_training" ? uploadModule : null }).select().single();
     if (dbError) { setUploadError(dbError.message); setUploading(false); return; }
     if (uploadExpiry && docData) {
       await supabase.from("document_expiry").insert({ document_id: docData.id, doctor_id: userId, expiry_date: uploadExpiry });
@@ -564,6 +586,7 @@ if (agencyInfo?.user_id) {
     setUploadFile(null);
     setUploadExpiry("");
     setUploadFolder("cvs");
+    setUploadModule("");
     setSaveMsg("Document uploaded!");
     setTimeout(() => setSaveMsg(""), 3000);
   };
@@ -1021,7 +1044,16 @@ const handleAddShift = async () => {
             </div>
             {uploadError && <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: "0.85rem", marginBottom: 16 }}>{uploadError}</div>}
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div><label>Folder</label><select className="input-field" value={uploadFolder} onChange={e => setUploadFolder(e.target.value)}>{FOLDERS.map(f => <option key={f.key} value={f.key}>{f.icon} {f.label}</option>)}</select></div>
+              <div><label>Folder</label><select className="input-field" value={uploadFolder} onChange={e => { setUploadFolder(e.target.value); setUploadModule(""); }}>{FOLDERS.map(f => <option key={f.key} value={f.key}>{f.icon} {f.label}</option>)}</select></div>
+{uploadFolder === "mandatory_training" && (
+  <div>
+    <label>Training Module *</label>
+    <select className="input-field" value={uploadModule} onChange={e => setUploadModule(e.target.value)}>
+      <option value="">Select module...</option>
+      {MANDATORY_MODULES.map(m => <option key={m} value={m}>{m}</option>)}
+    </select>
+  </div>
+)}
               <div>
                 <label>File</label>
                 <div className={`upload-zone ${uploadFile ? "has-file" : ""}`} onClick={() => fileInputRef.current?.click()}>
@@ -2001,6 +2033,9 @@ const handleAddShift = async () => {
                             <div style={{ width: 34, height: 34, background: "#f5f3ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>📄</div>
                             <div>
                               <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{doc.file_name}</p>
+                              {doc.module_name && (
+  <span style={{ fontSize: "0.72rem", fontWeight: 700, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "2px 8px", borderRadius: 100, display: "inline-block", marginBottom: 3 }}>🎓 {doc.module_name}</span>
+)}
                               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                                 <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}</p>
                                 {!isBase && daysLeft !== null && <span style={{ fontSize: "0.7rem", fontWeight: 600, padding: "2px 7px", borderRadius: 100, background: daysLeft <= 7 ? "#fef2f2" : daysLeft <= 30 ? "#fffbeb" : "#f0fdf4", color: daysLeft <= 7 ? "#dc2626" : daysLeft <= 30 ? "#92400e" : "#16a34a" }}>{daysLeft <= 0 ? "EXPIRED" : `Expires in ${daysLeft}d`}</span>}
