@@ -94,6 +94,8 @@ type ShareRequest = {
   file_name?: string;
   doctor_name?: string;
   storage_path?: string;
+  module_name?: string | null;
+  folder?: string | null;
 };
 const SPECIALTIES = [
   "General Practice (GP)", "Acute Internal Medicine", "Cardiology", "Clinical Genetics",
@@ -273,7 +275,7 @@ if (vac) setVacancies(vac);
 
       const { data: shares } = await supabase
         .from("document_share_requests")
-        .select("*, documents(file_name, storage_path), doctors(full_name)")
+        .select("*, documents(file_name, storage_path, module_name, folder), doctors(full_name)")
         .eq("agency_id", ag.id)
         .neq("status", "revoked")
         .order("requested_at", { ascending: false });
@@ -283,6 +285,8 @@ if (vac) setVacancies(vac);
           ...s,
           file_name: Array.isArray(s.documents) ? s.documents[0]?.file_name : s.documents?.file_name,
           storage_path: Array.isArray(s.documents) ? s.documents[0]?.storage_path : s.documents?.storage_path,
+          module_name: Array.isArray(s.documents) ? s.documents[0]?.module_name : s.documents?.module_name,
+          folder: Array.isArray(s.documents) ? s.documents[0]?.folder : s.documents?.folder,
           doctor_name: Array.isArray(s.doctors) ? s.doctors[0]?.full_name : s.doctors?.full_name,
         }));
         setShareRequests(mapped);
@@ -1270,6 +1274,12 @@ if (messageDoctor?.user_id) {
                       <div style={{ width: 40, height: 40, background: "#f5f3ff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", flexShrink: 0 }}>📄</div>
                       <div>
                         <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#0f172a" }}>{req.file_name || "Document"}</p>
+                        {req.module_name && (
+                          <span style={{ fontSize: "0.7rem", fontWeight: 700, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "1px 7px", borderRadius: 100, display: "inline-block", marginBottom: 2 }}>🎓 {req.module_name}</span>
+                        )}
+                        {req.folder === "mandatory_training" && !req.module_name && (
+                          <span style={{ fontSize: "0.7rem", fontWeight: 700, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "1px 7px", borderRadius: 100, display: "inline-block", marginBottom: 2 }}>🎓 Mandatory Training</span>
+                        )}
                         <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 3 }}>
                           <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>From {req.doctor_name || "Doctor"}</p>
                           <span className="status-badge" style={{ background: req.status === "accepted" ? "#f0fdf4" : req.status === "declined" ? "#fef2f2" : "#fffbeb", color: req.status === "accepted" ? "#16a34a" : req.status === "declined" ? "#dc2626" : "#92400e" }}>
