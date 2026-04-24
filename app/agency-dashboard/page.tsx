@@ -158,6 +158,7 @@ const [newExternal, setNewExternal] = useState({ full_name: "", email: "", speci
 const [savingExternal, setSavingExternal] = useState(false);
 const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 const [doctorMessages, setDoctorMessages] = useState<DoctorMessage[]>([]);
+const [agencyReplies, setAgencyReplies] = useState<{id: string; doctor_id: string; message: string; created_at: string}[]>([]);
 const changeTab = (tab: typeof activeTab) => {
   setActiveTab(tab);
   localStorage.setItem("agency_active_tab", tab);
@@ -378,7 +379,13 @@ if (msgs) {
   .select("*")
   .eq("agency_id", ag.id)
   .order("created_at", { ascending: false });
-if (extDocs) setExternalDoctors(extDocs);
+const { data: agencyMsgs } = await supabase
+  .from("agency_messages")
+  .select("*")
+  .eq("agency_id", ag.id)
+  .order("created_at", { ascending: false });
+if (agencyMsgs) setAgencyReplies(agencyMsgs);
+  if (extDocs) setExternalDoctors(extDocs);
       setLoading(false);
     };
     init();
@@ -1481,17 +1488,25 @@ if (messageDoctor?.user_id) {
             <button onClick={() => setSelectedConversation(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12, maxHeight: 500 }}>
-            {selected.messages.map(msg => (
-              <div key={msg.id} style={{ display: "flex", gap: 10 }}>
-                <div style={{ width: 32, height: 32, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.72rem", color: "#7c3aed", flexShrink: 0 }}>DR</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ background: "#f8f9fc", borderRadius: "12px 12px 12px 4px", padding: "10px 14px", display: "inline-block", maxWidth: "85%" }}>
-                    <p style={{ fontSize: "0.88rem", color: "#374151", lineHeight: 1.6 }}>{msg.message}</p>
+            {[
+              ...selected.messages.map(m => ({ ...m, from: "doctor" as const })),
+              ...agencyReplies.filter(r => r.doctor_id === selectedConversation).map(r => ({ ...r, from: "agency" as const })),
+            ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((msg, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, justifyContent: msg.from === "agency" ? "flex-end" : "flex-start" }}>
+                {msg.from === "doctor" && (
+                  <div style={{ width: 32, height: 32, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.72rem", color: "#7c3aed", flexShrink: 0 }}>DR</div>
+                )}
+                <div style={{ maxWidth: "75%" }}>
+                  <div style={{ background: msg.from === "agency" ? "linear-gradient(135deg, #1e293b, #334155)" : "#f8f9fc", borderRadius: msg.from === "agency" ? "12px 12px 4px 12px" : "12px 12px 12px 4px", padding: "10px 14px", display: "inline-block", width: "100%" }}>
+                    <p style={{ fontSize: "0.88rem", color: msg.from === "agency" ? "#fff" : "#374151", lineHeight: 1.6 }}>{msg.message}</p>
                   </div>
-                  <p style={{ fontSize: "0.68rem", color: "#94a3b8", marginTop: 4 }}>
-                    {new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  <p style={{ fontSize: "0.68rem", color: "#94a3b8", marginTop: 4, textAlign: msg.from === "agency" ? "right" : "left" }}>
+                    {msg.from === "agency" ? `${agency?.agency_name} · ` : ""}{new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
+                {msg.from === "agency" && (
+                  <div style={{ width: 32, height: 32, background: "#334155", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.72rem", color: "#fff", flexShrink: 0 }}>AG</div>
+                )}
               </div>
             ))}
           </div>
@@ -1510,6 +1525,7 @@ if (messageDoctor?.user_id) {
                     setSendingReply(true);
                     await supabase.from("agency_messages").insert({ agency_id: agency?.id, doctor_id: selectedConversation, message: replyText });
                     await notify(selectedConversation, `New Message from ${agency?.agency_name}`, replyText, "info", "/dashboard");
+                    setAgencyReplies(prev => [...prev, { id: Date.now().toString(), doctor_id: selectedConversation!, message: replyText, created_at: new Date().toISOString() }]);
                     setReplyText("");
                     setSendingReply(false);
                   })();
