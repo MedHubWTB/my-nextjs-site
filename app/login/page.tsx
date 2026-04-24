@@ -13,6 +13,7 @@ export default function LoginPage() {
     router.prefetch("/agency-dashboard");
     router.prefetch("/onboarding");
   }, [router]);
+  const [userType, setUserType] = useState<"doctor" | "agency" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -148,6 +149,50 @@ export default function LoginPage() {
             </a>
           </p>
 
+          {/* User type selector */}
+          {!userType ? (
+            <div>
+              <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#64748b", marginBottom: 14, textAlign: "center" }}>I am a...</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <button
+                  onClick={() => setUserType("doctor")}
+                  style={{ width: "100%", padding: "16px", background: "#f5f3ff", border: "2px solid #ddd6fe", borderRadius: 14, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 14, transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.background = "#ede9fe"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#ddd6fe"; e.currentTarget.style.background = "#f5f3ff"; }}
+                >
+                  <span style={{ fontSize: "1.8rem" }}>👨‍⚕️</span>
+                  <div style={{ textAlign: "left" }}>
+                    <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Doctor</p>
+                    <p style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 2 }}>Access your compliance passport & shifts</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setUserType("agency")}
+                  style={{ width: "100%", padding: "16px", background: "#f0fdf4", border: "2px solid #bbf7d0", borderRadius: 14, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 14, transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.background = "#dcfce7"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#bbf7d0"; e.currentTarget.style.background = "#f0fdf4"; }}
+                >
+                  <span style={{ fontSize: "1.8rem" }}>🏥</span>
+                  <div style={{ textAlign: "left" }}>
+                    <p style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Agency</p>
+                    <p style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 2 }}>Manage your doctors & post shifts</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => setUserType(null)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: "#7c3aed", fontWeight: 600, fontSize: "0.82rem", fontFamily: "inherit", marginBottom: 20, padding: 0 }}
+              >
+                ← Back
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: userType === "doctor" ? "#f5f3ff" : "#f0fdf4", border: `1.5px solid ${userType === "doctor" ? "#ddd6fe" : "#bbf7d0"}`, borderRadius: 10, padding: "10px 14px", marginBottom: 20 }}>
+                <span style={{ fontSize: "1.2rem" }}>{userType === "doctor" ? "👨‍⚕️" : "🏥"}</span>
+                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#0f172a" }}>Signing in as {userType === "doctor" ? "a Doctor" : "an Agency"}</p>
+              </div>
+
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <div>
               <label style={{
@@ -227,8 +272,9 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in to Quiet"}
             </button>
           </div>
+            </div>
+          )}
         </div>
-
         <p style={{
           marginTop: 20,
           fontSize: "0.75rem",
