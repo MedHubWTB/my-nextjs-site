@@ -1,5 +1,6 @@
 "use client";
 
+import UpgradeBanner from "../components/UpgradeBanner";
 import { notify } from "../lib/notify";
 import NotificationBell from "../components/NotificationBell";
 import { useEffect, useState, useRef } from "react";
@@ -1573,6 +1574,7 @@ const handleAddShift = async () => {
 {/* OVERVIEW */}
         {activeTab === "overview" && (
   <div>
+    <UpgradeBanner tier={tier} currentTab="overview" onUpgrade={handleUpgradeClick} />
     {/* Stats */}
     <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 24 }}>
       {[
@@ -1907,6 +1909,7 @@ const handleAddShift = async () => {
         {/* WORK FEED */}
         {activeTab === "workfeed" && (
           <div className="fade-up">
+            <UpgradeBanner tier={tier} currentTab="workfeed" onUpgrade={handleUpgradeClick} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2029,6 +2032,7 @@ const handleAddShift = async () => {
         {/* DOCUMENTS */}
         {activeTab === "documents" && (
           <div className="fade-up card">
+            <UpgradeBanner tier={tier} currentTab="documents" onUpgrade={handleUpgradeClick} />
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <h2 style={{ fontWeight: 700, fontSize: "1.1rem", color: "#0f172a" }}>Document Vault</h2>
@@ -2119,6 +2123,7 @@ const handleAddShift = async () => {
         {/* CALENDAR */}
         {activeTab === "calendar" && (
   <div className="fade-up">
+    <UpgradeBanner tier={tier} currentTab="calendar" onUpgrade={handleUpgradeClick} />
     {/* Helper text + export buttons */}
     <div className="card" style={{ marginBottom: 20, background: "linear-gradient(135deg, #f8f9fc, #f5f3ff)", border: "1px solid #ddd6fe" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
@@ -2307,6 +2312,7 @@ const handleAddShift = async () => {
         {/* AGENCIES TAB */}
         {activeTab === "agencies" && (
           <div className="fade-up">
+            <UpgradeBanner tier={tier} currentTab="agencies" onUpgrade={handleUpgradeClick} />
             {pendingIncomingConnections.length > 0 && (
               <div style={{ marginBottom: 24 }}>
                 <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a", marginBottom: 12 }}>🔔 Connection Requests <span style={{ marginLeft: 8, background: "#f59e0b", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100 }}>{pendingIncomingConnections.length}</span></h2>
@@ -2492,6 +2498,7 @@ const handleAddShift = async () => {
         {/* APPRAISAL TAB */}
         {activeTab === "appraisal" && (
   <div className="fade-up">
+    <UpgradeBanner tier={tier} currentTab="appraisal" onUpgrade={handleUpgradeClick} />
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -2659,6 +2666,7 @@ const handleAddShift = async () => {
         {/* INSURANCE TAB */}
         {activeTab === "insurance" && (
   <div className="fade-up">
+    <UpgradeBanner tier={tier} currentTab="insurance" onUpgrade={handleUpgradeClick} />
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
       <div>
         <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>Insurance</h2>
@@ -2792,6 +2800,7 @@ const handleAddShift = async () => {
         {/* REFERENCES */}
 {activeTab === "references" && (
   <div className="fade-up">
+    <UpgradeBanner tier={tier} currentTab="references" onUpgrade={handleUpgradeClick} />
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
       <div>
         <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>📜 References</h2>
