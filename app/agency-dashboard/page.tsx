@@ -82,9 +82,9 @@ type DoctorMessage = {
   message: string;
   read: boolean;
   created_at: string;
-  doctor_name?: string;
-  doctor_specialty?: string;
-  doctor_grade?: string;
+  doctor_name: string | null;
+  doctor_specialty: string | null;
+  doctor_grade: string | null;
 };
 
 type ConnectionRequest = {
@@ -144,6 +144,7 @@ export default function AgencyDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [agencyUserId, setAgencyUserId] = useState("");
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 const [showSupportModal, setShowSupportModal] = useState(false);
 const [supportSubject, setSupportSubject] = useState("");
 const [supportMessage, setSupportMessage] = useState("");
@@ -1400,72 +1401,105 @@ if (messageDoctor?.user_id) {
 
         {/* MY DOCTORS */}
 {/* MESSAGES */}
-{activeTab === "messages" && (
+{activeTab === "messages" && (() => {
+  // Group messages by sender
+  const grouped = doctorMessages.reduce((acc, msg) => {
+    const key = msg.sender_id;
+    if (!acc[key]) acc[key] = { sender_id: msg.sender_id, doctor_name: msg.doctor_name || null, doctor_specialty: msg.doctor_specialty || null, doctor_grade: msg.doctor_grade || null, messages: [], unread: 0 };
+    acc[key].messages.push(msg);
+    if (!msg.read) acc[key].unread++;
+    return acc;
+  }, {} as Record<string, { sender_id: string; doctor_name: string | null; doctor_specialty: string | null; doctor_grade: string | null; messages: DoctorMessage[]; unread: number }>);
+  const conversations = Object.values(grouped);
+  const selected = selectedConversation ? grouped[selectedConversation] : null;
+
+  return (
   <div className="fade-up">
     <div style={{ marginBottom: 20 }}>
       <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>💬 Messages</h2>
       <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Messages from doctors about your spots and vacancies.</p>
     </div>
-
-    {/* Stats */}
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
-      {[
-        { label: "Total", value: doctorMessages.length, color: "#f8f9fc" },
-        { label: "Unread", value: doctorMessages.filter(m => !m.read).length, color: "#fef2f2" },
-        { label: "Read", value: doctorMessages.filter(m => m.read).length, color: "#f0fdf4" },
-      ].map((s, i) => (
-        <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
-          <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
-          <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+    <div style={{ display: "grid", gridTemplateColumns: selected ? "280px 1fr" : "1fr", gap: 16, minHeight: 400 }}>
+      {/* Doctor list */}
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={{ fontWeight: 700, fontSize: "0.88rem", color: "#0f172a" }}>Conversations ({conversations.length})</p>
+          {doctorMessages.filter(m => !m.read).length > 0 && (
+            <span style={{ background: "#7c3aed", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>
+              {doctorMessages.filter(m => !m.read).length} unread
+            </span>
+          )}
         </div>
-      ))}
-    </div>
-
-    {doctorMessages.length === 0 ? (
-      <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
-        <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No messages yet</p>
-        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>When doctors message you about spots, they will appear here.</p>
-      </div>
-    ) : (
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {doctorMessages.map(msg => (
+        {conversations.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
+            <div style={{ fontSize: "2rem", marginBottom: 8 }}>💬</div>
+            <p style={{ fontSize: "0.82rem" }}>No messages yet</p>
+          </div>
+        ) : conversations.map(conv => (
           <div
-            key={msg.id}
-            className="card"
-            style={{ background: msg.read ? "#fff" : "#f5f3ff", border: `1.5px solid ${msg.read ? "#e2e8f0" : "#ddd6fe"}`, cursor: "pointer" }}
+            key={conv.sender_id}
             onClick={async () => {
-              if (!msg.read) {
-                await supabase.from("doctor_messages").update({ read: true }).eq("id", msg.id);
-                setDoctorMessages(prev => prev.map(m => m.id === msg.id ? { ...m, read: true } : m));
+              setSelectedConversation(conv.sender_id);
+              // Mark all as read
+              const unreadIds = conv.messages.filter(m => !m.read).map(m => m.id);
+              if (unreadIds.length > 0) {
+                await supabase.from("doctor_messages").update({ read: true }).in("id", unreadIds);
+                setDoctorMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, read: true } : m));
               }
             }}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #f8f9fc", cursor: "pointer", background: selectedConversation === conv.sender_id ? "#f5f3ff" : conv.unread > 0 ? "#faf5ff" : "#fff", transition: "background 0.15s" }}
           >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 40, height: 40, background: msg.read ? "#f1f5f9" : "#ede9fe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem", color: msg.read ? "#64748b" : "#7c3aed", flexShrink: 0 }}>
-                  DR
-                </div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>
-                      {msg.doctor_specialty} · {msg.doctor_grade} Doctor
-                    </p>
-                    {!msg.read && <span style={{ width: 8, height: 8, background: "#7c3aed", borderRadius: "50%", display: "inline-block" }} />}
-                  </div>
-                  <p style={{ fontSize: "0.85rem", color: "#374151", lineHeight: 1.6 }}>{msg.message}</p>
-                  <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 4 }}>
-                    {new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
+            <div style={{ width: 38, height: 38, background: conv.unread > 0 ? "#ede9fe" : "#f1f5f9", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", color: conv.unread > 0 ? "#7c3aed" : "#64748b", flexShrink: 0 }}>DR</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {conv.doctor_specialty || "Doctor"} · {conv.doctor_grade}
+                </p>
+                {conv.unread > 0 && <span style={{ width: 8, height: 8, background: "#7c3aed", borderRadius: "50%", flexShrink: 0 }} />}
               </div>
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {conv.messages[conv.messages.length - 1]?.message}
+              </p>
             </div>
           </div>
         ))}
       </div>
-    )}
+
+      {/* Conversation view */}
+      {selected && (
+        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 36, height: 36, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.8rem", color: "#7c3aed" }}>DR</div>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{selected.doctor_specialty} · {selected.doctor_grade} Doctor</p>
+                <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{selected.messages.length} message{selected.messages.length > 1 ? "s" : ""}</p>
+              </div>
+            </div>
+            <button onClick={() => setSelectedConversation(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "1.2rem" }}>✕</button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12, maxHeight: 500 }}>
+            {selected.messages.map(msg => (
+              <div key={msg.id} style={{ display: "flex", gap: 10 }}>
+                <div style={{ width: 32, height: 32, background: "#f5f3ff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.72rem", color: "#7c3aed", flexShrink: 0 }}>DR</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ background: "#f8f9fc", borderRadius: "12px 12px 12px 4px", padding: "10px 14px", display: "inline-block", maxWidth: "85%" }}>
+                    <p style={{ fontSize: "0.88rem", color: "#374151", lineHeight: 1.6 }}>{msg.message}</p>
+                  </div>
+                  <p style={{ fontSize: "0.68rem", color: "#94a3b8", marginTop: 4 }}>
+                    {new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   </div>
-)}
+  );
+})()}
+
 {activeTab === "mydoctors" && (
   <div className="fade-up">
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
