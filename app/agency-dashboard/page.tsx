@@ -244,7 +244,9 @@ useEffect(() => {
 
       if (!agencyUser) { router.push("/agency-login"); return; }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ag = (agencyUser as any).agencies;
+      const agRaw = (agencyUser as any).agencies;
+      const ag = Array.isArray(agRaw) ? agRaw[0] : agRaw;
+      if (!ag) { router.push("/agency-login"); return; }
       setAgency(ag);
 
       // Connected doctors (accepted)
