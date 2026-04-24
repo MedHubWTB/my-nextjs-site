@@ -145,6 +145,8 @@ export default function AgencyDashboardPage() {
   const [agencyUserId, setAgencyUserId] = useState("");
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+const [sendingReply, setSendingReply] = useState(false);
 const [showSupportModal, setShowSupportModal] = useState(false);
 const [supportSubject, setSupportSubject] = useState("");
 const [supportMessage, setSupportMessage] = useState("");
@@ -1492,6 +1494,49 @@ if (messageDoctor?.user_id) {
                 </div>
               </div>
             ))}
+          </div>
+          {/* Reply box */}
+          <div style={{ padding: "12px 16px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 10 }}>
+            <input
+              className="input-field"
+              placeholder="Type a reply..."
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey && replyText.trim()) {
+                  e.preventDefault();
+                  (async () => {
+                    if (!replyText.trim() || !selectedConversation) return;
+                    setSendingReply(true);
+                    await supabase.from("agency_messages").insert({ agency_id: agency?.id, doctor_id: selectedConversation, message: replyText });
+                    await notify(selectedConversation, `New Message from ${agency?.agency_name}`, replyText, "info", "/dashboard");
+                    setReplyText("");
+                    setSendingReply(false);
+                  })();
+                }
+              }}
+              style={{ flex: 1 }}
+            />
+            <button
+              disabled={sendingReply || !replyText.trim()}
+              onClick={async () => {
+                if (!replyText.trim() || !selectedConversation) return;
+                setSendingReply(true);
+                await supabase.from("agency_messages").insert({
+                  agency_id: agency?.id,
+                  doctor_id: selectedConversation,
+                  message: replyText,
+                });
+                await notify(selectedConversation, `New Message from ${agency?.agency_name}`, replyText, "info", "/dashboard");
+                setReplyText("");
+                setSendingReply(false);
+                setMsg("Reply sent!");
+                setTimeout(() => setMsg(""), 2000);
+              }}
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "none", padding: "10px 16px", borderRadius: 10, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+            >
+              {sendingReply ? "..." : "Send →"}
+            </button>
           </div>
         </div>
       )}
