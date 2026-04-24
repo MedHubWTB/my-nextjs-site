@@ -173,19 +173,44 @@ useEffect(() => {
   const [msg, setMsg] = useState("");
   useRealtimeSync({
   agencyId: agency?.id,
-  onAgencyUpdate: (updated) => {
-    setAgency(prev => prev ? { ...prev, ...updated } : prev);
+  onAgencyUpdate: ({ event, data }) => {
+    if (event === "UPDATE") setAgency(prev => prev ? { ...prev, ...data } : prev);
   },
-  
-  onAnyVacancyUpdate: (updated) => {
-    setVacancies(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
+  onAnyVacancyUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setVacancies(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setVacancies(prev => prev.map(v => v.id === data.id ? { ...v, ...data } : v));
+    if (event === "DELETE") setVacancies(prev => prev.filter(v => v.id !== data.id));
   },
-  
-  onAnyInvoiceUpdate: (updated) => {
-    setInvoices(prev => prev.map(i => i.id === updated.id ? { ...i, ...updated } : i));
+  onAnyInvoiceUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setInvoices(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setInvoices(prev => prev.map(i => i.id === data.id ? { ...i, ...data } : i));
+    if (event === "DELETE") setInvoices(prev => prev.filter(i => i.id !== data.id));
   },
-  onAnyDocumentUpdate: (updated) => {
-    setShareRequests(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+  onAnyDocumentUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setShareRequests(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setShareRequests(prev => prev.map(s => s.id === data.id ? { ...s, ...data } : s));
+    if (event === "DELETE") setShareRequests(prev => prev.filter(s => s.id !== data.id));
+  },
+  onAnyConnectionUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setConnectionRequests(prev => [data as any, ...prev]);
+    if (event === "UPDATE") {
+      setConnectionRequests(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
+      setDoctors(prev => prev.map(d => d.user_id === data.doctor_id ? { ...d, ...data } : d));
+    }
+    if (event === "DELETE") {
+      setConnectionRequests(prev => prev.filter(c => c.id !== data.id));
+      setDoctors(prev => prev.filter(d => d.user_id !== data.doctor_id));
+    }
+  },
+  onAnyExternalDoctorUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setExternalDoctors(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setExternalDoctors(prev => prev.map(d => d.id === data.id ? { ...d, ...data } : d));
+    if (event === "DELETE") setExternalDoctors(prev => prev.filter(d => d.id !== data.id));
   },
 });
 

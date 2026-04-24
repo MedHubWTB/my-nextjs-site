@@ -291,21 +291,47 @@ useEffect(() => {
 
   useRealtimeSync({
   doctorUserId: userId,
-  onDoctorUpdate: (updated) => {
-    setDoctor(prev => prev ? { ...prev, ...updated } : prev);
-    setEditData(prev => prev ? { ...prev, ...updated } : prev);
+  onDoctorUpdate: ({ event, data }) => {
+    if (event === "UPDATE") {
+      setDoctor(prev => prev ? { ...prev, ...data } : prev);
+      setEditData(prev => prev ? { ...prev, ...data } : prev);
+    }
   },
-  onAnyConnectionUpdate: (updated) => {
-    setConnections(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+  onAnyConnectionUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setConnections(prev => [...prev, data as any]);
+    if (event === "UPDATE") setConnections(prev => prev.map(c => c.id === data.id ? { ...c, ...data } : c));
+    if (event === "DELETE") setConnections(prev => prev.filter(c => c.id !== data.id));
   },
-  onAnyShiftUpdate: (updated) => {
-    setShifts(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+  onAnyShiftUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setShifts(prev => [...prev, data as any]);
+    if (event === "UPDATE") setShifts(prev => prev.map(s => s.id === data.id ? { ...s, ...data } : s));
+    if (event === "DELETE") setShifts(prev => prev.filter(s => s.id !== data.id));
   },
-  onAnyDocumentUpdate: (updated) => {
-    setDocuments(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d));
+  onAnyDocumentUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setDocuments(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setDocuments(prev => prev.map(d => d.id === data.id ? { ...d, ...data } : d));
+    if (event === "DELETE") setDocuments(prev => prev.filter(d => d.id !== data.id));
   },
-  onAnyVacancyUpdate: (updated) => {
-    setVacancies(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
+  onAnyVacancyUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setVacancies(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setVacancies(prev => prev.map(v => v.id === data.id ? { ...v, ...data } : v));
+    if (event === "DELETE") setVacancies(prev => prev.filter(v => v.id !== data.id));
+  },
+  onAnyShareRequestUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setShareRequests(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setShareRequests(prev => prev.map(s => s.id === data.id ? { ...s, ...data } : s));
+    if (event === "DELETE") setShareRequests(prev => prev.filter(s => s.id !== data.id));
+  },
+  onAnyReferenceUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setReferences(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setReferences(prev => prev.map(r => r.id === data.id ? { ...r, ...data } : r));
+    if (event === "DELETE") setReferences(prev => prev.filter(r => r.id !== data.id));
   },
 });
   const today = new Date();

@@ -597,21 +597,35 @@ useEffect(() => {
   const [savingTier, setSavingTier] = useState<string | null>(null);
   useRealtimeSync({
   isAdmin: true,
-  onAnyDoctorUpdate: (updated) => {
-    setDoctors(prev => prev.map(d => d.user_id === updated.user_id ? { ...d, ...updated } : d));
-    setUsers(prev => prev.map(u => u.id === updated.user_id ? { ...u, ...updated } : u));
+  onAnyDoctorUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") { setDoctors(prev => [...prev, data as any]); setUsers(prev => [...prev, data as any]); }
+    if (event === "UPDATE") { setDoctors(prev => prev.map(d => d.user_id === data.user_id ? { ...d, ...data } : d)); setUsers(prev => prev.map(u => u.id === data.user_id ? { ...u, ...data } : u)); }
+    if (event === "DELETE") { setDoctors(prev => prev.filter(d => d.user_id !== data.user_id)); setUsers(prev => prev.filter(u => u.id !== data.user_id)); }
   },
-  onAnyAgencyUpdate: (updated) => {
-    setAgencies(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+  onAnyAgencyUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setAgencies(prev => [...prev, data as any]);
+    if (event === "UPDATE") setAgencies(prev => prev.map(a => a.id === data.id ? { ...a, ...data } : a));
+    if (event === "DELETE") setAgencies(prev => prev.filter(a => a.id !== data.id));
   },
-  onAnyConnectionUpdate: (updated) => {
-    setConnections(prev => prev.map(c => c.doctor_email === updated.doctor_email ? { ...c, ...updated } : c));
+  onAnyConnectionUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setConnections(prev => [...prev, data as any]);
+    if (event === "UPDATE") setConnections(prev => prev.map(c => c.doctor_email === data.doctor_email ? { ...c, ...data } : c));
+    if (event === "DELETE") setConnections(prev => prev.filter(c => c.doctor_email !== data.doctor_email));
   },
-  onAnySupportUpdate: (updated) => {
-    setSupportMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
+  onAnySupportUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setSupportMessages(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setSupportMessages(prev => prev.map(m => m.id === data.id ? { ...m, ...data } : m));
+    if (event === "DELETE") setSupportMessages(prev => prev.filter(m => m.id !== data.id));
   },
-  onAnyFeatureRequestUpdate: (updated) => {
-    setFeatureRequests(prev => prev.map(f => f.id === updated.id ? { ...f, ...updated } : f));
+  onAnyFeatureRequestUpdate: ({ event, data }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (event === "INSERT") setFeatureRequests(prev => [data as any, ...prev]);
+    if (event === "UPDATE") setFeatureRequests(prev => prev.map(f => f.id === data.id ? { ...f, ...data } : f));
+    if (event === "DELETE") setFeatureRequests(prev => prev.filter(f => f.id !== data.id));
   },
 });
   const [msg, setMsg] = useState("");

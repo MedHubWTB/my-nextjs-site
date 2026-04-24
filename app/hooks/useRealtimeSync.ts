@@ -3,23 +3,32 @@
 import { useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
+export type RealtimePayload = {
+  event: "INSERT" | "UPDATE" | "DELETE";
+  data: Record<string, unknown>;
+};
+
 type SyncOptions = {
   doctorUserId?: string;
-  onDoctorUpdate?: (updated: Record<string, unknown>) => void;
+  onDoctorUpdate?: (payload: RealtimePayload) => void;
   agencyId?: string;
-  onAgencyUpdate?: (updated: Record<string, unknown>) => void;
+  onAgencyUpdate?: (payload: RealtimePayload) => void;
   isAdmin?: boolean;
-  onAnyDoctorUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyAgencyUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyConnectionUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyVacancyUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyMessageUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyDocumentUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyInvoiceUpdate?: (updated: Record<string, unknown>) => void;
-  onAnySupportUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyFeatureRequestUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyShiftUpdate?: (updated: Record<string, unknown>) => void;
-  onAnyUserProfileUpdate?: (updated: Record<string, unknown>) => void;
+  onAnyDoctorUpdate?: (payload: RealtimePayload) => void;
+  onAnyAgencyUpdate?: (payload: RealtimePayload) => void;
+  onAnyConnectionUpdate?: (payload: RealtimePayload) => void;
+  onAnyVacancyUpdate?: (payload: RealtimePayload) => void;
+  onAnyMessageUpdate?: (payload: RealtimePayload) => void;
+  onAnyDocumentUpdate?: (payload: RealtimePayload) => void;
+  onAnyInvoiceUpdate?: (payload: RealtimePayload) => void;
+  onAnySupportUpdate?: (payload: RealtimePayload) => void;
+  onAnyFeatureRequestUpdate?: (payload: RealtimePayload) => void;
+  onAnyShiftUpdate?: (payload: RealtimePayload) => void;
+  onAnyUserProfileUpdate?: (payload: RealtimePayload) => void;
+  onAnyShareRequestUpdate?: (payload: RealtimePayload) => void;
+  onAnyNotificationUpdate?: (payload: RealtimePayload) => void;
+  onAnyExternalDoctorUpdate?: (payload: RealtimePayload) => void;
+  onAnyReferenceUpdate?: (payload: RealtimePayload) => void;
 };
 
 export function useRealtimeSync(options: SyncOptions) {
@@ -40,6 +49,10 @@ export function useRealtimeSync(options: SyncOptions) {
     onAnyFeatureRequestUpdate,
     onAnyShiftUpdate,
     onAnyUserProfileUpdate,
+    onAnyShareRequestUpdate,
+    onAnyNotificationUpdate,
+    onAnyExternalDoctorUpdate,
+    onAnyReferenceUpdate,
   } = options;
 
   useEffect(() => {
@@ -48,7 +61,7 @@ export function useRealtimeSync(options: SyncOptions) {
     const watch = (
       name: string,
       table: string,
-      cb: (updated: Record<string, unknown>) => void,
+      cb: (payload: RealtimePayload) => void,
       filter?: string
     ) => {
       const ch = supabase
@@ -62,7 +75,10 @@ export function useRealtimeSync(options: SyncOptions) {
             ...(filter ? { filter } : {}),
           },
           (payload) => {
-            cb((payload.new ?? payload.old) as Record<string, unknown>);
+            cb({
+              event: payload.eventType as "INSERT" | "UPDATE" | "DELETE",
+              data: (payload.new ?? payload.old) as Record<string, unknown>,
+            });
           }
         )
         .subscribe();
@@ -105,8 +121,11 @@ export function useRealtimeSync(options: SyncOptions) {
       if (onAnyConnectionUpdate) watch(`doctor-connections-${doctorUserId}`, "doctor_agencies", onAnyConnectionUpdate, `doctor_id=eq.${doctorUserId}`);
       if (onAnyShiftUpdate) watch(`doctor-shifts-${doctorUserId}`, "shifts", onAnyShiftUpdate, `doctor_id=eq.${doctorUserId}`);
       if (onAnyDocumentUpdate) watch(`doctor-docs-${doctorUserId}`, "documents", onAnyDocumentUpdate, `user_id=eq.${doctorUserId}`);
-      if (onAnyMessageUpdate) watch(`doctor-messages-${doctorUserId}`, "doctor_messages", onAnyMessageUpdate, `doctor_id=eq.${doctorUserId}`);
+      if (onAnyMessageUpdate) watch(`doctor-messages-${doctorUserId}`, "agency_messages", onAnyMessageUpdate, `doctor_id=eq.${doctorUserId}`);
       if (onAnyVacancyUpdate) watch(`doctor-vacancies-${doctorUserId}`, "vacancy_posts", onAnyVacancyUpdate);
+      if (onAnyShareRequestUpdate) watch(`doctor-shares-${doctorUserId}`, "document_share_requests", onAnyShareRequestUpdate, `doctor_id=eq.${doctorUserId}`);
+      if (onAnyNotificationUpdate) watch(`doctor-notifications-${doctorUserId}`, "notifications", onAnyNotificationUpdate, `user_id=eq.${doctorUserId}`);
+      if (onAnyReferenceUpdate) watch(`doctor-references-${doctorUserId}`, "doctor_references", onAnyReferenceUpdate, `doctor_id=eq.${doctorUserId}`);
     }
 
     // Agency watching their own related tables
@@ -116,6 +135,9 @@ export function useRealtimeSync(options: SyncOptions) {
       if (onAnyMessageUpdate) watch(`agency-messages-${agencyId}`, "agency_messages", onAnyMessageUpdate, `agency_id=eq.${agencyId}`);
       if (onAnyInvoiceUpdate) watch(`agency-invoices-${agencyId}`, "invoices", onAnyInvoiceUpdate, `agency_id=eq.${agencyId}`);
       if (onAnyDocumentUpdate) watch(`agency-doc-shares-${agencyId}`, "document_share_requests", onAnyDocumentUpdate, `agency_id=eq.${agencyId}`);
+      if (onAnyShareRequestUpdate) watch(`agency-shares-${agencyId}`, "document_share_requests", onAnyShareRequestUpdate, `agency_id=eq.${agencyId}`);
+      if (onAnyNotificationUpdate) watch(`agency-notifications-${agencyId}`, "notifications", onAnyNotificationUpdate);
+      if (onAnyExternalDoctorUpdate) watch(`agency-external-${agencyId}`, "external_doctors", onAnyExternalDoctorUpdate, `agency_id=eq.${agencyId}`);
     }
 
     return () => {
