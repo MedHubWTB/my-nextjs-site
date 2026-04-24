@@ -1075,10 +1075,49 @@ const handleAddShift = async () => {
         <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowUpgradePopup(false)}>
           <div className="upgrade-popup" style={{ background: "#fff", borderRadius: 20, padding: "28px 32px", maxWidth: 400, width: "100%", border: `2px solid ${upgradeRequired === "advanced" ? "#334155" : "#d8b4fe"}`, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", textAlign: "center" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: "2.2rem", marginBottom: 12 }}>{upgradeRequired === "advanced" ? "⚡" : "💎"}</div>
-            <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 8 }}>{upgradeRequired === "advanced" ? "Advanced" : "Pro"} Feature</h3>
-            <p style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: 20 }}><strong style={{ color: upgradeRequired === "advanced" ? "#334155" : "#7c3aed" }}>{upgradeFeature}</strong> requires the {upgradeRequired === "advanced" ? "Advanced" : "Pro"} plan.</p>
+            <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", color: "#0f172a", marginBottom: 8 }}>{upgradeRequired === "advanced" ? "Advanced" : "Pro"} Plan</h3>
+            <p style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: 16 }}><strong style={{ color: upgradeRequired === "advanced" ? "#334155" : "#7c3aed" }}>{upgradeFeature}</strong> requires the {upgradeRequired === "advanced" ? "Advanced" : "Pro"} plan.</p>
+
+            {/* Price display */}
+            <div style={{ background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #f8f9fc, #f1f0f8)" : "#f5f3ff", borderRadius: 14, padding: "16px", marginBottom: 16, border: `1.5px solid ${upgradeRequired === "advanced" ? "#e2e8f0" : "#ddd6fe"}` }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "center", marginBottom: 4 }}>
+                {upgradeRequired === "advanced" && <span style={{ fontSize: "1rem", fontWeight: 600, color: "#94a3b8", textDecoration: "line-through", marginRight: 4 }}>£25</span>}
+                <span style={{ fontSize: "2.4rem", fontWeight: 800, color: "#0f172a" }}>£15</span>
+                <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>/month</span>
+              </div>
+              {upgradeRequired === "advanced" && (
+                <p style={{ fontSize: "0.72rem", color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "3px 8px", display: "inline-block", fontWeight: 600 }}>⏰ Relaunch offer — price goes to £25/month after May</p>
+              )}
+              {upgradeRequired === "pro" && (
+                <p style={{ fontSize: "0.78rem", color: "#7c3aed", fontWeight: 600 }}>or £150/year — save £30</p>
+              )}
+            </div>
+
+            {/* Features */}
+            <div style={{ textAlign: "left", marginBottom: 16 }}>
+              {(upgradeRequired === "advanced" ? [
+                "⚡ Everything in Pro",
+                "💬 Unlimited chat with agencies",
+                "🎯 Priority matching & instant grab",
+                "🎓 Universal Compliance Passport",
+                "🔗 Designated Body / RO Link discount",
+                "📋 Top of agency search results",
+              ] : [
+                "💎 Everything in Base",
+                "📋 Work Feed — see live vacancies",
+                "💬 Chat with agencies (2/day)",
+                "📅 Live Vacancy Calendar",
+                "📊 BMA Rate Benchmarking",
+                "📝 Appraisal Tracking",
+              ]).map((f, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid #f1f5f9" }}>
+                  <span style={{ fontSize: "0.82rem", color: "#374151" }}>{f}</span>
+                </div>
+              ))}
+            </div>
+
             <button onClick={() => { setShowUpgradePopup(false); setUpgradeTarget(upgradeRequired); setShowUpgradePage(true); }} style={{ width: "100%", background: upgradeRequired === "advanced" ? "linear-gradient(135deg, #0f172a, #334155)" : "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", border: "none", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "Inter, sans-serif", marginBottom: 10 }}>
-              {upgradeRequired === "advanced" ? "⚡ Upgrade to Advanced" : "💎 Upgrade to Pro"}
+              {upgradeRequired === "advanced" ? "⚡ Upgrade to Advanced — £15/mo" : "💎 Upgrade to Pro — £15/mo"}
             </button>
             <button onClick={() => setShowUpgradePopup(false)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "0.85rem", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Maybe later</button>
           </div>
