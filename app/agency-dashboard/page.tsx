@@ -75,6 +75,18 @@ type Vacancy = {
   created_at: string;
 };
 
+type DoctorMessage = {
+  id: string;
+  sender_id: string;
+  receiver_agency_id: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+  doctor_name?: string;
+  doctor_specialty?: string;
+  doctor_grade?: string;
+};
+
 type ConnectionRequest = {
   id: string;
   doctor_id: string;
@@ -131,16 +143,18 @@ export default function AgencyDashboardPage() {
   const [outreachUsedThisWeek, setOutreachUsedThisWeek] = useState(0);
   const [loading, setLoading] = useState(true);
   const [agencyUserId, setAgencyUserId] = useState("");
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
 const [showSupportModal, setShowSupportModal] = useState(false);
 const [supportSubject, setSupportSubject] = useState("");
 const [supportMessage, setSupportMessage] = useState("");
 const [sendingSupport, setSendingSupport] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"|"mydoctors">("overview");
+  const [activeTab, setActiveTab] = useState<"overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"|"mydoctors"|"messages">("overview");
   const [externalDoctors, setExternalDoctors] = useState<ExternalDoctor[]>([]);
 const [showExternalModal, setShowExternalModal] = useState(false);
 const [newExternal, setNewExternal] = useState({ full_name: "", email: "", specialty: "", grade: "", phone: "", gmc_number: "", preferred_location: "", notes: "" });
 const [savingExternal, setSavingExternal] = useState(false);
 const [sendingInvite, setSendingInvite] = useState<string | null>(null);
+const [doctorMessages, setDoctorMessages] = useState<DoctorMessage[]>([]);
 
 
 
@@ -212,6 +226,12 @@ useEffect(() => {
     if (event === "UPDATE") setExternalDoctors(prev => prev.map(d => d.id === data.id ? { ...d, ...data } : d));
     if (event === "DELETE") setExternalDoctors(prev => prev.filter(d => d.id !== data.id));
   },
+  onAnyMessageUpdate: ({ event, data }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (event === "INSERT") setDoctorMessages(prev => [data as any, ...prev]);
+  if (event === "UPDATE") setDoctorMessages(prev => prev.map(m => m.id === data.id ? { ...m, ...data } : m));
+  if (event === "DELETE") setDoctorMessages(prev => prev.filter(m => m.id !== data.id));
+},
 });
 
   useEffect(() => {
@@ -328,6 +348,21 @@ if (vac) setVacancies(vac);
       const { data: outreachData } = await supabase.from("agency_outreach_usage").select("messages_sent").eq("agency_id", ag.id).eq("week_start", weekStartStr).single();
       if (outreachData) setOutreachUsedThisWeek(outreachData.messages_sent);
 
+      const { data: msgs } = await supabase
+  .from("doctor_messages")
+  .select("*, doctors(full_name, specialty, grade)")
+  .eq("receiver_agency_id", ag.id)
+  .order("created_at", { ascending: false });
+if (msgs) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapped = msgs.map((m: any) => ({
+    ...m,
+    doctor_name: Array.isArray(m.doctors) ? m.doctors[0]?.full_name : m.doctors?.full_name,
+    doctor_specialty: Array.isArray(m.doctors) ? m.doctors[0]?.specialty : m.doctors?.specialty,
+    doctor_grade: Array.isArray(m.doctors) ? m.doctors[0]?.grade : m.doctors?.grade,
+  }));
+  setDoctorMessages(mapped);
+}
       const { data: extDocs } = await supabase
   .from("external_doctors")
   .select("*")
@@ -766,6 +801,7 @@ if (messageDoctor?.user_id) {
             { key: "placed", label: "Placed Doctors", icon: "✅" },
             { key: "invoices", label: "Invoices", icon: "🧾" },
             { key: "documents", label: "Documents", icon: "📄" },
+            { key: "messages", label: "Messages", icon: "💬" },
             { key: "mydoctors", label: "My Doctors", icon: "🩺" },
             { key: "billing", label: "Billing", icon: "💳" },
           ] as { key: "overview"|"leads"|"market"|"placed"|"invoices"|"vacancies"|"documents"|"billing"; label: string; icon: string }[]).map(item => (
@@ -954,22 +990,48 @@ if (messageDoctor?.user_id) {
                   <span style={{ marginLeft: 8, background: "#f59e0b", color: "#fff", fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px", borderRadius: 100 }}>{connectionRequests.length}</span>
                 </h3>
                 {connectionRequests.map(req => (
-                  <div key={req.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, padding: "14px 18px", marginBottom: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 40, height: 40, background: "#fef9c3", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem", color: "#92400e" }}>DR</div>
-                      <div>
-                        <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{req.doctor_specialty} · {req.doctor_grade}</p>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <p style={{ fontSize: "0.75rem", color: "#92400e" }}>Wants to connect</p>
-                          {req.doctor_tier === "advanced" && <span style={{ fontSize: "0.65rem", background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>⚡ ADV</span>}
-                          {req.doctor_tier === "pro" && <span style={{ fontSize: "0.65rem", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>💎 PRO</span>}
+                  <div key={req.id} style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 14, padding: "14px 18px", marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 40, height: 40, background: "#fef9c3", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem", color: "#92400e" }}>DR</div>
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{req.doctor_specialty} · {req.doctor_grade}</p>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <p style={{ fontSize: "0.75rem", color: "#92400e" }}>Wants to connect</p>
+                            {req.doctor_tier === "advanced" && <span style={{ fontSize: "0.65rem", background: "linear-gradient(135deg, #0f172a, #334155)", color: "#fff", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>⚡ ADV</span>}
+                            {req.doctor_tier === "pro" && <span style={{ fontSize: "0.65rem", background: "linear-gradient(135deg, #6d28d9, #4f46e5)", color: "#fff", padding: "1px 6px", borderRadius: 100, fontWeight: 700 }}>💎 PRO</span>}
+                          </div>
                         </div>
                       </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={() => setExpandedRequest(expandedRequest === req.id ? null : req.id)}
+                          style={{ background: "#fff", color: "#92400e", border: "1.5px solid #fde68a", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}
+                        >
+                          {expandedRequest === req.id ? "Hide Profile ▲" : "View Profile ▼"}
+                        </button>
+                        <button onClick={() => handleAcceptDoctorConnection(req.id)} style={{ background: "#f0fdf4", color: "#16a34a", border: "1.5px solid #bbf7d0", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✓ Accept</button>
+                        <button onClick={() => handleDeclineDoctorConnection(req.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✗ Decline</button>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => handleAcceptDoctorConnection(req.id)} style={{ background: "#f0fdf4", color: "#16a34a", border: "1.5px solid #bbf7d0", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✓ Accept</button>
-                      <button onClick={() => handleDeclineDoctorConnection(req.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "1.5px solid #fecaca", padding: "7px 14px", borderRadius: 10, fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>✗ Decline</button>
-                    </div>
+                    {expandedRequest === req.id && (
+                      <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #fde68a" }}>
+                        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Doctor Qualifications</p>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
+                          {[
+                            { label: "Specialty", value: req.doctor_specialty },
+                            { label: "Grade", value: req.doctor_grade },
+                            { label: "Tier", value: req.doctor_tier === "advanced" ? "⚡ Advanced" : req.doctor_tier === "pro" ? "💎 Pro" : "Base" },
+                          ].filter(f => f.value).map((field, i) => (
+                            <div key={i} style={{ background: "#fffde7", borderRadius: 10, padding: "10px 12px", border: "1px solid #fde68a" }}>
+                              <p style={{ fontSize: "0.7rem", fontWeight: 700, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{field.label}</p>
+                              <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a" }}>{field.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 10 }}>Contact details are only shared after you accept the connection.</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1330,6 +1392,73 @@ if (messageDoctor?.user_id) {
         )}
 
         {/* MY DOCTORS */}
+{/* MESSAGES */}
+{activeTab === "messages" && (
+  <div className="fade-up">
+    <div style={{ marginBottom: 20 }}>
+      <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "1.3rem", fontWeight: 700, color: "#0f172a" }}>💬 Messages</h2>
+      <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 4 }}>Messages from doctors about your spots and vacancies.</p>
+    </div>
+
+    {/* Stats */}
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
+      {[
+        { label: "Total", value: doctorMessages.length, color: "#f8f9fc" },
+        { label: "Unread", value: doctorMessages.filter(m => !m.read).length, color: "#fef2f2" },
+        { label: "Read", value: doctorMessages.filter(m => m.read).length, color: "#f0fdf4" },
+      ].map((s, i) => (
+        <div key={i} className="card" style={{ background: s.color, border: "none", padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#0f172a" }}>{s.value}</div>
+          <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    {doctorMessages.length === 0 ? (
+      <div className="card" style={{ textAlign: "center", padding: "48px 24px" }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>💬</div>
+        <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>No messages yet</p>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8" }}>When doctors message you about spots, they will appear here.</p>
+      </div>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {doctorMessages.map(msg => (
+          <div
+            key={msg.id}
+            className="card"
+            style={{ background: msg.read ? "#fff" : "#f5f3ff", border: `1.5px solid ${msg.read ? "#e2e8f0" : "#ddd6fe"}`, cursor: "pointer" }}
+            onClick={async () => {
+              if (!msg.read) {
+                await supabase.from("doctor_messages").update({ read: true }).eq("id", msg.id);
+                setDoctorMessages(prev => prev.map(m => m.id === msg.id ? { ...m, read: true } : m));
+              }
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, background: msg.read ? "#f1f5f9" : "#ede9fe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem", color: msg.read ? "#64748b" : "#7c3aed", flexShrink: 0 }}>
+                  DR
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>
+                      {msg.doctor_specialty} · {msg.doctor_grade} Doctor
+                    </p>
+                    {!msg.read && <span style={{ width: 8, height: 8, background: "#7c3aed", borderRadius: "50%", display: "inline-block" }} />}
+                  </div>
+                  <p style={{ fontSize: "0.85rem", color: "#374151", lineHeight: 1.6 }}>{msg.message}</p>
+                  <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: 4 }}>
+                    {new Date(msg.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 {activeTab === "mydoctors" && (
   <div className="fade-up">
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
