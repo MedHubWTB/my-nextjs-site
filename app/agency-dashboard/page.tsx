@@ -155,18 +155,14 @@ const [newExternal, setNewExternal] = useState({ full_name: "", email: "", speci
 const [savingExternal, setSavingExternal] = useState(false);
 const [sendingInvite, setSendingInvite] = useState<string | null>(null);
 const [doctorMessages, setDoctorMessages] = useState<DoctorMessage[]>([]);
-
-
-
-useEffect(() => {
-  const saved = localStorage.getItem("agency_active_tab");
-  if (saved) changeTab(saved as typeof activeTab);
-}, []);
-
 const changeTab = (tab: typeof activeTab) => {
   setActiveTab(tab);
   localStorage.setItem("agency_active_tab", tab);
 };
+useEffect(() => {
+  const saved = localStorage.getItem("agency_active_tab");
+  if (saved) setActiveTab(saved as typeof activeTab);
+}, []);
 
 useEffect(() => {
   const saved = localStorage.getItem("agency_active_tab");
