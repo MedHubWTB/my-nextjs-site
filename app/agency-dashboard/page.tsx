@@ -350,17 +350,26 @@ if (vac) setVacancies(vac);
 
       const { data: msgs } = await supabase
   .from("doctor_messages")
-  .select("*, doctors(full_name, specialty, grade)")
+  .select("*")
   .eq("receiver_agency_id", ag.id)
   .order("created_at", { ascending: false });
 if (msgs) {
+  // Fetch doctor info for each message
+  const senderIds = [...new Set(msgs.map((m: any) => m.sender_id))];
+  const { data: doctorsData } = await supabase
+    .from("doctors")
+    .select("user_id, full_name, specialty, grade")
+    .in("user_id", senderIds);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapped = msgs.map((m: any) => ({
-    ...m,
-    doctor_name: Array.isArray(m.doctors) ? m.doctors[0]?.full_name : m.doctors?.full_name,
-    doctor_specialty: Array.isArray(m.doctors) ? m.doctors[0]?.specialty : m.doctors?.specialty,
-    doctor_grade: Array.isArray(m.doctors) ? m.doctors[0]?.grade : m.doctors?.grade,
-  }));
+  const mapped = msgs.map((m: any) => {
+    const doc = doctorsData?.find((d: any) => d.user_id === m.sender_id);
+    return {
+      ...m,
+      doctor_name: doc?.full_name || null,
+      doctor_specialty: doc?.specialty || null,
+      doctor_grade: doc?.grade || null,
+    };
+  });
   setDoctorMessages(mapped);
 }
       const { data: extDocs } = await supabase

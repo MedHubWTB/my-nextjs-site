@@ -584,9 +584,10 @@ setLoading(false);
       setConnections(prev => [...prev, { ...d, agency_name: agencyInfo?.agency_name, agency_email: agencyInfo?.contact_email }]);
       await triggerEmail("connection_request", { agency_email: agencyInfo?.contact_email, agency_name: agencyInfo?.agency_name, doctor_name: doctor?.full_name, doctor_specialty: doctor?.specialty, doctor_grade: doctor?.grade });
       // Notify the agency of new connection request
-if (agencyInfo?.user_id) {
-  await notify(agencyInfo.user_id, "New Connection Request", `Dr. ${doctor?.full_name} wants to connect with your agency.`, "info", "/agency-dashboard");
-}
+      const { data: agencyUserData } = await supabase.from("agency_users").select("user_id").eq("agency_id", agencyId).single();
+      if (agencyUserData?.user_id) {
+        await notify(agencyUserData.user_id, "New Connection Request 🔔", `A ${doctor?.specialty} · ${doctor?.grade} doctor wants to connect with your agency.`, "info", "/agency-dashboard");
+      }
       setSaveMsg("Connection request sent!");
       setTimeout(() => setSaveMsg(""), 3000);
     }
