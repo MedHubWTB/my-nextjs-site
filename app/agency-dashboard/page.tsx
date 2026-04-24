@@ -150,7 +150,7 @@ useEffect(() => {
 }, []);
 
 const changeTab = (tab: typeof activeTab) => {
-  changeTab(tab);
+  setActiveTab(tab);
   localStorage.setItem("agency_active_tab", tab);
 };
 
