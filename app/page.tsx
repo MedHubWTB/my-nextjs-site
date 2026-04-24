@@ -96,11 +96,7 @@ export default function LandingPage() {
                 <a href="/signup" className="btn-primary" style={{ fontSize: "1rem", padding: "14px 32px" }}>
                   Create free account →
                 </a>
-                <a href="/otp-login" className="btn-ghost" style={{ fontSize: "1rem", padding: "14px 32px" }}>
-                  Sign in with email code
-                </a>
               </div>
-
               <div className="fade-up-3" style={{ display: "flex", gap: 24, marginTop: 36, flexWrap: "wrap" }}>
                 {[
                   { icon: "🔒", text: "No data sharing without consent" },
@@ -327,11 +323,7 @@ export default function LandingPage() {
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="/signup" style={{ display: "inline-block", background: "#fff", color: "#1e293b", fontWeight: 700, fontSize: "1rem", padding: "14px 36px", borderRadius: 12, textDecoration: "none", transition: "all 0.2s", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
-              Create free account →
-            </a>
-            <a href="/otp-login" style={{ display: "inline-block", background: "rgba(255,255,255,0.1)", color: "#fff", fontWeight: 600, fontSize: "1rem", padding: "14px 36px", borderRadius: 12, textDecoration: "none", border: "1.5px solid rgba(255,255,255,0.2)", transition: "all 0.2s" }}>
-              Sign in with email code
-            </a>
+              Create free account →</a>
           </div>
         </div>
       </section>
@@ -339,7 +331,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer style={{ background: "#0f172a", padding: "48px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #334155, #475569)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.82rem" }}>Q</span>
