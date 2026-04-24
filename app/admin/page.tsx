@@ -583,7 +583,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"overview"|"doctors"|"agencies"|"connections"|"broadcasts"|"users"|"imports"|"feedback"|"support">("overview");
 
 const changeTab = (tab: typeof activeTab) => {
-  changeTab(tab);
+  setActiveTab(tab);
   localStorage.setItem("admin_active_tab", tab);
 };
 
