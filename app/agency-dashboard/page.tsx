@@ -371,7 +371,7 @@ if (msgs) {
       const { data: extDocs } = await supabase
   .from("external_doctors")
   .select("*")
-  .eq("agency_id", agency?.id)
+  .eq("agency_id", ag.id)
   .order("created_at", { ascending: false });
 if (extDocs) setExternalDoctors(extDocs);
       setLoading(false);
